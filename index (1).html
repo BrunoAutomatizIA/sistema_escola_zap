@@ -1,0 +1,2976 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Condozap · Dashboard de Ocorrências</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+
+  /* ============================================
+     TEMA - variaveis de marca (Automatiz.ia)
+     Trocar estes valores para customizar por cliente
+     ============================================ */
+  :root{
+    /* Cores de marca */
+    --brand-primary: #3D8BFF;
+    --brand-primary-dark: #0E2D7A;
+    --brand-accent: #F5A623;
+
+    /* Superficies (navy automatiz.ia) */
+    --bg-page: #0B1623;
+    --bg-surface: #121F30;
+    --bg-surface-2: #1A2A40;
+    --bg-surface-hover: #1F3148;
+
+    /* Bordas */
+    --border-subtle: rgba(255,255,255,0.06);
+    --border-default: rgba(255,255,255,0.10);
+
+    /* Texto */
+    --text-primary: #F4F6FA;
+    --text-secondary: #8A99B5;
+    --text-tertiary: #5A6E98;
+
+    /* Status semantico - usar apenas para urgencia/estado */
+    --status-critical-bg: #5C1A1A;
+    --status-critical-fg: #FFFFFF;
+    --status-danger-bg: rgba(226,75,74,0.14);
+    --status-danger-fg: #F09595;
+    --status-warning-bg: rgba(245,166,35,0.14);
+    --status-warning-fg: #F5A623;
+    --status-success-bg: rgba(99,153,34,0.14);
+    --status-success-fg: #97C459;
+    --status-info-bg: rgba(61,139,255,0.14);
+    --status-info-fg: #85B7EB;
+
+    /* Layout */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+
+    --font-display: 'Outfit', sans-serif;
+    --font-mono: 'Space Mono', monospace;
+
+    --transition-theme: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  }
+
+  /* ============================================
+     TEMA CLARO - off-white quente
+     Ativado via body.theme-light
+     ============================================ */
+  body.theme-light{
+    /* Marca: azul ligeiramente mais escuro/saturado para contraste sobre claro */
+    --brand-primary: #1F6AF0;
+    --brand-primary-dark: #0E2D7A;
+    --brand-accent: #D9860F;
+
+    /* Superficies off-white quente */
+    --bg-page: #F7F3EC;
+    --bg-surface: #FFFFFF;
+    --bg-surface-2: #F1EBE1;
+    --bg-surface-hover: #ECE4D6;
+
+    /* Bordas - pretas com baixa opacidade */
+    --border-subtle: rgba(40,30,20,0.07);
+    --border-default: rgba(40,30,20,0.12);
+
+    /* Texto */
+    --text-primary: #2A2420;
+    --text-secondary: #756F66;
+    --text-tertiary: #A39C90;
+
+    /* Status semantico recalibrado para fundo claro */
+    --status-critical-bg: #A32D2D;
+    --status-critical-fg: #FFFFFF;
+    --status-danger-bg: #FBEAEA;
+    --status-danger-fg: #A32D2D;
+    --status-warning-bg: #FBF0DC;
+    --status-warning-fg: #8A5A0B;
+    --status-success-bg: #EEF5E4;
+    --status-success-fg: #3B6D11;
+    --status-info-bg: #E8F0FE;
+    --status-info-fg: #0C447C;
+  }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+
+  body{
+    font-family: var(--font-display);
+    background: var(--bg-page);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    transition: var(--transition-theme);
+  }
+
+  a{ color: inherit; text-decoration: none; }
+
+  /* ============================================
+     LAYOUT GERAL
+     ============================================ */
+  .app{
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* Sidebar - escondida em mobile, fixa em desktop */
+  .sidebar{
+    display: none;
+    width: 240px;
+    background: var(--bg-surface);
+    border-right: 1px solid var(--border-subtle);
+    padding: 1.5rem 1rem;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex-shrink: 0;
+  }
+
+  .sidebar-logo{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 0.5rem 1.5rem;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .sidebar-logo-icon{
+    width: 32px; height: 32px;
+    border-radius: var(--radius-sm);
+    background: linear-gradient(135deg, var(--brand-primary), var(--brand-primary-dark));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; color: #fff; flex-shrink: 0;
+  }
+
+  .sidebar-logo-text{ font-size: 15px; font-weight: 700; line-height: 1.2; }
+  .sidebar-logo-sub{ font-size: 11px; color: var(--text-tertiary); font-family: var(--font-mono); letter-spacing: 0.04em; }
+
+  .nav-section-label{
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--text-tertiary);
+    letter-spacing: 0.08em;
+    padding: 1rem 0.75rem 0.5rem;
+  }
+
+  .nav-item{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0.625rem 0.75rem;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    color: var(--text-secondary);
+    transition: background 0.15s, color 0.15s;
+  }
+
+  /* Icones SVG inline (sprite) */
+  .icon{
+    width: 1em;
+    height: 1em;
+    font-size: 16px;
+    stroke: currentColor;
+    fill: none;
+    flex-shrink: 0;
+    vertical-align: -0.15em;
+  }
+
+  .nav-item .icon{ font-size: 18px; }
+
+  .nav-item:hover{ background: var(--bg-surface-hover); color: var(--text-primary); }
+
+  .nav-item.active{
+    background: var(--status-info-bg);
+    color: var(--brand-primary);
+  }
+
+  .nav-item .badge{
+    margin-left: auto;
+    font-size: 11px;
+    font-weight: 700;
+    background: var(--status-danger-fg);
+    color: #2C0A0A;
+    border-radius: 999px;
+    min-width: 18px;
+    height: 18px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 5px;
+  }
+
+  /* Main content */
+  .main{
+    flex: 1;
+    min-width: 0;
+    padding: 1rem;
+    padding-bottom: 5.5rem; /* espaco para bottom nav mobile */
+  }
+
+  .app-footer{
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-subtle);
+    text-align: center;
+    font-size: 12px;
+    font-family: var(--font-mono);
+    color: var(--text-tertiary);
+    letter-spacing: 0.03em;
+  }
+
+  .app-footer strong{
+    color: var(--text-secondary);
+    font-weight: 700;
+  }
+
+  /* Top bar */
+  .topbar{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+  }
+
+  .topbar-title{ font-size: 20px; font-weight: 700; }
+  .topbar-subtitle{ font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+
+  .topbar-actions{ display: flex; align-items: center; gap: 0.5rem; }
+
+  .icon-btn{
+    width: 38px; height: 38px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .icon-btn:hover{ background: var(--bg-surface-hover); color: var(--text-primary); }
+
+  .icon-btn.has-dot{ position: relative; }
+  .icon-btn.has-dot::after{
+    content:'';
+    position: absolute;
+    top: 8px; right: 8px;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--status-danger-fg);
+    border: 1.5px solid var(--bg-page);
+  }
+
+  /* ============================================
+     METRICAS
+     ============================================ */
+  .metrics-grid{
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.625rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .metric-card{
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 0.875rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .metric-card.is-alert{
+    border-color: rgba(245,166,35,0.25);
+    background: linear-gradient(180deg, rgba(245,166,35,0.06), var(--bg-surface) 60%);
+  }
+
+  .metric-head{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .metric-label{
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--text-tertiary);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .metric-icon{
+    width: 28px; height: 28px;
+    border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    background: var(--bg-surface-2);
+    color: var(--text-secondary);
+  }
+
+  .metric-card.is-alert .metric-icon{
+    background: var(--status-warning-bg);
+    color: var(--status-warning-fg);
+  }
+
+  .metric-value{
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .metric-meta{
+    font-size: 12px;
+    color: var(--text-tertiary);
+  }
+
+  /* ============================================
+     SECAO OCORRENCIAS (modulo central)
+     ============================================ */
+  .section{ margin-bottom: 1.75rem; }
+
+  .section-head{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.875rem;
+  }
+
+  .section-title{
+    font-size: 16px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-title .icon{ color: var(--brand-primary); font-size: 18px; }
+
+  .section-link{
+    font-size: 13px;
+    color: var(--brand-primary);
+    display: flex; align-items: center; gap: 4px;
+  }
+
+  .filter-row{
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.875rem;
+    overflow-x: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+  .filter-row::-webkit-scrollbar{ display:none; }
+
+  .filter-chip{
+    flex-shrink: 0;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 0.4rem 0.875rem;
+    border-radius: 999px;
+    border: 1px solid var(--border-default);
+    background: var(--bg-surface);
+    color: var(--text-secondary);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .filter-chip.active{
+    background: var(--status-info-bg);
+    border-color: var(--brand-primary);
+    color: var(--brand-primary);
+  }
+
+  .occurrence-list{
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+  }
+
+  .occurrence-card{
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    border-left: 3px solid var(--border-default);
+  }
+
+  .occurrence-card.urgency-critica{ border-left-color: var(--status-critical-bg); border-left-width: 4px; }
+  .occurrence-card.urgency-alta{ border-left-color: var(--status-danger-fg); }
+  .occurrence-card.urgency-media{ border-left-color: var(--status-warning-fg); }
+  .occurrence-card.urgency-baixa{ border-left-color: var(--status-success-fg); }
+
+  .occ-top{
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.375rem;
+  }
+
+  .occ-title{
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+
+  .occ-desc{
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 0.75rem;
+  }
+
+  .badge{
+    font-size: 11px;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: var(--radius-sm);
+    white-space: nowrap;
+    flex-shrink: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .badge-critical{ background: var(--status-critical-bg); color: var(--status-critical-fg); }
+  .badge-danger{ background: var(--status-danger-bg); color: var(--status-danger-fg); }
+  .badge-warning{ background: var(--status-warning-bg); color: var(--status-warning-fg); }
+  .badge-success{ background: var(--status-success-bg); color: var(--status-success-fg); }
+  .badge-info{ background: var(--status-info-bg); color: var(--status-info-fg); }
+  .badge-neutral{ background: var(--bg-surface-2); color: var(--text-secondary); }
+
+  .occ-bottom{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.625rem;
+    padding-top: 0.625rem;
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  .occ-meta{
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    font-size: 12px;
+    color: var(--text-tertiary);
+    flex-wrap: wrap;
+  }
+
+  .occ-meta-item{ display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+  .occ-meta-item .icon{ font-size: 14px; flex-shrink: 0; }
+
+  .occ-bottom > div:last-child{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+  }
+
+  /* Empty state */
+  .empty-state{
+    background: var(--bg-surface);
+    border: 1px dashed var(--border-default);
+    border-radius: var(--radius-md);
+    padding: 2.5rem 1rem;
+    text-align: center;
+    color: var(--text-tertiary);
+  }
+  .empty-state .icon{
+    font-size: 28px;
+    color: var(--text-tertiary);
+    margin: 0 auto 0.625rem;
+    display: block;
+  }
+  .empty-state-title{ font-size: 14px; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.25rem; }
+  .empty-state-sub{ font-size: 12px; }
+
+  /* ============================================
+     ACOES RAPIDAS
+     ============================================ */
+  .quick-actions{
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.625rem;
+  }
+
+  .quick-action{
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 0.875rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.625rem;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+
+  .quick-action:hover{
+    border-color: var(--brand-primary);
+    background: var(--bg-surface-hover);
+  }
+
+  .quick-action-icon{
+    width: 34px; height: 34px;
+    border-radius: var(--radius-sm);
+    background: var(--status-info-bg);
+    color: var(--brand-primary);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px;
+  }
+
+  .quick-action.is-primary .quick-action-icon{
+    background: var(--status-warning-bg);
+    color: var(--status-warning-fg);
+  }
+
+  .quick-action-label{ font-size: 13px; font-weight: 600; }
+
+  /* ============================================
+     ATIVIDADE RECENTE
+     ============================================ */
+  .activity-list{
+    display: flex;
+    flex-direction: column;
+  }
+
+  .activity-item{
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .activity-item:last-child{ border-bottom: none; }
+
+  .activity-dot{
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-top: 6px;
+    flex-shrink: 0;
+  }
+  .activity-dot.danger{ background: var(--status-danger-fg); }
+  .activity-dot.warning{ background: var(--status-warning-fg); }
+  .activity-dot.info{ background: var(--brand-primary); }
+  .activity-dot.success{ background: var(--status-success-fg); }
+
+  .activity-text{ font-size: 13px; line-height: 1.5; }
+  .activity-text strong{ font-weight: 600; }
+  .activity-time{ font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
+
+  /* ============================================
+     BOTTOM NAV (mobile)
+     ============================================ */
+  .bottom-nav{
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--bg-surface);
+    border-top: 1px solid var(--border-subtle);
+    display: flex;
+    justify-content: space-around;
+    padding: 0.5rem 0 calc(0.5rem + env(safe-area-inset-bottom));
+    z-index: 50;
+  }
+
+  .bottom-nav-item{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    font-size: 11px;
+    color: var(--text-tertiary);
+    padding: 0.25rem 0.75rem;
+    position: relative;
+    flex: 1;
+  }
+
+  .bottom-nav-item .icon{ font-size: 20px; }
+  .bottom-nav-item.active{ color: var(--brand-primary); }
+
+  .bottom-nav-item .badge{
+    position: absolute;
+    top: -2px;
+    right: 18%;
+    font-size: 10px;
+    font-weight: 700;
+    background: var(--status-danger-fg);
+    color: #2C0A0A;
+    border-radius: 999px;
+    min-width: 16px;
+    height: 16px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 4px;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  /* ============================================
+     PAGINAS (navegacao client-side)
+     ============================================ */
+  .page{ display: none; }
+  .page.active{ display: block; }
+
+  /* ============================================
+     STATUS BOT WHATSAPP
+     ============================================ */
+  .bot-status-bar{
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 0.875rem 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .bot-status-left{
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .bot-status-icon{
+    width: 38px; height: 38px;
+    border-radius: var(--radius-sm);
+    background: var(--status-success-bg);
+    color: var(--status-success-fg);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 19px;
+    flex-shrink: 0;
+  }
+
+  .bot-status-title{
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .bot-status-sub{
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+  }
+
+  .status-pill{
+    font-size: 11px;
+    font-weight: 700;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .status-pill.online{ background: var(--status-success-bg); color: var(--status-success-fg); }
+  .status-pill.offline{ background: var(--status-danger-bg); color: var(--status-danger-fg); }
+
+  .bot-status-stats{
+    display: flex;
+    gap: 1.5rem;
+  }
+
+  .bot-stat{
+    display: flex;
+    flex-direction: column;
+  }
+
+  .bot-stat-value{ font-size: 20px; font-weight: 700; line-height: 1.2; }
+  .bot-stat-label{ font-size: 11px; color: var(--text-tertiary); }
+
+  /* ============================================
+     FILA DE APROVACOES
+     ============================================ */
+  .approval-list{
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+  }
+
+  .approval-card{
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 0.75rem 1rem;
+  }
+
+  .approval-icon{
+    width: 36px; height: 36px;
+    border-radius: var(--radius-sm);
+    background: var(--status-info-bg);
+    color: var(--status-info-fg);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px;
+    flex-shrink: 0;
+  }
+
+  .approval-info{ flex: 1; min-width: 0; }
+
+  .approval-title{
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .approval-meta{
+    font-size: 12px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .approval-actions{
+    display: flex;
+    gap: 0.4rem;
+    flex-shrink: 0;
+  }
+
+  .btn-approve, .btn-reject{
+    width: 32px; height: 32px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-default);
+    background: var(--bg-surface);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+  }
+
+  .btn-approve{ color: var(--status-success-fg); }
+  .btn-approve:hover{ background: var(--status-success-bg); border-color: var(--status-success-fg); }
+
+  .btn-reject{ color: var(--status-danger-fg); }
+  .btn-reject:hover{ background: var(--status-danger-bg); border-color: var(--status-danger-fg); }
+
+  /* ============================================
+     RESERVAS DE AREAS COMUNS
+     ============================================ */
+  .reservation-list{
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+  }
+
+  .reservation-item{
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 0.625rem 0.875rem;
+  }
+
+  .reservation-date{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 42px; height: 42px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-surface-2);
+    flex-shrink: 0;
+    line-height: 1.1;
+  }
+
+  .reservation-day{ font-size: 16px; font-weight: 700; }
+  .reservation-month{ font-size: 10px; color: var(--text-tertiary); text-transform: uppercase; }
+
+  .reservation-info{ flex: 1; min-width: 0; }
+  .reservation-title{ font-size: 13px; font-weight: 600; }
+  .reservation-meta{ font-size: 12px; color: var(--text-secondary); }
+
+  /* ============================================
+     COMUNICADOS
+     ============================================ */
+  .btn-new-comm{
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 600;
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-default);
+    background: var(--bg-surface);
+    color: var(--brand-primary);
+    cursor: pointer;
+  }
+  .btn-new-comm:hover{ background: var(--bg-surface-hover); }
+
+  .comm-list{
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+  }
+
+  .comm-item{
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 0.875rem 1rem;
+  }
+
+  .comm-title{ font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .comm-desc{ font-size: 12px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0.625rem; }
+
+  .comm-meta{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .comm-time{ font-size: 11px; color: var(--text-tertiary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* ============================================
+     TOOLBAR DE PAGINA (ex: Ocorrencias)
+     ============================================ */
+  .page-toolbar{
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .page-toolbar .filter-row{ width: 100%; }
+
+  /* ============================================
+     BOTOES
+     ============================================ */
+  .btn-primary{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 0.625rem 1.125rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--brand-primary);
+    background: var(--brand-primary);
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    white-space: nowrap;
+  }
+  .btn-primary:hover{ background: var(--brand-primary-dark); border-color: var(--brand-primary-dark); }
+
+  .btn-secondary{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 0.625rem 1.125rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-default);
+    background: var(--bg-surface);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    white-space: nowrap;
+  }
+  .btn-secondary:hover{ background: var(--bg-surface-hover); color: var(--text-primary); }
+
+  .btn-resolve{
+    font-size: 12px;
+    font-weight: 600;
+    padding: 0.4rem 0.75rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-default);
+    background: var(--bg-surface);
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+    white-space: nowrap;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+  }
+  .btn-resolve:hover{ background: var(--status-success-bg); border-color: var(--status-success-fg); color: var(--status-success-fg); }
+  .btn-resolve:disabled{
+    opacity: 0.5;
+    cursor: default;
+  }
+  .btn-resolve:disabled:hover{ background: var(--bg-surface); border-color: var(--border-default); color: var(--text-secondary); }
+
+  /* ============================================
+     FORMULARIO NOVA OCORRENCIA
+     ============================================ */
+  .occ-form-card{
+    background: var(--bg-surface);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    padding: 1.125rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .form-grid{
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.875rem;
+    margin-bottom: 1.125rem;
+  }
+
+  .form-field{
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+
+  .form-field-full{ grid-column: 1 / -1; }
+
+  .form-label{
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  .form-field input,
+  .form-field select,
+  .form-field textarea{
+    font-family: var(--font-display);
+    font-size: 14px;
+    padding: 0.625rem 0.75rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-default);
+    background: var(--bg-page);
+    color: var(--text-primary);
+    width: 100%;
+  }
+
+  .form-field input:focus,
+  .form-field select:focus,
+  .form-field textarea:focus{
+    outline: none;
+    border-color: var(--brand-primary);
+  }
+
+  .form-field textarea{
+    resize: vertical;
+    font-family: var(--font-display);
+  }
+
+  .form-actions{
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.625rem;
+  }
+
+  /* ============================================
+     KANBAN (pagina requisicoes)
+     ============================================ */
+  .kanban-header{ margin-bottom: 1.25rem; }
+
+
+  .kanban-board{
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.875rem;
+  }
+
+  .kanban-column{
+    background: var(--bg-surface-2);
+    border-radius: var(--radius-md);
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    min-height: 80px;
+  }
+
+  .kanban-column-head{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 0.25rem;
+  }
+
+  .kanban-column-title{
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .kanban-dot{
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .kanban-dot.warning{ background: var(--status-warning-fg); }
+  .kanban-dot.info{ background: var(--status-info-fg); }
+  .kanban-dot.brand{ background: var(--brand-primary); }
+  .kanban-dot.success{ background: var(--status-success-fg); }
+
+  .kanban-count{
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    background: var(--bg-surface);
+    border-radius: 999px;
+    min-width: 22px;
+    height: 22px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 6px;
+  }
+
+  .kanban-cards{
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    min-height: 40px;
+  }
+
+  .kanban-card{
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-left: 3px solid var(--border-default);
+    border-radius: var(--radius-md);
+    padding: 0.75rem;
+    transition: box-shadow 0.15s, border-color 0.15s;
+  }
+
+  .kanban-card[data-urgency="critica"]{ border-left-color: var(--status-critical-bg); border-left-width: 4px; }
+  .kanban-card[data-urgency="alta"]{ border-left-color: var(--status-danger-fg); }
+  .kanban-card[data-urgency="media"]{ border-left-color: var(--status-warning-fg); }
+  .kanban-card[data-urgency="baixa"]{ border-left-color: var(--status-success-fg); }
+
+  /* ============================================
+     MATRIZ DE REQUISICOES (urgencia x status) - desktop
+     ============================================ */
+  .req-matrix{ display: none; }
+
+  .req-matrix-grid{
+    display: grid;
+    grid-template-columns: 120px repeat(4, 1fr);
+    gap: 0.625rem;
+  }
+
+  .req-matrix-corner{}
+
+  .req-matrix-col-head{
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.5rem 0.25rem;
+  }
+
+  .req-matrix-row-head{
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0.25rem;
+    border-radius: var(--radius-sm);
+  }
+
+  .req-matrix-row-head.critica{ background: var(--status-critical-bg); color: var(--status-critical-fg); }
+  .req-matrix-row-head.alta{ background: var(--status-danger-bg); color: var(--status-danger-fg); }
+  .req-matrix-row-head.media{ background: var(--status-warning-bg); color: var(--status-warning-fg); }
+  .req-matrix-row-head.baixa{ background: var(--status-success-bg); color: var(--status-success-fg); }
+
+  .req-matrix-cell{
+    background: var(--bg-surface-2);
+    border-radius: var(--radius-md);
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-height: 64px;
+  }
+
+  .req-matrix-cell-empty{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: var(--text-tertiary);
+    min-height: 48px;
+  }
+
+  /* ============================================
+     LISTA DE REQUISICOES (agrupada por urgencia) - mobile
+     ============================================ */
+  .req-list{ display: flex; flex-direction: column; gap: 1.25rem; }
+
+  .req-group-head{
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.4rem 0.75rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: 0.625rem;
+  }
+
+  .req-group-head.critica{ background: var(--status-critical-bg); color: var(--status-critical-fg); }
+  .req-group-head.alta{ background: var(--status-danger-bg); color: var(--status-danger-fg); }
+  .req-group-head.media{ background: var(--status-warning-bg); color: var(--status-warning-fg); }
+  .req-group-head.baixa{ background: var(--status-success-bg); color: var(--status-success-fg); }
+
+  .req-status-block{ margin-bottom: 0.875rem; }
+  .req-status-block:last-child{ margin-bottom: 0; }
+
+  .req-status-label{
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 0.5rem;
+    padding-left: 0.25rem;
+  }
+
+  .req-status-cards{
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+  }
+
+  .req-empty-group{
+    font-size: 12px;
+    color: var(--text-tertiary);
+    padding: 0.5rem 0.75rem;
+  }
+
+
+  .kanban-card-head{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+  }
+
+  .kanban-grip{ color: var(--text-tertiary); font-size: 16px; }
+
+  .kanban-card-title{
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+
+  .kanban-card-meta{
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 0.625rem;
+  }
+
+  .kanban-card-footer{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-tertiary);
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  .kanban-card-time, .kanban-card-source{
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .kanban-card-advance{
+    width: 100%;
+    margin-top: 0.625rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 0.4rem 0.625rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-default);
+    background: var(--bg-surface-2);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+  }
+  .kanban-card-advance:hover{ background: var(--status-info-bg); border-color: var(--brand-primary); color: var(--brand-primary); }
+  .kanban-card-advance:disabled{
+    opacity: 0.5;
+    cursor: default;
+  }
+  .kanban-card-advance:disabled:hover{ background: var(--bg-surface-2); border-color: var(--border-default); color: var(--text-secondary); }
+
+  /* ============================================
+     RESPONSIVO - TABLET / DESKTOP
+     ============================================ */
+  @media (min-width: 768px){
+    .sidebar{ display: flex; }
+    .bottom-nav{ display: none; }
+    .main{ padding: 1.5rem 2rem; padding-bottom: 1.5rem; }
+
+    .metrics-grid{ grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+
+    .content-grid{
+      display: grid;
+      grid-template-columns: 1.6fr 1fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    .quick-actions{ grid-template-columns: repeat(4, 1fr); }
+
+    .topbar-title{ font-size: 24px; }
+
+    .bot-status-bar{
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .kanban-board{
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .kanban-board.kanban-board-3{
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .req-matrix{ display: block; }
+    .req-list{ display: none; }
+
+    .page-toolbar{
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .form-grid{
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (min-width: 1200px){
+    .main{ padding: 2rem 3rem; }
+  }
+
+</style>
+</head>
+<body>
+<svg style="display:none;" aria-hidden="true">
+<symbol id="icon-alert-triangle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v2m0 4v.01"/><path d="M5.07 19H19a2 2 0 0 0 1.74 -2.99l-7 -12a2 2 0 0 0 -3.48 0l-7 12a2 2 0 0 0 1.75 2.99z"/></symbol>
+<symbol id="icon-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/></symbol>
+<symbol id="icon-building-skyscraper" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21l18 0"/><path d="M5 21v-14l8 -4v18"/><path d="M19 21v-10l-6 -4"/><path d="M9 9l0 .01"/><path d="M9 12l0 .01"/><path d="M9 15l0 .01"/><path d="M9 18l0 .01"/></symbol>
+<symbol id="icon-chevron-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6l-6 6"/></symbol>
+<symbol id="icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v5l3 3"/><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/></symbol>
+<symbol id="icon-help-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/><path d="M12 17l0 .01"/><path d="M12 13.5a1.5 1.5 0 0 1 1 -1.5a2.6 2.6 0 1 0 -3 -4"/></symbol>
+<symbol id="icon-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l-2 0l9 -9l9 9l-2 0"/><path d="M5 12l0 7a2 2 0 0 0 2 2l10 0a2 2 0 0 0 2 -2l0 -7"/><path d="M9 21l0 -6a2 2 0 0 1 2 -2l2 0a2 2 0 0 1 2 2l0 6"/></symbol>
+<symbol id="icon-id-badge-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v16l-9 -4l-9 4z"/><path d="M9 10h6"/><path d="M9 14h3"/></symbol>
+<symbol id="icon-layout-dashboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4m0 2a2 2 0 0 1 2 -2h3a2 2 0 0 1 2 2v3a2 2 0 0 1 -2 2h-3a2 2 0 0 1 -2 -2z"/><path d="M4 15m0 2a2 2 0 0 1 2 -2h3a2 2 0 0 1 2 2v3a2 2 0 0 1 -2 2h-3a2 2 0 0 1 -2 -2z"/><path d="M13 4m0 2a2 2 0 0 1 2 -2h3a2 2 0 0 1 2 2v3a2 2 0 0 1 -2 2h-3a2 2 0 0 1 -2 -2z"/><path d="M13 15m0 2a2 2 0 0 1 2 -2h3a2 2 0 0 1 2 2v3a2 2 0 0 1 -2 2h-3a2 2 0 0 1 -2 -2z"/></symbol>
+<symbol id="icon-map-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/><path d="M17.657 16.657l-4.243 4.243a2 2 0 0 1 -2.827 0l-4.244 -4.243a8 8 0 1 1 11.314 0z"/></symbol>
+<symbol id="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"/></symbol>
+<symbol id="icon-package" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5l0 9l-8 4.5l-8 -4.5l0 -9l8 -4.5"/><path d="M12 12l8 -4.5"/><path d="M12 12l0 9"/><path d="M12 12l-8 -4.5"/><path d="M16 5.25l-8 4.5"/></symbol>
+<symbol id="icon-package-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M4 8v8.5a1 1 0 0 0 .485 .857l7 4.2a1 1 0 0 0 1.03 0l1.943 -1.166m1.542 -2.34v-9.051a1 1 0 0 0 -.485 -.857l-7 -4.2a1 1 0 0 0 -1.03 0l-3.6 2.16"/><path d="M8.857 4.357l3.143 -1.886a1 1 0 0 1 1.03 0l7 4.2a1 1 0 0 1 .485 .857v8.572"/></symbol>
+<symbol id="icon-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v-3a3 3 0 0 1 3 -3h13m-3 -3l3 3l-3 3"/><path d="M20 12v3a3 3 0 0 1 -3 3h-13m3 3l-3 -3l3 -3"/></symbol>
+<symbol id="icon-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"/><path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/></symbol>
+<symbol id="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7"/></symbol>
+<symbol id="icon-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/><path d="M21 21v-2a4 4 0 0 0 -3 -3.85"/></symbol>
+<symbol id="icon-robot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-6a2 2 0 0 1 2 -2z"/><path d="M9 16v1a2 2 0 0 0 2 2h2a2 2 0 0 0 2 -2v-1"/><path d="M9 7v-2"/><path d="M15 7v-2"/><path d="M9 11v.01"/><path d="M15 11v.01"/></symbol><symbol id="icon-calendar-event" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12z"/><path d="M16 3v4"/><path d="M8 3v4"/><path d="M4 11h16"/><path d="M8 15h2v2h-2z"/></symbol><symbol id="icon-speakerphone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a3 3 0 0 1 0 6"/><path d="M10 8v11a1 1 0 0 1 -1 1h-1a1 1 0 0 1 -1 -1v-5"/><path d="M6 8m-2 0a2 2 0 0 0 -2 2v2a2 2 0 0 0 2 2h2a14 14 0 0 1 9 -4v-8a14 14 0 0 1 -9 4z"/></symbol><symbol id="icon-gauge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 14m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="M13.45 11.55l2.05 -2.05"/><path d="M6.4 20a9 9 0 1 1 11.2 0z"/></symbol><symbol id="icon-chart-bar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z"/><path d="M9 5a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z"/><path d="M15 9a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z"/></symbol><symbol id="icon-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5l0 14"/><path d="M5 12l14 0"/></symbol><symbol id="icon-dots-vertical" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M12 19m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M12 5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/></symbol><symbol id="icon-grip-vertical" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M9 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M9 19m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M15 5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M15 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M15 19m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/></symbol><symbol id="icon-circle-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/><path d="M9 12l2 2l4 -4"/></symbol><symbol id="icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0"/><path d="M21 21l-6 -6"/></symbol><symbol id="icon-package-export" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21l-8 -4.5v-9l8 -4.5l8 4.5v9l-8 4.5"/><path d="M12 12l8 -4.5"/><path d="M12 12l0 9"/><path d="M12 12l-8 -4.5"/><path d="M15 9l4 -2.3"/><path d="M21 14v4h-4"/><path d="M21 18l-5 -5"/></symbol><symbol id="icon-phone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5l-2.5 1.5a11 11 0 0 0 5 5l1.5 -2.5l5 2v4a2 2 0 0 1 -2 2a16 16 0 0 1 -15 -15a2 2 0 0 1 2 -2"/></symbol><symbol id="icon-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6l-12 12"/><path d="M6 6l12 12"/></symbol><symbol id="icon-arrow-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14l-4 -4l4 -4"/><path d="M5 10h11a4 4 0 1 1 0 8h-1"/></symbol></svg>
+
+
+<div class="app">
+
+  <!-- ============ SIDEBAR (desktop) ============ -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon"><svg class="icon" aria-hidden="true"><use href="#icon-building-skyscraper"/></svg></div>
+      <div>
+        <div class="sidebar-logo-text">Condozap</div>
+        <div class="sidebar-logo-sub">SISTEMA DE GESTÃO</div>
+      </div>
+    </div>
+
+    <div class="nav-section-label">MENU</div>
+    <a href="#" class="nav-item active" data-page="dashboard"><svg class="icon" aria-hidden="true"><use href="#icon-layout-dashboard"/></svg> Dashboard</a>
+    <a href="#" class="nav-item" data-page="requisicoes"><svg class="icon" aria-hidden="true"><use href="#icon-circle-check"/></svg> Requisições <span class="badge">3</span></a>
+    <a href="#" class="nav-item" data-page="ocorrencias"><svg class="icon" aria-hidden="true"><use href="#icon-alert-triangle"/></svg> Ocorrências <span class="badge" id="badge-ocorrencias-sidebar">2</span></a>
+    <a href="#" class="nav-item" data-page="encomendas"><svg class="icon" aria-hidden="true"><use href="#icon-package"/></svg> Encomendas <span class="badge" id="badge-encomendas-sidebar">3</span></a>
+    <a href="#" class="nav-item" data-page="visitantes"><svg class="icon" aria-hidden="true"><use href="#icon-id-badge-2"/></svg> Visitantes</a>
+    <a href="#" class="nav-item" data-page="moradores"><svg class="icon" aria-hidden="true"><use href="#icon-users"/></svg> Moradores</a>
+
+    <div class="nav-section-label">SISTEMA</div>
+    <a href="#" class="nav-item"><svg class="icon" aria-hidden="true"><use href="#icon-settings"/></svg> Configurações</a>
+    <a href="#" class="nav-item"><svg class="icon" aria-hidden="true"><use href="#icon-help-circle"/></svg> Ajuda</a>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <main class="main">
+
+    <div class="topbar">
+      <div>
+        <div class="topbar-title" id="topbar-title">Dashboard</div>
+        <div class="topbar-subtitle" id="topbar-subtitle">Residencial Jardim das Flores · sábado, 13 de junho</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="icon-btn" id="theme-toggle" aria-label="Alternar tema"><svg class="icon" id="theme-icon" aria-hidden="true"><use href="#icon-moon"/></svg></button>
+        <button class="icon-btn has-dot" aria-label="Notificações"><svg class="icon" aria-hidden="true"><use href="#icon-bell"/></svg></button>
+        <button class="icon-btn" aria-label="Atualizar"><svg class="icon" aria-hidden="true"><use href="#icon-refresh"/></svg></button>
+      </div>
+    </div>
+
+    <!-- ============ PAGINA: DASHBOARD ============ -->
+    <div class="page active" id="page-dashboard">
+
+    <!-- STATUS DO BOT WHATSAPP -->
+    <div class="bot-status-bar">
+      <div class="bot-status-left">
+        <div class="bot-status-icon"><svg class="icon" aria-hidden="true"><use href="#icon-robot"/></svg></div>
+        <div>
+          <div class="bot-status-title">Bot WhatsApp <span class="status-pill online">Online</span></div>
+          <div class="bot-status-sub">Atendendo moradores automaticamente</div>
+        </div>
+      </div>
+      <div class="bot-status-stats">
+        <div class="bot-stat">
+          <span class="bot-stat-value">47</span>
+          <span class="bot-stat-label">mensagens hoje</span>
+        </div>
+        <div class="bot-stat">
+          <span class="bot-stat-value">3</span>
+          <span class="bot-stat-label">aguardando humano</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ METRICAS ============ -->
+    <div class="metrics-grid">
+
+      <div class="metric-card is-alert">
+        <div class="metric-head">
+          <span class="metric-label">Ocorrências</span>
+          <div class="metric-icon"><svg class="icon" aria-hidden="true"><use href="#icon-alert-triangle"/></svg></div>
+        </div>
+        <div class="metric-value" id="metric-ocorrencias-value">2</div>
+        <div class="metric-meta">em aberto</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-head">
+          <span class="metric-label">Visitantes</span>
+          <div class="metric-icon"><svg class="icon" aria-hidden="true"><use href="#icon-id-badge-2"/></svg></div>
+        </div>
+        <div class="metric-value">5</div>
+        <div class="metric-meta">entradas hoje</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-head">
+          <span class="metric-label">Encomendas</span>
+          <div class="metric-icon"><svg class="icon" aria-hidden="true"><use href="#icon-package"/></svg></div>
+        </div>
+        <div class="metric-value" id="metric-encomendas-value">3</div>
+        <div class="metric-meta">aguardando retirada</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-head">
+          <span class="metric-label">Moradores</span>
+          <div class="metric-icon"><svg class="icon" aria-hidden="true"><use href="#icon-users"/></svg></div>
+        </div>
+        <div class="metric-value">128</div>
+        <div class="metric-meta">cadastrados</div>
+      </div>
+
+    </div>
+
+    <!-- ============ GRID PRINCIPAL ============ -->
+    <div class="content-grid">
+
+      <!-- COLUNA ESQUERDA: Ocorrências (modulo central) -->
+      <div>
+
+        <!-- FILA DE APROVACOES -->
+        <div class="section">
+          <div class="section-head">
+            <div class="section-title"><svg class="icon" aria-hidden="true"><use href="#icon-circle-check"/></svg> Aguardando aprovação</div>
+            <a href="#" class="section-link" data-page-link="requisicoes">Ver todas <svg class="icon" aria-hidden="true"><use href="#icon-chevron-right"/></svg></a>
+          </div>
+
+          <div class="approval-list">
+
+            <div class="approval-card">
+              <div class="approval-icon"><svg class="icon" aria-hidden="true"><use href="#icon-calendar-event"/></svg></div>
+              <div class="approval-info">
+                <div class="approval-title">Reserva do salão de festas</div>
+                <div class="approval-meta">Apto 304 · Maria Souza · 21/06, 19h-23h</div>
+              </div>
+              <div class="approval-actions">
+                <button class="btn-approve" aria-label="Aprovar"><svg class="icon" aria-hidden="true"><use href="#icon-circle-check"/></svg></button>
+                <button class="btn-reject" aria-label="Rejeitar"><svg class="icon" aria-hidden="true"><use href="#icon-x"/></svg></button>
+              </div>
+            </div>
+
+            <div class="approval-card">
+              <div class="approval-icon"><svg class="icon" aria-hidden="true"><use href="#icon-id-badge-2"/></svg></div>
+              <div class="approval-info">
+                <div class="approval-title">Liberação de visitante recorrente</div>
+                <div class="approval-meta">Apto 112 · Carlos Lima · diarista, seg-sex</div>
+              </div>
+              <div class="approval-actions">
+                <button class="btn-approve" aria-label="Aprovar"><svg class="icon" aria-hidden="true"><use href="#icon-circle-check"/></svg></button>
+                <button class="btn-reject" aria-label="Rejeitar"><svg class="icon" aria-hidden="true"><use href="#icon-x"/></svg></button>
+              </div>
+            </div>
+
+            <div class="approval-card">
+              <div class="approval-icon"><svg class="icon" aria-hidden="true"><use href="#icon-package"/></svg></div>
+              <div class="approval-info">
+                <div class="approval-title">Autorização de entrega antecipada</div>
+                <div class="approval-meta">Apto 507 · Ana Ferreira · hoje, antes das 8h</div>
+              </div>
+              <div class="approval-actions">
+                <button class="btn-approve" aria-label="Aprovar"><svg class="icon" aria-hidden="true"><use href="#icon-circle-check"/></svg></button>
+                <button class="btn-reject" aria-label="Rejeitar"><svg class="icon" aria-hidden="true"><use href="#icon-x"/></svg></button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-head">
+            <div class="section-title"><svg class="icon" aria-hidden="true"><use href="#icon-alert-triangle"/></svg> Ocorrências em aberto</div>
+            <a href="#" class="section-link" data-page-link="ocorrencias">Ver todas <svg class="icon" aria-hidden="true"><use href="#icon-chevron-right"/></svg></a>
+          </div>
+
+          <div class="occurrence-list" id="occurrence-summary-list"></div>
+        </div>
+
+        <!-- ACOES RAPIDAS -->
+        <div class="section">
+          <div class="section-head">
+            <div class="section-title">Ações rápidas</div>
+          </div>
+          <div class="quick-actions">
+            <div class="quick-action is-primary">
+              <div class="quick-action-icon"><svg class="icon" aria-hidden="true"><use href="#icon-alert-triangle"/></svg></div>
+              <div class="quick-action-label">Nova ocorrência</div>
+            </div>
+            <div class="quick-action">
+              <div class="quick-action-icon"><svg class="icon" aria-hidden="true"><use href="#icon-id-badge-2"/></svg></div>
+              <div class="quick-action-label">Registrar visitante</div>
+            </div>
+            <div class="quick-action">
+              <div class="quick-action-icon"><svg class="icon" aria-hidden="true"><use href="#icon-package"/></svg></div>
+              <div class="quick-action-label">Registrar encomenda</div>
+            </div>
+            <div class="quick-action">
+              <div class="quick-action-icon"><svg class="icon" aria-hidden="true"><use href="#icon-users"/></svg></div>
+              <div class="quick-action-label">Ver moradores</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COLUNA DIREITA: Atividade recente -->
+      <div>
+
+        <!-- RESERVAS DE AREAS COMUNS -->
+        <div class="section">
+          <div class="section-head">
+            <div class="section-title"><svg class="icon" aria-hidden="true"><use href="#icon-calendar-event"/></svg> Próximas reservas</div>
+            <a href="#" class="section-link">Ver agenda <svg class="icon" aria-hidden="true"><use href="#icon-chevron-right"/></svg></a>
+          </div>
+
+          <div class="reservation-list">
+            <div class="reservation-item">
+              <div class="reservation-date">
+                <span class="reservation-day">21</span>
+                <span class="reservation-month">jun</span>
+              </div>
+              <div class="reservation-info">
+                <div class="reservation-title">Salão de festas</div>
+                <div class="reservation-meta">19h-23h · Apto 304</div>
+              </div>
+              <span class="badge badge-warning">Pendente</span>
+            </div>
+
+            <div class="reservation-item">
+              <div class="reservation-date">
+                <span class="reservation-day">22</span>
+                <span class="reservation-month">jun</span>
+              </div>
+              <div class="reservation-info">
+                <div class="reservation-title">Churrasqueira 2</div>
+                <div class="reservation-meta">12h-17h · Apto 108</div>
+              </div>
+              <span class="badge badge-success">Confirmada</span>
+            </div>
+
+            <div class="reservation-item">
+              <div class="reservation-date">
+                <span class="reservation-day">28</span>
+                <span class="reservation-month">jun</span>
+              </div>
+              <div class="reservation-info">
+                <div class="reservation-title">Quadra esportiva</div>
+                <div class="reservation-meta">9h-11h · Apto 215</div>
+              </div>
+              <span class="badge badge-success">Confirmada</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- COMUNICADOS -->
+        <div class="section">
+          <div class="section-head">
+            <div class="section-title"><svg class="icon" aria-hidden="true"><use href="#icon-speakerphone"/></svg> Comunicados</div>
+            <button class="btn-new-comm"><svg class="icon" aria-hidden="true"><use href="#icon-plus"/></svg> Novo</button>
+          </div>
+
+          <div class="comm-list">
+            <div class="comm-item">
+              <div class="comm-title">Manutenção do elevador social</div>
+              <div class="comm-desc">Elevador ficará indisponível das 14h às 17h para manutenção preventiva.</div>
+              <div class="comm-meta">
+                <span class="badge badge-info">Enviado</span>
+                <span class="comm-time">Hoje, 09:00 · 128 destinatários</span>
+              </div>
+            </div>
+
+            <div class="comm-item">
+              <div class="comm-title">Assembleia geral ordinária</div>
+              <div class="comm-desc">Convocação para assembleia no dia 25/06 às 19h no salão de festas.</div>
+              <div class="comm-meta">
+                <span class="badge badge-neutral">Agendado</span>
+                <span class="comm-time">Envio em 18/06, 08:00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-head">
+            <div class="section-title">Atividade recente</div>
+          </div>
+
+          <div class="activity-list" id="activity-list" style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 0.25rem 1rem;">
+
+            <div class="activity-item">
+              <div class="activity-dot danger"></div>
+              <div>
+                <div class="activity-text"><strong>Nova ocorrência:</strong> Barulho do vizinho de cima — Apto 201</div>
+                <div class="activity-time">13/06/2026, 15:20</div>
+              </div>
+            </div>
+
+            <div class="activity-item">
+              <div class="activity-dot warning"></div>
+              <div>
+                <div class="activity-text"><strong>Ocorrência atualizada:</strong> Vaga de garagem — status alterado para "Em análise"</div>
+                <div class="activity-time">13/06/2026, 11:40</div>
+              </div>
+            </div>
+
+            <div class="activity-item">
+              <div class="activity-dot info"></div>
+              <div>
+                <div class="activity-text"><strong>Visitante registrado:</strong> João Pereira — Apto 405</div>
+                <div class="activity-time">12/06/2026, 18:05</div>
+              </div>
+            </div>
+
+            <div class="activity-item">
+              <div class="activity-dot success"></div>
+              <div>
+                <div class="activity-text"><strong>Ocorrência resolvida:</strong> Portão da garagem com defeito</div>
+                <div class="activity-time">12/06/2026, 09:15</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- EXEMPLO ESTADO VAZIO (encomendas) -->
+        <div class="section">
+          <div class="section-head">
+            <div class="section-title">Últimas encomendas</div>
+          </div>
+          <div class="empty-state">
+            <svg class="icon" aria-hidden="true"><use href="#icon-package-off"/></svg>
+            <div class="empty-state-title">Nenhuma encomenda pendente</div>
+            <div class="empty-state-sub">Novos registros aparecerão aqui</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    </div><!-- /page-dashboard -->
+
+    <!-- ============ PAGINA: REQUISICOES (KANBAN) ============ -->
+    <div class="page" id="page-requisicoes">
+
+      <div class="kanban-header">
+        <a href="#" class="section-link" data-page-link="dashboard"><svg class="icon" aria-hidden="true"><use href="#icon-arrow-back"/></svg> Voltar ao dashboard</a>
+      </div>
+
+      <!-- DESKTOP: matriz urgencia x status -->
+      <div class="req-matrix" id="req-matrix"></div>
+
+      <!-- MOBILE: lista agrupada por urgencia, depois status -->
+      <div class="req-list" id="req-list"></div>
+
+    </div><!-- /page-requisicoes -->
+
+    <!-- ============ PAGINA: OCORRENCIAS ============ -->
+    <div class="page" id="page-ocorrencias">
+
+      <div class="page-toolbar">
+        <div class="filter-row" style="margin: 0; flex: 1;">
+          <button class="filter-chip active" data-occ-filter="todas">Todas</button>
+          <button class="filter-chip" data-occ-filter="aberta">Abertas</button>
+          <button class="filter-chip" data-occ-filter="analise">Em análise</button>
+          <button class="filter-chip" data-occ-filter="resolvida">Resolvidas</button>
+        </div>
+        <button class="btn-primary" id="btn-new-occurrence">
+          <svg class="icon" aria-hidden="true"><use href="#icon-plus"/></svg> Nova ocorrência
+        </button>
+      </div>
+
+      <!-- FORMULARIO NOVA OCORRENCIA (oculto por padrao) -->
+      <div class="occ-form-card" id="occ-form" hidden>
+        <div class="section-title" style="margin-bottom: 1rem;">Nova ocorrência</div>
+
+        <div class="form-grid">
+          <label class="form-field">
+            <span class="form-label">Título</span>
+            <input type="text" id="occ-input-title" placeholder="Ex: Barulho excessivo">
+          </label>
+
+          <label class="form-field">
+            <span class="form-label">Local / Apartamento</span>
+            <input type="text" id="occ-input-location" placeholder="Ex: Apto 304 ou Subsolo 2">
+          </label>
+
+          <label class="form-field form-field-full">
+            <span class="form-label">Descrição</span>
+            <textarea id="occ-input-description" rows="3" placeholder="Descreva o ocorrido..."></textarea>
+          </label>
+
+          <label class="form-field">
+            <span class="form-label">Urgência</span>
+            <select id="occ-input-urgency">
+              <option value="critica">Crítica — risco a pessoas ou patrimônio em curso</option>
+              <option value="alta">Alta — incômodo significativo, sem risco imediato</option>
+              <option value="media" selected>Média</option>
+              <option value="baixa">Baixa</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn-secondary" id="btn-cancel-occurrence">Cancelar</button>
+          <button class="btn-primary" id="btn-save-occurrence">Salvar ocorrência</button>
+        </div>
+      </div>
+
+      <!-- LISTA DE OCORRENCIAS -->
+      <div class="occurrence-list" id="occurrence-full-list"></div>
+
+      <div class="empty-state" id="occ-empty-state" hidden>
+        <svg class="icon" aria-hidden="true"><use href="#icon-circle-check"/></svg>
+        <div class="empty-state-title">Nenhuma ocorrência encontrada</div>
+        <div class="empty-state-sub">Ajuste os filtros ou crie uma nova ocorrência</div>
+      </div>
+
+    </div><!-- /page-ocorrencias -->
+
+    <!-- ============ PAGINA: ENCOMENDAS ============ -->
+    <div class="page" id="page-encomendas">
+
+      <div class="page-toolbar">
+        <div></div>
+        <button class="btn-primary" id="btn-new-package">
+          <svg class="icon" aria-hidden="true"><use href="#icon-plus"/></svg> Nova encomenda
+        </button>
+      </div>
+
+      <!-- FORMULARIO NOVA ENCOMENDA (oculto por padrao) -->
+      <div class="occ-form-card" id="package-form" hidden>
+        <div class="section-title" style="margin-bottom: 1rem;">Nova encomenda</div>
+
+        <div class="form-grid">
+          <label class="form-field">
+            <span class="form-label">Morador / Apartamento</span>
+            <input type="text" id="package-input-resident" placeholder="Ex: Apto 304 - Maria Souza">
+          </label>
+
+          <label class="form-field">
+            <span class="form-label">Descrição</span>
+            <input type="text" id="package-input-description" placeholder="Ex: Caixa média, Mercado Livre">
+          </label>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn-secondary" id="btn-cancel-package">Cancelar</button>
+          <button class="btn-primary" id="btn-save-package">Salvar encomenda</button>
+        </div>
+      </div>
+
+      <div class="kanban-board kanban-board-3" id="package-board">
+
+        <div class="kanban-column" data-status="recebida">
+          <div class="kanban-column-head">
+            <span class="kanban-column-title"><span class="kanban-dot warning"></span> Recebida</span>
+            <span class="kanban-count" id="package-count-recebida">0</span>
+          </div>
+          <div class="kanban-cards" data-column="recebida"></div>
+        </div>
+
+        <div class="kanban-column" data-status="notificado">
+          <div class="kanban-column-head">
+            <span class="kanban-column-title"><span class="kanban-dot info"></span> Notificado</span>
+            <span class="kanban-count" id="package-count-notificado">0</span>
+          </div>
+          <div class="kanban-cards" data-column="notificado"></div>
+        </div>
+
+        <div class="kanban-column" data-status="retirada">
+          <div class="kanban-column-head">
+            <span class="kanban-column-title"><span class="kanban-dot success"></span> Retirada</span>
+            <span class="kanban-count" id="package-count-retirada">0</span>
+          </div>
+          <div class="kanban-cards" data-column="retirada"></div>
+        </div>
+
+      </div>
+
+    </div><!-- /page-encomendas -->
+
+    <!-- ============ PAGINA: VISITANTES ============ -->
+    <div class="page" id="page-visitantes">
+
+      <div class="page-toolbar">
+        <div></div>
+        <button class="btn-primary" id="btn-new-visitor">
+          <svg class="icon" aria-hidden="true"><use href="#icon-plus"/></svg> Registrar entrada
+        </button>
+      </div>
+
+      <!-- FORMULARIO NOVO VISITANTE -->
+      <div class="occ-form-card" id="visitor-form" hidden>
+        <div class="section-title" style="margin-bottom: 1rem;">Registrar visitante</div>
+        <div class="form-grid">
+          <label class="form-field">
+            <span class="form-label">Nome do visitante</span>
+            <input type="text" id="vis-input-nome" placeholder="Ex: João Silva">
+          </label>
+          <label class="form-field">
+            <span class="form-label">Documento (opcional)</span>
+            <input type="text" id="vis-input-doc" placeholder="CPF ou RG">
+          </label>
+          <label class="form-field">
+            <span class="form-label">Morador / Apartamento visitado</span>
+            <input type="text" id="vis-input-morador" placeholder="Ex: Ap. 304 - Maria Souza">
+          </label>
+          <label class="form-field">
+            <span class="form-label">Motivo (opcional)</span>
+            <input type="text" id="vis-input-motivo" placeholder="Ex: Visita familiar">
+          </label>
+        </div>
+        <div class="form-actions">
+          <button class="btn-secondary" id="btn-cancel-visitor">Cancelar</button>
+          <button class="btn-primary" id="btn-save-visitor">Registrar entrada</button>
+        </div>
+      </div>
+
+      <!-- FILTROS -->
+      <div style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;">
+        <button class="filter-chip active" data-vis-filter="todos">Todos</button>
+        <button class="filter-chip" data-vis-filter="hoje">Hoje</button>
+        <button class="filter-chip" data-vis-filter="pendente">Sem saída</button>
+      </div>
+
+      <!-- TABELA VISITANTES -->
+      <div class="occurrence-list" id="visitor-list">
+        <div class="empty-state">
+          <svg class="icon" aria-hidden="true" style="font-size:2rem"><use href="#icon-users"/></svg>
+          <div class="empty-state-title">Carregando visitantes...</div>
+        </div>
+      </div>
+
+    </div><!-- /page-visitantes -->
+
+    <!-- ============ PAGINA: MORADORES ============ -->
+    <div class="page" id="page-moradores">
+
+      <div class="page-toolbar">
+        <div></div>
+        <button class="btn-primary" id="btn-new-morador">
+          <svg class="icon" aria-hidden="true"><use href="#icon-plus"/></svg> Novo morador
+        </button>
+      </div>
+
+      <!-- FORMULARIO NOVO MORADOR -->
+      <div class="occ-form-card" id="morador-form" hidden>
+        <div class="section-title" style="margin-bottom: 1rem;">Cadastrar morador</div>
+        <div class="form-grid">
+          <label class="form-field">
+            <span class="form-label">Nome completo</span>
+            <input type="text" id="mor-input-nome" placeholder="Ex: Maria Souza">
+          </label>
+          <label class="form-field">
+            <span class="form-label">Apartamento</span>
+            <input type="text" id="mor-input-apto" placeholder="Ex: 304">
+          </label>
+          <label class="form-field">
+            <span class="form-label">Bloco (opcional)</span>
+            <input type="text" id="mor-input-bloco" placeholder="Ex: A">
+          </label>
+          <label class="form-field">
+            <span class="form-label">Telefone</span>
+            <input type="text" id="mor-input-tel" placeholder="Ex: (11) 99999-0000">
+          </label>
+        </div>
+        <div class="form-actions">
+          <button class="btn-secondary" id="btn-cancel-morador">Cancelar</button>
+          <button class="btn-primary" id="btn-save-morador">Salvar morador</button>
+        </div>
+      </div>
+
+      <!-- BUSCA -->
+      <div style="display:flex;align-items:center;gap:10px;background:var(--bg-surface-2);border:1px solid var(--border-default);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:1rem;">
+        <svg class="icon" aria-hidden="true" style="color:var(--text-tertiary)"><use href="#icon-search"/></svg>
+        <input type="text" id="morador-search" placeholder="Buscar por nome ou apartamento..."
+          style="background:none;border:none;outline:none;color:var(--text-primary);font-family:var(--font-display);font-size:14px;flex:1;">
+      </div>
+
+      <!-- LISTA MORADORES -->
+      <div class="occurrence-list" id="morador-list">
+        <div class="empty-state">
+          <svg class="icon" aria-hidden="true" style="font-size:2rem"><use href="#icon-users"/></svg>
+          <div class="empty-state-title">Carregando moradores...</div>
+        </div>
+      </div>
+
+    </div><!-- /page-moradores -->
+
+    <footer class="app-footer">
+      Feito por <strong>Automatiz.IA</strong> · 2026
+    </footer>
+
+  </main>
+
+</div>
+
+<!-- ============ BOTTOM NAV (mobile) ============ -->
+<nav class="bottom-nav">
+  <a href="#" class="bottom-nav-item active" data-page="dashboard"><svg class="icon" aria-hidden="true"><use href="#icon-layout-dashboard"/></svg> Início</a>
+  <a href="#" class="bottom-nav-item" data-page="requisicoes"><svg class="icon" aria-hidden="true"><use href="#icon-circle-check"/></svg> Requisições <span class="badge">3</span></a>
+  <a href="#" class="bottom-nav-item" data-page="ocorrencias"><svg class="icon" aria-hidden="true"><use href="#icon-alert-triangle"/></svg> Ocorrências <span class="badge" id="badge-ocorrencias-bottom">2</span></a>
+  <a href="#" class="bottom-nav-item" data-page="encomendas"><svg class="icon" aria-hidden="true"><use href="#icon-package"/></svg> Encomendas <span class="badge" id="badge-encomendas-bottom">3</span></a>
+  <a href="#" class="bottom-nav-item" data-page="moradores"><svg class="icon" aria-hidden="true"><use href="#icon-users"/></svg> Moradores</a>
+</nav>
+
+<script>
+  (function(){
+    var body = document.body;
+    var toggle = document.getElementById('theme-toggle');
+    var icon = document.getElementById('theme-icon');
+
+    function applyTheme(theme){
+      var use = icon.querySelector('use');
+      if(theme === 'light'){
+        body.classList.add('theme-light');
+        use.setAttribute('href', '#icon-sun');
+      } else {
+        body.classList.remove('theme-light');
+        use.setAttribute('href', '#icon-moon');
+      }
+    }
+
+    var saved = localStorage.getItem('portaria-theme') || 'light';
+    applyTheme(saved);
+
+    toggle.addEventListener('click', function(){
+      var isLight = body.classList.contains('theme-light');
+      var next = isLight ? 'dark' : 'light';
+      applyTheme(next);
+      localStorage.setItem('portaria-theme', next);
+    });
+  })();
+
+  /* ============================================
+     SUPABASE - configuracao e helper de API
+     ============================================ */
+  var SUPA = 'https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1';
+  var KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM';
+  var SUPA_H = { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY, 'Content-Type': 'application/json' };
+
+  function supaApi(method, path, body){
+    var headers = Object.assign({}, SUPA_H);
+    if(method === 'POST')   headers['Prefer'] = 'return=representation';
+    if(method === 'PATCH')  headers['Prefer'] = 'return=representation';
+    if(method === 'DELETE') headers['Prefer'] = 'return=minimal';
+    var opts = { method: method, headers: headers };
+    if(body) opts.body = JSON.stringify(body);
+    return fetch(SUPA + path, opts).then(function(r){
+      if(!r.ok) return r.text().then(function(t){ throw new Error(t); });
+      return r.text().then(function(t){ return t ? JSON.parse(t) : []; });
+    });
+  }
+
+  function fmtRelative(dateStr){
+    if(!dateStr) return '—';
+    var diff = Date.now() - new Date(dateStr).getTime();
+    var mins = Math.floor(diff / 60000);
+    if(mins < 1)  return 'agora mesmo';
+    if(mins < 60) return 'há ' + mins + 'min';
+    var hrs = Math.floor(mins / 60);
+    if(hrs < 24)  return 'há ' + hrs + 'h';
+    var days = Math.floor(hrs / 24);
+    if(days === 1) return 'ontem';
+    return 'há ' + days + ' dias';
+  }
+
+  function showToast(msg, type){
+    type = type || 'success';
+    var c = document.getElementById('toast-container');
+    if(!c){
+      c = document.createElement('div');
+      c.id = 'toast-container';
+      c.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;';
+      document.body.appendChild(c);
+    }
+    var t = document.createElement('div');
+    t.style.cssText = 'background:#1A2A40;border:1px solid rgba(255,255,255,0.12);border-left:3px solid ' +
+      (type === 'success' ? '#97C459' : '#F09595') +
+      ';border-radius:8px;padding:12px 18px;font-size:13px;color:#F4F6FA;min-width:260px;animation:slideIn 0.25s ease;';
+    t.textContent = (type === 'success' ? '✓ ' : '✕ ') + msg;
+    c.appendChild(t);
+    setTimeout(function(){ t.remove(); }, 3500);
+  }
+
+  /* ============================================
+     OCORRENCIAS - estado e renderizacao (Supabase)
+     ============================================ */
+  var OccApp = (function(){
+    var occurrences = [];
+
+    var urgencyLabels = { critica: 'Crítica', alta: 'Alta', media: 'Média', baixa: 'Baixa' };
+    var urgencyBadgeClass = { critica: 'badge-critical', alta: 'badge-danger', media: 'badge-warning', baixa: 'badge-success' };
+    var urgencyOrder = { critica: 0, alta: 1, media: 2, baixa: 3 };
+    var statusLabels = {
+      aberta: 'Aberta',
+      analise: 'Em análise',
+      andamento: 'Em andamento',
+      resolvida: 'Resolvida'
+    };
+    var statusBadgeClass = {
+      aberta: 'badge-neutral',
+      analise: 'badge-warning',
+      andamento: 'badge-info',
+      resolvida: 'badge-success'
+    };
+
+    var currentFilter = 'todas';
+    var nextId = 4;
+
+    function openCount(){
+      return occurrences.filter(function(o){ return o.status !== 'resolvida'; }).length;
+    }
+
+    function buildCard(occ, withResolve){
+      var resolved = occ.status === 'resolvida';
+      var card = document.createElement('div');
+      card.className = 'occurrence-card urgency-' + occ.urgency;
+
+      var resolveBtn = '';
+      if(withResolve){
+        resolveBtn = '<button class="btn-resolve" data-resolve="' + occ.id + '"' + (resolved ? ' disabled' : '') + '>' +
+          '<svg class="icon" aria-hidden="true"><use href="#icon-circle-check"/></svg>' +
+          (resolved ? 'Resolvida' : 'Resolver') +
+          '</button>';
+      }
+
+      card.innerHTML =
+        '<div class="occ-top">' +
+          '<div class="occ-title">' + escapeHtml(occ.title) + '</div>' +
+          '<span class="badge ' + urgencyBadgeClass[occ.urgency] + '">' + urgencyLabels[occ.urgency] + '</span>' +
+        '</div>' +
+        '<div class="occ-desc">' + escapeHtml(occ.description) + '</div>' +
+        '<div class="occ-bottom">' +
+          '<div class="occ-meta">' +
+            '<span class="occ-meta-item"><svg class="icon" aria-hidden="true"><use href="#icon-clock"/></svg> ' + escapeHtml(occ.timeLabel) + '</span>' +
+            '<span class="occ-meta-item"><svg class="icon" aria-hidden="true"><use href="#icon-' + occ.locationIcon + '"/></svg> ' + escapeHtml(occ.location) + '</span>' +
+          '</div>' +
+          '<div style="display:flex; align-items:center; gap:8px;">' +
+            '<span class="badge ' + statusBadgeClass[occ.status] + '">' + statusLabels[occ.status] + '</span>' +
+            resolveBtn +
+          '</div>' +
+        '</div>';
+
+      return card;
+    }
+
+    function escapeHtml(str){
+      var div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function renderSummary(){
+      var container = document.getElementById('occurrence-summary-list');
+      if(!container) return;
+      container.innerHTML = '';
+      var open = occurrences.filter(function(o){ return o.status !== 'resolvida'; })
+        .slice()
+        .sort(function(a, b){
+          var ao = urgencyOrder.hasOwnProperty(a.urgency) ? urgencyOrder[a.urgency] : 99;
+          var bo = urgencyOrder.hasOwnProperty(b.urgency) ? urgencyOrder[b.urgency] : 99;
+          return ao - bo;
+        })
+        .slice(0, 3);
+      if(open.length === 0){
+        var empty = document.createElement('div');
+        empty.className = 'empty-state';
+        empty.innerHTML = '<svg class="icon" aria-hidden="true"><use href="#icon-circle-check"/></svg>' +
+          '<div class="empty-state-title">Nenhuma ocorrência em aberto</div>' +
+          '<div class="empty-state-sub">Tudo certo por aqui</div>';
+        container.appendChild(empty);
+        return;
+      }
+      open.forEach(function(occ){
+        container.appendChild(buildCard(occ, false));
+      });
+    }
+
+    function renderFullList(){
+      var container = document.getElementById('occurrence-full-list');
+      var emptyState = document.getElementById('occ-empty-state');
+      if(!container) return;
+      container.innerHTML = '';
+
+      var filtered = occurrences.filter(function(o){
+        if(currentFilter === 'todas') return true;
+        return o.status === currentFilter || (currentFilter === 'aberta' && o.status === 'andamento');
+      });
+
+      filtered = filtered.slice().sort(function(a, b){
+        var ao = urgencyOrder.hasOwnProperty(a.urgency) ? urgencyOrder[a.urgency] : 99;
+        var bo = urgencyOrder.hasOwnProperty(b.urgency) ? urgencyOrder[b.urgency] : 99;
+        return ao - bo;
+      });
+
+      if(filtered.length === 0){
+        container.hidden = true;
+        if(emptyState) emptyState.hidden = false;
+        return;
+      }
+
+      container.hidden = false;
+      if(emptyState) emptyState.hidden = true;
+
+      filtered.forEach(function(occ){
+        container.appendChild(buildCard(occ, true));
+      });
+    }
+
+    function updateBadges(){
+      var count = openCount();
+      var s1 = document.getElementById('badge-ocorrencias-sidebar');
+      var s2 = document.getElementById('badge-ocorrencias-bottom');
+      var metric = document.getElementById('metric-ocorrencias-value');
+      if(s1) s1.textContent = count;
+      if(s2) s2.textContent = count;
+      if(metric) metric.textContent = count;
+    }
+
+    function addActivity(dotClass, html, when){
+      var list = document.getElementById('activity-list');
+      if(!list) return;
+      var item = document.createElement('div');
+      item.className = 'activity-item';
+      item.innerHTML = '<div class="activity-dot ' + dotClass + '"></div><div><div class="activity-text">' + html + '</div><div class="activity-time">' + when + '</div></div>';
+      list.insertBefore(item, list.firstChild);
+    }
+
+    function renderAll(){
+      renderSummary();
+      renderFullList();
+      updateBadges();
+    }
+
+    function loadFromSupabase(){
+      return supaApi('GET', '/atendimentos?select=*&order=created_at.desc').then(function(rows){
+        occurrences = rows.map(function(r){
+          var s = r.status || 'aberta';
+          // mapeia status do supabase para os usados no dashboard
+          var statusMap = { aberta: 'aberta', resolvida: 'resolvida', andamento: 'andamento', analise: 'analise' };
+          return {
+            id: r.id,
+            title: r.mensagem ? r.mensagem.substring(0, 60) : 'Ocorrência #' + r.id,
+            location: r.telefone || 'Portaria',
+            description: r.mensagem || '',
+            urgency: r.urgency || 'media',
+            status: statusMap[s] || 'aberta',
+            timeLabel: fmtRelative(r.created_at),
+            locationIcon: 'map-pin'
+          };
+        });
+        renderAll();
+      }).catch(function(e){
+        console.error('OccApp load error:', e);
+        showToast('Erro ao carregar ocorrências', 'error');
+      });
+    }
+
+    function resolve(id){
+      var occ = occurrences.find(function(o){ return o.id === id; });
+      if(!occ || occ.status === 'resolvida') return;
+      supaApi('PATCH', '/atendimentos?id=eq.' + id, { status: 'resolvida' }).then(function(){
+        occ.status = 'resolvida';
+        addActivity('success', '<strong>Ocorrência resolvida:</strong> ' + escapeHtml(occ.title), 'agora mesmo');
+        renderAll();
+        showToast('Ocorrência resolvida!');
+      }).catch(function(e){
+        showToast('Erro ao resolver: ' + (e.message || 'tente novamente'), 'error');
+      });
+    }
+
+    function create(data){
+      var now = new Date();
+      var when = now.toLocaleDateString('pt-BR') + ', ' + now.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'});
+      var payload = {
+        mensagem: data.description ? (data.title + (data.location ? ' — ' + data.location : '') + (data.description ? ': ' + data.description : '')) : data.title,
+        telefone: data.location || 'portaria',
+        status: 'aberta'
+      };
+      supaApi('POST', '/atendimentos', payload).then(function(rows){
+        var row = Array.isArray(rows) ? rows[0] : rows;
+        var occ = {
+          id: row ? row.id : ('tmp-' + Date.now()),
+          title: data.title || 'Ocorrência sem título',
+          location: data.location || 'Não informado',
+          description: data.description || '',
+          urgency: data.urgency || 'media',
+          status: 'aberta',
+          timeLabel: 'agora mesmo',
+          locationIcon: 'map-pin'
+        };
+        occurrences.unshift(occ);
+        addActivity('danger', '<strong>Nova ocorrência:</strong> ' + escapeHtml(occ.title) + (occ.location ? ' — ' + escapeHtml(occ.location) : ''), when);
+        renderAll();
+        showToast('Ocorrência registrada!');
+      }).catch(function(e){
+        showToast('Erro ao salvar: ' + (e.message || 'tente novamente'), 'error');
+      });
+    }
+
+    function setFilter(filter){
+      currentFilter = filter;
+      renderFullList();
+    }
+
+    return {
+      loadFromSupabase: loadFromSupabase,
+      renderAll: renderAll,
+      resolve: resolve,
+      create: create,
+      setFilter: setFilter
+    };
+  })();
+
+  OccApp.loadFromSupabase();
+
+  /* Delegacao de clique para botoes "Resolver" (gerados dinamicamente) */
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest('[data-resolve]');
+    if(btn){
+      OccApp.resolve(btn.getAttribute('data-resolve'));
+    }
+  });
+
+  /* Filtros da pagina Ocorrencias */
+  document.querySelectorAll('[data-occ-filter]').forEach(function(chip){
+    chip.addEventListener('click', function(){
+      document.querySelectorAll('[data-occ-filter]').forEach(function(c){ c.classList.remove('active'); });
+      chip.classList.add('active');
+      OccApp.setFilter(chip.getAttribute('data-occ-filter'));
+    });
+  });
+
+  /* Formulario de nova ocorrencia */
+  (function(){
+    var form = document.getElementById('occ-form');
+    var btnNew = document.getElementById('btn-new-occurrence');
+    var btnCancel = document.getElementById('btn-cancel-occurrence');
+    var btnSave = document.getElementById('btn-save-occurrence');
+
+    if(!form || !btnNew) return;
+
+    btnNew.addEventListener('click', function(){
+      form.hidden = !form.hidden;
+    });
+
+    btnCancel.addEventListener('click', function(){
+      form.hidden = true;
+      clearForm();
+    });
+
+    btnSave.addEventListener('click', function(){
+      var title = document.getElementById('occ-input-title').value.trim();
+      var location = document.getElementById('occ-input-location').value.trim();
+      var description = document.getElementById('occ-input-description').value.trim();
+      var urgency = document.getElementById('occ-input-urgency').value;
+
+      if(!title){
+        document.getElementById('occ-input-title').focus();
+        return;
+      }
+
+      OccApp.create({ title: title, location: location, description: description, urgency: urgency });
+      form.hidden = true;
+      clearForm();
+    });
+
+    function clearForm(){
+      document.getElementById('occ-input-title').value = '';
+      document.getElementById('occ-input-location').value = '';
+      document.getElementById('occ-input-description').value = '';
+      document.getElementById('occ-input-urgency').value = 'media';
+    }
+  })();
+
+  /* ============================================
+     REQUISICOES - matriz urgencia x status
+     ============================================ */
+  var ReqApp = (function(){
+    var urgencyOrder = ['critica', 'alta', 'media', 'baixa'];
+    var urgencyLabels = { critica: 'Crítica', alta: 'Alta', media: 'Média', baixa: 'Baixa' };
+
+    var statusFlow = ['pendente', 'analise', 'andamento', 'resolvido'];
+    var statusLabels = { pendente: 'Pendente', analise: 'Em análise', andamento: 'Em andamento', resolvido: 'Resolvido' };
+    var statusDotClass = { pendente: 'warning', analise: 'info', andamento: 'brand', resolvido: 'success' };
+
+    var items = [
+      { id: 'req-1', type: 'Reserva', typeBadge: 'badge-warning', title: 'Salão de festas', meta: 'Apto 304 · Maria Souza', timeLabel: 'há 2h', urgency: 'media', status: 'pendente' },
+      { id: 'req-2', type: 'Encomenda', typeBadge: 'badge-neutral', title: 'Entrega antecipada', meta: 'Apto 507 · Ana Ferreira', timeLabel: 'há 15min', urgency: 'media', status: 'pendente' },
+      { id: 'req-3', type: 'Visitante', typeBadge: 'badge-info', title: 'Liberação recorrente', meta: 'Apto 112 · Carlos Lima', timeLabel: 'há 40min', urgency: 'baixa', status: 'pendente' },
+      { id: 'req-4', type: 'Ocorrência', typeBadge: 'badge-danger', title: 'Vaga de garagem ocupada', meta: 'Subsolo 2 · Vaga 34', timeLabel: 'há 3h', urgency: 'media', status: 'analise' },
+      { id: 'req-5', type: 'Ocorrência', typeBadge: 'badge-danger', title: 'Barulho do vizinho de cima', meta: 'Apto 201', timeLabel: 'há 1 dia', urgency: 'alta', status: 'andamento' },
+      { id: 'req-6', type: 'Manutenção', typeBadge: 'badge-success', title: 'Portão da garagem com defeito', meta: 'Subsolo 1', timeLabel: 'ontem', urgency: 'media', status: 'resolvido' }
+    ];
+
+    function escapeHtml(str){
+      var div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function buildCard(item){
+      var card = document.createElement('div');
+      card.className = 'kanban-card';
+      card.setAttribute('data-urgency', item.urgency);
+
+      var nextStatus = statusFlow[statusFlow.indexOf(item.status) + 1];
+      var advanceBtn;
+      if(nextStatus){
+        advanceBtn = '<button class="kanban-card-advance" data-advance-req="' + item.id + '">' +
+          '<svg class="icon" aria-hidden="true"><use href="#icon-chevron-right"/></svg> Mover para ' + statusLabels[nextStatus] +
+          '</button>';
+      } else {
+        advanceBtn = '<button class="kanban-card-advance" disabled>' +
+          '<svg class="icon" aria-hidden="true"><use href="#icon-circle-check"/></svg> Resolvido</button>';
+      }
+
+      card.innerHTML =
+        '<div class="kanban-card-head">' +
+          '<span class="badge ' + item.typeBadge + '">' + escapeHtml(item.type) + '</span>' +
+        '</div>' +
+        '<div class="kanban-card-title">' + escapeHtml(item.title) + '</div>' +
+        '<div class="kanban-card-meta">' + escapeHtml(item.meta) + '</div>' +
+        '<div class="kanban-card-footer">' +
+          '<span class="kanban-card-time"><svg class="icon" aria-hidden="true"><use href="#icon-clock"/></svg> ' + escapeHtml(item.timeLabel) + '</span>' +
+          '<span class="kanban-card-source"><svg class="icon" aria-hidden="true"><use href="#icon-robot"/></svg> via bot</span>' +
+        '</div>' +
+        advanceBtn;
+
+      return card;
+    }
+
+    function renderMatrix(){
+      var container = document.getElementById('req-matrix');
+      if(!container) return;
+      container.innerHTML = '';
+
+      var grid = document.createElement('div');
+      grid.className = 'req-matrix-grid';
+
+      // cabecalho: canto vazio + colunas de status
+      grid.appendChild(makeDiv('req-matrix-corner', ''));
+      statusFlow.forEach(function(status){
+        var head = makeDiv('req-matrix-col-head', '<span class="kanban-dot ' + statusDotClass[status] + '"></span> ' + statusLabels[status]);
+        grid.appendChild(head);
+      });
+
+      // linhas: urgencia + celulas por status
+      urgencyOrder.forEach(function(urgency){
+        var rowHead = makeDiv('req-matrix-row-head ' + urgency, urgencyLabels[urgency]);
+        grid.appendChild(rowHead);
+
+        statusFlow.forEach(function(status){
+          var cell = document.createElement('div');
+          cell.className = 'req-matrix-cell';
+          var cellItems = items.filter(function(i){ return i.urgency === urgency && i.status === status; });
+          if(cellItems.length === 0){
+            cell.appendChild(makeDiv('req-matrix-cell-empty', '—'));
+          } else {
+            cellItems.forEach(function(item){
+              cell.appendChild(buildCard(item));
+            });
+          }
+          grid.appendChild(cell);
+        });
+      });
+
+      container.appendChild(grid);
+    }
+
+    function makeDiv(className, html){
+      var div = document.createElement('div');
+      div.className = className;
+      div.innerHTML = html;
+      return div;
+    }
+
+    function renderList(){
+      var container = document.getElementById('req-list');
+      if(!container) return;
+      container.innerHTML = '';
+
+      urgencyOrder.forEach(function(urgency){
+        var groupItems = items.filter(function(i){ return i.urgency === urgency; });
+
+        var group = document.createElement('div');
+        var groupHead = makeDiv('req-group-head ' + urgency, urgencyLabels[urgency] + ' urgência (' + groupItems.length + ')');
+        group.appendChild(groupHead);
+
+        if(groupItems.length === 0){
+          group.appendChild(makeDiv('req-empty-group', 'Nenhum item nesta urgência'));
+          container.appendChild(group);
+          return;
+        }
+
+        statusFlow.forEach(function(status){
+          var statusItems = groupItems.filter(function(i){ return i.status === status; });
+          if(statusItems.length === 0) return;
+
+          var block = document.createElement('div');
+          block.className = 'req-status-block';
+          block.appendChild(makeDiv('req-status-label', '<span class="kanban-dot ' + statusDotClass[status] + '"></span> ' + statusLabels[status]));
+
+          var cardsWrap = document.createElement('div');
+          cardsWrap.className = 'req-status-cards';
+          statusItems.forEach(function(item){
+            cardsWrap.appendChild(buildCard(item));
+          });
+          block.appendChild(cardsWrap);
+          group.appendChild(block);
+        });
+
+        container.appendChild(group);
+      });
+    }
+
+    function renderAll(){
+      renderMatrix();
+      renderList();
+    }
+
+    function advance(id){
+      var item = items.find(function(i){ return i.id === id; });
+      if(!item) return;
+      var idx = statusFlow.indexOf(item.status);
+      if(idx < statusFlow.length - 1){
+        item.status = statusFlow[idx + 1];
+        item.timeLabel = 'agora mesmo';
+        renderAll();
+      }
+    }
+
+    return { renderAll: renderAll, advance: advance };
+  })();
+
+  ReqApp.renderAll();
+
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest('[data-advance-req]');
+    if(btn){
+      ReqApp.advance(btn.getAttribute('data-advance-req'));
+    }
+  });
+
+  /* ============================================
+     ENCOMENDAS - estado e renderizacao (Supabase)
+     ============================================ */
+  var PackageApp = (function(){
+    var statusFlow = ['recebida', 'notificado', 'retirada'];
+    var statusLabels = { recebida: 'Recebida', notificado: 'Notificado', retirada: 'Retirada' };
+    var advanceLabels = { recebida: 'Notificar morador', notificado: 'Marcar retirada' };
+
+    // mapeamento status supabase → kanban
+    var supaToKanban = { aguardando: 'recebida', notificado: 'notificado', retirado: 'retirada' };
+    var kanbanToSupa = { recebida: 'aguardando', notificado: 'notificado', retirada: 'retirado' };
+
+    var packages = [];
+
+    function escapeHtml(str){
+      var div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function buildCard(pkg){
+      var card = document.createElement('div');
+      card.className = 'kanban-card';
+
+      var advanceBtn = '';
+      var nextStatus = statusFlow[statusFlow.indexOf(pkg.status) + 1];
+      if(nextStatus){
+        advanceBtn = '<button class="kanban-card-advance" data-advance-package="' + pkg.id + '">' +
+          '<svg class="icon" aria-hidden="true"><use href="#icon-package-export"/></svg> ' +
+          escapeHtml(advanceLabels[pkg.status]) +
+          '</button>';
+      } else {
+        advanceBtn = '<button class="kanban-card-advance" disabled>' +
+          '<svg class="icon" aria-hidden="true"><use href="#icon-circle-check"/></svg> Retirada</button>';
+      }
+
+      card.innerHTML =
+        '<div class="kanban-card-head">' +
+          '<span class="badge badge-neutral">Encomenda</span>' +
+        '</div>' +
+        '<div class="kanban-card-title">' + escapeHtml(pkg.description) + '</div>' +
+        '<div class="kanban-card-meta">' + escapeHtml(pkg.resident) + '</div>' +
+        '<div class="kanban-card-footer">' +
+          '<span class="kanban-card-time"><svg class="icon" aria-hidden="true"><use href="#icon-clock"/></svg> ' + escapeHtml(pkg.timeLabel) + '</span>' +
+          '<span class="kanban-card-source"><svg class="icon" aria-hidden="true"><use href="#icon-robot"/></svg> via bot</span>' +
+        '</div>' +
+        advanceBtn;
+
+      return card;
+    }
+
+    function renderAll(){
+      statusFlow.forEach(function(status){
+        var container = document.querySelector('.kanban-cards[data-column="' + status + '"]');
+        var countEl = document.getElementById('package-count-' + status);
+        if(!container) return;
+        container.innerHTML = '';
+        var items = packages.filter(function(p){ return p.status === status; });
+        items.forEach(function(p){
+          container.appendChild(buildCard(p));
+        });
+        if(countEl) countEl.textContent = items.length;
+      });
+      updateBadges();
+    }
+
+    function updateBadges(){
+      var pending = packages.filter(function(p){ return p.status !== 'retirada'; }).length;
+      var s1 = document.getElementById('badge-encomendas-sidebar');
+      var s2 = document.getElementById('badge-encomendas-bottom');
+      var metric = document.getElementById('metric-encomendas-value');
+      if(s1) s1.textContent = pending;
+      if(s2) s2.textContent = pending;
+      if(metric) metric.textContent = pending;
+    }
+
+    function loadFromSupabase(){
+      return supaApi('GET', '/encomendas?select=*,moradores(nome,apartamento,bloco)&order=data_recebimento.desc').then(function(rows){
+        packages = rows.map(function(r){
+          var m = r.moradores || {};
+          var resident = m.nome ? (m.nome + (m.apartamento ? ' · Ap. ' + m.apartamento : '') + (m.bloco ? ' Bl.' + m.bloco : '')) : 'Morador #' + r.morador_id;
+          var kanbanStatus = supaToKanban[r.status] || 'recebida';
+          return {
+            id: r.id,
+            resident: resident,
+            description: r.descricao || 'Encomenda',
+            status: kanbanStatus,
+            timeLabel: fmtRelative(r.data_recebimento)
+          };
+        });
+        renderAll();
+      }).catch(function(e){
+        console.error('PackageApp load error:', e);
+        showToast('Erro ao carregar encomendas', 'error');
+      });
+    }
+
+    function advance(id){
+      var pkg = packages.find(function(p){ return p.id === id; });
+      if(!pkg) return;
+      var idx = statusFlow.indexOf(pkg.status);
+      if(idx >= statusFlow.length - 1) return;
+      var nextKanban = statusFlow[idx + 1];
+      var nextSupa = kanbanToSupa[nextKanban];
+      var patchData = { status: nextSupa };
+      if(nextSupa === 'retirado') patchData.retirada_em = new Date().toISOString();
+      supaApi('PATCH', '/encomendas?id=eq.' + id, patchData).then(function(){
+        pkg.status = nextKanban;
+        pkg.timeLabel = 'agora mesmo';
+        renderAll();
+        showToast(nextKanban === 'notificado' ? 'Morador notificado!' : 'Retirada confirmada!');
+      }).catch(function(e){
+        showToast('Erro: ' + (e.message || 'tente novamente'), 'error');
+      });
+    }
+
+    function create(data){
+      // busca morador por nome/apto se possível, senão cria sem morador_id
+      var payload = {
+        descricao: data.description || 'Encomenda',
+        status: 'aguardando',
+        data_recebimento: new Date().toISOString()
+      };
+      // tenta extrair morador_id se data.residentId existir
+      if(data.residentId) payload.morador_id = data.residentId;
+      supaApi('POST', '/encomendas', payload).then(function(rows){
+        var row = Array.isArray(rows) ? rows[0] : rows;
+        var pkg = {
+          id: row ? row.id : ('tmp-' + Date.now()),
+          resident: data.resident || 'Não informado',
+          description: data.description || 'Encomenda sem descrição',
+          status: 'recebida',
+          timeLabel: 'agora mesmo'
+        };
+        packages.unshift(pkg);
+        renderAll();
+        showToast('Encomenda registrada!');
+      }).catch(function(e){
+        showToast('Erro ao salvar: ' + (e.message || 'tente novamente'), 'error');
+      });
+    }
+
+    return { loadFromSupabase: loadFromSupabase, renderAll: renderAll, advance: advance, create: create };
+  })();
+
+  PackageApp.loadFromSupabase();
+
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest('[data-advance-package]');
+    if(btn){
+      PackageApp.advance(btn.getAttribute('data-advance-package'));
+    }
+  });
+
+  /* Formulario de nova encomenda */
+  (function(){
+    var form = document.getElementById('package-form');
+    var btnNew = document.getElementById('btn-new-package');
+    var btnCancel = document.getElementById('btn-cancel-package');
+    var btnSave = document.getElementById('btn-save-package');
+
+    if(!form || !btnNew) return;
+
+    btnNew.addEventListener('click', function(){
+      form.hidden = !form.hidden;
+    });
+
+    btnCancel.addEventListener('click', function(){
+      form.hidden = true;
+      clearForm();
+    });
+
+    btnSave.addEventListener('click', function(){
+      var resident = document.getElementById('package-input-resident').value.trim();
+      var description = document.getElementById('package-input-description').value.trim();
+
+      if(!resident){
+        document.getElementById('package-input-resident').focus();
+        return;
+      }
+
+      PackageApp.create({ resident: resident, description: description });
+      form.hidden = true;
+      clearForm();
+    });
+
+    function clearForm(){
+      document.getElementById('package-input-resident').value = '';
+      document.getElementById('package-input-description').value = '';
+    }
+  })();
+
+  /* ============================================
+     NAVEGACAO POR PAGINAS
+     ============================================ */
+  (function(){
+    var pages = document.querySelectorAll('.page');
+    var navItems = document.querySelectorAll('[data-page]');
+    var pageLinks = document.querySelectorAll('[data-page-link]');
+    var topbarTitle = document.getElementById('topbar-title');
+    var topbarSubtitle = document.getElementById('topbar-subtitle');
+
+    var titles = {
+      dashboard: ['Dashboard', 'Residencial Jardim das Flores · sábado, 13 de junho'],
+      requisicoes: ['Requisições', 'Acompanhe e atualize o status das solicitações'],
+      ocorrencias: ['Ocorrências', 'Registro e acompanhamento de ocorrências do condomínio'],
+      encomendas: ['Encomendas', 'Gestão de recebimento e retirada'],
+      visitantes: ['Visitantes', 'Controle de acesso e registro de entradas'],
+      moradores: ['Moradores', 'Cadastro e gestão de moradores do condomínio']
+    };
+
+    var loaded = {};
+
+    function showPage(pageId){
+      pages.forEach(function(p){
+        p.classList.toggle('active', p.id === 'page-' + pageId);
+      });
+      navItems.forEach(function(item){
+        item.classList.toggle('active', item.getAttribute('data-page') === pageId);
+      });
+      if(titles[pageId]){
+        topbarTitle.textContent = titles[pageId][0];
+        topbarSubtitle.textContent = titles[pageId][1];
+      }
+      // Carrega dados ao entrar pela primeira vez na página
+      if(pageId === 'visitantes' && !loaded.visitantes){
+        loaded.visitantes = true;
+        VisitorApp.loadFromSupabase();
+      }
+      if(pageId === 'moradores' && !loaded.moradores){
+        loaded.moradores = true;
+        MoradorApp.loadFromSupabase();
+      }
+    }
+
+    navItems.forEach(function(item){
+      item.addEventListener('click', function(e){
+        e.preventDefault();
+        showPage(item.getAttribute('data-page'));
+      });
+    });
+
+    pageLinks.forEach(function(link){
+      link.addEventListener('click', function(e){
+        e.preventDefault();
+        showPage(link.getAttribute('data-page-link'));
+      });
+    });
+  })();
+
+  /* ============================================
+     DASHBOARD - metricas em tempo real do Supabase
+     ============================================ */
+  function loadDashboardMetrics(){
+    // Moradores
+    supaApi('GET', '/moradores?select=id').then(function(rows){
+      var el = document.getElementById('metric-moradores-value');
+      if(el) el.textContent = rows.length;
+    }).catch(function(){});
+
+    // Visitantes de hoje
+    var hoje = new Date();
+    hoje.setHours(0,0,0,0);
+    supaApi('GET', '/visitantes?select=id&entrada=gte.' + hoje.toISOString()).then(function(rows){
+      var el = document.getElementById('metric-visitantes-value');
+      if(el) el.textContent = rows.length;
+    }).catch(function(){});
+  }
+
+  /* ============================================
+     VISITANTES - Supabase
+     ============================================ */
+  var VisitorApp = (function(){
+    var visitors = [];
+    var currentFilter = 'todos';
+
+    function fmtDate(d){
+      if(!d) return '—';
+      return new Date(d).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    }
+
+    function loadFromSupabase(){
+      return supaApi('GET', '/visitantes?select=*,moradores(nome,apartamento,bloco)&order=entrada.desc').then(function(rows){
+        visitors = rows;
+        render();
+      }).catch(function(e){
+        showToast('Erro ao carregar visitantes', 'error');
+      });
+    }
+
+    function registrarSaida(id){
+      supaApi('PATCH', '/visitantes?id=eq.' + id, { saida: new Date().toISOString() }).then(function(){
+        var v = visitors.find(function(x){ return x.id === id; });
+        if(v) v.saida = new Date().toISOString();
+        render();
+        showToast('Saída registrada!');
+      }).catch(function(e){
+        showToast('Erro ao registrar saída', 'error');
+      });
+    }
+
+    function excluir(id){
+      if(!confirm('Excluir este registro de visitante?')) return;
+      supaApi('DELETE', '/visitantes?id=eq.' + id).then(function(){
+        visitors = visitors.filter(function(v){ return v.id !== id; });
+        render();
+        showToast('Registro excluído!');
+      }).catch(function(){ showToast('Erro ao excluir', 'error'); });
+    }
+
+    function render(){
+      var container = document.getElementById('visitor-list');
+      if(!container) return;
+
+      var hoje = new Date(); hoje.setHours(0,0,0,0);
+      var filtered = visitors.filter(function(v){
+        if(currentFilter === 'hoje'){
+          return v.entrada && new Date(v.entrada) >= hoje;
+        }
+        if(currentFilter === 'pendente') return !v.saida;
+        return true;
+      });
+
+      if(!filtered.length){
+        container.innerHTML = '<div class="empty-state"><div class="empty-state-title">Nenhum visitante encontrado</div></div>';
+        return;
+      }
+
+      container.innerHTML = filtered.map(function(v){
+        var m = v.moradores || {};
+        var morador = m.nome ? (m.nome + (m.apartamento ? ' · Ap. ' + m.apartamento : '')) : '—';
+        var statusCls = v.saida ? 'badge-success' : 'badge-warning';
+        var statusLbl = v.saida ? 'Saiu' : 'Dentro';
+        return '<div class="occurrence-card">' +
+          '<div class="occ-top">' +
+            '<div class="occ-title">' + escHtml(v.nome || 'Visitante #' + v.id) + '</div>' +
+            '<span class="badge ' + statusCls + '">' + statusLbl + '</span>' +
+          '</div>' +
+          '<div class="occ-desc" style="margin-bottom:0.5rem;">' +
+            (v.documento ? '📄 ' + escHtml(v.documento) + ' &nbsp;·&nbsp; ' : '') +
+            '🏠 ' + escHtml(morador) +
+            (v.motivo ? ' &nbsp;·&nbsp; ' + escHtml(v.motivo) : '') +
+          '</div>' +
+          '<div class="occ-bottom">' +
+            '<div class="occ-meta">' +
+              '<span class="occ-meta-item">Entrada: ' + fmtDate(v.entrada) + '</span>' +
+              (v.saida ? '<span class="occ-meta-item">Saída: ' + fmtDate(v.saida) + '</span>' : '') +
+            '</div>' +
+            '<div style="display:flex;gap:6px;">' +
+              (!v.saida ? '<button class="btn-resolve" onclick="VisitorApp.registrarSaida(' + v.id + ')">✓ Registrar saída</button>' : '') +
+              '<button class="btn-resolve" style="background:var(--status-danger-bg);color:var(--status-danger-fg);border-color:transparent;" onclick="VisitorApp.excluir(' + v.id + ')">🗑</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    function escHtml(s){ var d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
+
+    function create(data){
+      var payload = {
+        nome: data.nome,
+        documento: data.documento || null,
+        motivo: data.motivo || null,
+        entrada: new Date().toISOString(),
+        status: 'autorizado'
+      };
+      if(data.morador_id) payload.morador_id = data.morador_id;
+      supaApi('POST', '/visitantes', payload).then(function(rows){
+        var row = Array.isArray(rows) ? rows[0] : rows;
+        if(row) visitors.unshift(row);
+        render();
+        showToast('Visitante registrado!');
+      }).catch(function(e){ showToast('Erro ao salvar: ' + (e.message||''), 'error'); });
+    }
+
+    function setFilter(f){ currentFilter = f; render(); }
+
+    return { loadFromSupabase: loadFromSupabase, render: render, registrarSaida: registrarSaida, excluir: excluir, create: create, setFilter: setFilter };
+  })();
+
+  // Filtros de visitantes
+  document.querySelectorAll('[data-vis-filter]').forEach(function(chip){
+    chip.addEventListener('click', function(){
+      document.querySelectorAll('[data-vis-filter]').forEach(function(c){ c.classList.remove('active'); });
+      chip.classList.add('active');
+      VisitorApp.setFilter(chip.getAttribute('data-vis-filter'));
+    });
+  });
+
+  // Formulário novo visitante
+  (function(){
+    var form = document.getElementById('visitor-form');
+    var btnNew = document.getElementById('btn-new-visitor');
+    var btnCancel = document.getElementById('btn-cancel-visitor');
+    var btnSave = document.getElementById('btn-save-visitor');
+    if(!form || !btnNew) return;
+    btnNew.addEventListener('click', function(){ form.hidden = !form.hidden; });
+    btnCancel.addEventListener('click', function(){ form.hidden = true; clearVis(); });
+    btnSave.addEventListener('click', function(){
+      var nome = document.getElementById('vis-input-nome').value.trim();
+      if(!nome){ document.getElementById('vis-input-nome').focus(); return; }
+      VisitorApp.create({
+        nome: nome,
+        documento: document.getElementById('vis-input-doc').value.trim(),
+        motivo: document.getElementById('vis-input-motivo').value.trim()
+      });
+      form.hidden = true; clearVis();
+    });
+    function clearVis(){
+      ['vis-input-nome','vis-input-doc','vis-input-morador','vis-input-motivo'].forEach(function(id){
+        var el = document.getElementById(id); if(el) el.value='';
+      });
+    }
+  })();
+
+  /* ============================================
+     MORADORES - Supabase
+     ============================================ */
+  var MoradorApp = (function(){
+    var moradores = [];
+
+    function loadFromSupabase(){
+      return supaApi('GET', '/moradores?select=*&order=nome.asc').then(function(rows){
+        moradores = rows;
+        render();
+        // Atualiza métrica
+        var el = document.getElementById('metric-moradores-value');
+        if(el) el.textContent = rows.length;
+      }).catch(function(){ showToast('Erro ao carregar moradores', 'error'); });
+    }
+
+    function excluir(id){
+      if(!confirm('Excluir este morador? Esta ação não pode ser desfeita.')) return;
+      supaApi('DELETE', '/moradores?id=eq.' + id).then(function(){
+        moradores = moradores.filter(function(m){ return m.id !== id; });
+        render();
+        showToast('Morador excluído!');
+      }).catch(function(){ showToast('Erro ao excluir', 'error'); });
+    }
+
+    function render(list){
+      var container = document.getElementById('morador-list');
+      if(!container) return;
+      var data = list || moradores;
+      if(!data.length){
+        container.innerHTML = '<div class="empty-state"><div class="empty-state-title">Nenhum morador cadastrado</div></div>';
+        return;
+      }
+      container.innerHTML = data.map(function(m){
+        var initials = (m.nome||'?').split(' ').slice(0,2).map(function(n){ return n[0]; }).join('').toUpperCase();
+        var apto = 'Ap. ' + escHtml(m.apartamento||'—') + (m.bloco ? ' · Bl. ' + escHtml(m.bloco) : '');
+        return '<div class="occurrence-card">' +
+          '<div class="occ-top">' +
+            '<div style="display:flex;align-items:center;gap:12px;">' +
+              '<div style="width:38px;height:38px;border-radius:50%;background:var(--status-info-bg);color:var(--brand-primary);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;">' + initials + '</div>' +
+              '<div>' +
+                '<div class="occ-title">' + escHtml(m.nome||'—') + '</div>' +
+                '<div class="occ-desc" style="margin:0;">' + apto + '</div>' +
+              '</div>' +
+            '</div>' +
+            '<button class="btn-resolve" style="background:var(--status-danger-bg);color:var(--status-danger-fg);border-color:transparent;" onclick="MoradorApp.excluir(' + m.id + ')">🗑 Excluir</button>' +
+          '</div>' +
+          (m.telefone ? '<div class="occ-bottom" style="margin-top:0.5rem;"><div class="occ-meta"><span class="occ-meta-item">📞 ' + escHtml(m.telefone) + '</span></div></div>' : '') +
+        '</div>';
+      }).join('');
+    }
+
+    function escHtml(s){ var d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
+
+    function create(data){
+      supaApi('POST', '/moradores', data).then(function(rows){
+        var row = Array.isArray(rows) ? rows[0] : rows;
+        if(row) moradores.unshift(row);
+        render();
+        var el = document.getElementById('metric-moradores-value');
+        if(el) el.textContent = moradores.length;
+        showToast('Morador cadastrado!');
+      }).catch(function(e){ showToast('Erro ao salvar: ' + (e.message||''), 'error'); });
+    }
+
+    function search(q){
+      if(!q) return render();
+      var l = q.toLowerCase();
+      render(moradores.filter(function(m){
+        return (m.nome||'').toLowerCase().includes(l) || (m.apartamento||'').toLowerCase().includes(l) || (m.bloco||'').toLowerCase().includes(l);
+      }));
+    }
+
+    return { loadFromSupabase: loadFromSupabase, render: render, excluir: excluir, create: create, search: search };
+  })();
+
+  // Busca de moradores
+  (function(){
+    var input = document.getElementById('morador-search');
+    if(input) input.addEventListener('input', function(){ MoradorApp.search(this.value); });
+  })();
+
+  // Formulário novo morador
+  (function(){
+    var form = document.getElementById('morador-form');
+    var btnNew = document.getElementById('btn-new-morador');
+    var btnCancel = document.getElementById('btn-cancel-morador');
+    var btnSave = document.getElementById('btn-save-morador');
+    if(!form || !btnNew) return;
+    btnNew.addEventListener('click', function(){ form.hidden = !form.hidden; });
+    btnCancel.addEventListener('click', function(){ form.hidden = true; clearMor(); });
+    btnSave.addEventListener('click', function(){
+      var nome = document.getElementById('mor-input-nome').value.trim();
+      var apto = document.getElementById('mor-input-apto').value.trim();
+      if(!nome || !apto){ showToast('Nome e apartamento são obrigatórios', 'error'); return; }
+      MoradorApp.create({
+        nome: nome,
+        apartamento: apto,
+        bloco: document.getElementById('mor-input-bloco').value.trim() || null,
+        telefone: document.getElementById('mor-input-tel').value.trim() || null
+      });
+      form.hidden = true; clearMor();
+    });
+    function clearMor(){
+      ['mor-input-nome','mor-input-apto','mor-input-bloco','mor-input-tel'].forEach(function(id){
+        var el = document.getElementById(id); if(el) el.value='';
+      });
+    }
+  })();
+
+  // Botão atualizar do topbar
+  (function(){
+    var btn = document.querySelector('[aria-label="Atualizar"]');
+    if(btn) btn.addEventListener('click', function(){
+      OccApp.loadFromSupabase();
+      PackageApp.loadFromSupabase();
+      VisitorApp.loadFromSupabase();
+      MoradorApp.loadFromSupabase();
+      loadDashboardMetrics();
+      showToast('Dados atualizados!');
+    });
+  })();
+
+  // Auto-refresh a cada 60s
+  setInterval(function(){
+    OccApp.loadFromSupabase();
+    PackageApp.loadFromSupabase();
+    VisitorApp.loadFromSupabase();
+    MoradorApp.loadFromSupabase();
+    loadDashboardMetrics();
+  }, 60000);
+
+</script>
+</body>
+</html>

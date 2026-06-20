@@ -1,0 +1,2075 @@
+{
+  "name": "BOT  CONDOMINIO BRUNO",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "testeteste",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "b7e6e3ac-6305-4c98-ad18-dc1f7cf34e72",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -64,
+        384
+      ],
+      "webhookId": "condominio-bot"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "OK",
+        "options": {}
+      },
+      "id": "bdd4d146-4c61-4d84-96b6-fc248e87cdad",
+      "name": "Respond 200",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        160,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body    = $input.first().json.body ?? $input.first().json;\nconst data    = body.data    ?? body;\nconst key     = data.key     ?? body.key     ?? {};\nconst message = data.message ?? body.message ?? {};\n\nif (key.fromMe === true) return [];\nif ((key.remoteJid ?? '').includes('@g.us')) return [];\n\nconst from = (key.remoteJid ?? '')\n  .replace('@s.whatsapp.net', '')\n  .replace('@g.us', '');\n\nif (!from || from.length < 5) return [];\n\nconst texto    = (message.conversation ?? message.extendedTextMessage?.text ?? message.buttonsResponseMessage?.selectedDisplayText ?? message.listResponseMessage?.singleSelectReply?.selectedRowId ?? '').trim();\nconst buttonId = message.buttonsResponseMessage?.selectedButtonId ?? message.listResponseMessage?.singleSelectReply?.selectedRowId ?? null;\nconst instance = body.instance ?? data.instance ?? 'N8N-Portaria';\n\nreturn [{ json: { from, texto, buttonId, instance } }];"
+      },
+      "id": "89d6a287-ad8c-484c-8b18-0fbdb3c6b474",
+      "name": "Parsear Mensagem",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        384
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/moradores?telefone=eq.{{ $json.from }}&select=id,nome,apartamento,bloco",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true,
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "2a366436-e151-4d05-9dbb-0280d3012dcf",
+      "name": "GET Morador",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        384,
+        384
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/sessoes?telefone=eq.{{ $('Parsear Mensagem').item.json.from }}&select=etapa,dados",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true,
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "33a22dad-911e-41a5-9aba-784d3034a473",
+      "name": "GET Sessao",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        608,
+        384
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const p = $('Parsear Mensagem').item.json;\nlet moradores = [], sessoes = [];\ntry { const t = $('GET Morador').item.json.data ?? $('GET Morador').item.json; moradores = typeof t === 'string' ? JSON.parse(t) : (Array.isArray(t) ? t : []); } catch(e) { moradores = []; }\ntry { const t = $('GET Sessao').item.json.data  ?? $('GET Sessao').item.json;  sessoes   = typeof t === 'string' ? JSON.parse(t) : (Array.isArray(t) ? t : []); } catch(e) { sessoes   = []; }\nconst m = moradores[0] ?? null;\nconst s = sessoes[0]   ?? null;\nreturn [{ json: {\n  from:              p.from,\n  texto:             p.texto,\n  buttonId:          p.buttonId,\n  instance:          p.instance,\n  moradorEncontrado: m !== null,\n  moradorId:         m?.id          ?? null,\n  moradorNome:       m?.nome        ?? null,\n  moradorApto:       m?.apartamento ?? null,\n  moradorBloco:      m?.bloco       ?? null,\n  sessaoEtapa:       s?.etapa       ?? null,\n  sessaoDados:       s?.dados       ?? {}\n} }];"
+      },
+      "id": "9f262a1f-36e3-4ce3-b7b3-1656b916a290",
+      "name": "Consolidar",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        816,
+        384
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.moradorEncontrado }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "76da9f98-0632-4906-8f30-b91f42ccb96d",
+      "name": "Morador existe?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        384
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $json;\nconst etapa = d.sessaoEtapa, texto = d.texto ?? '', dados = d.sessaoDados ?? {};\nlet nd = { ...dados }, prox = null, resp = '', ok = false;\n\nif (!etapa) {\n  resp = 'Olá! 👋 Não encontrei seu cadastro.\\n\\nVamos fazer seu registro rapidinho! 😊\\n\\nQual é o seu *nome completo*?';\n  prox = 'aguardando_nome'; nd = {};\n} else if (etapa === 'aguardando_nome') {\n  if (texto.length < 3) { resp = '⚠️ Nome muito curto. Digite seu nome completo.'; prox = 'aguardando_nome'; }\n  else { nd.nome = texto; resp = `Ótimo, *${texto}*! 🏠\\n\\nQual é o número do seu *apartamento*?`; prox = 'aguardando_apto'; }\n} else if (etapa === 'aguardando_apto') {\n  if (texto.length < 1) { resp = '⚠️ Informe o número do apartamento.'; prox = 'aguardando_apto'; }\n  else { nd.apto = texto; resp = `Perfeito! 🏢\\n\\nQual é o *bloco*?\\n_(Ex: A, B — ou \"Único\" se não houver)_`; prox = 'aguardando_bloco'; }\n} else if (etapa === 'aguardando_bloco') {\n  nd.bloco = texto; ok = true;\n  resp = `✅ *Cadastro realizado!*\\n\\n👤 ${nd.nome}\\n🏠 Ap. ${nd.apto} - Bloco ${nd.bloco}\\n\\nBem-vindo(a)! 🎉\\n\\nEnvie qualquer mensagem para o menu.`;\n}\n\nreturn [{ json: { from: d.from, instance: d.instance, resp, prox, nd: JSON.stringify(nd), ok, nome: nd.nome ?? '', apto: nd.apto ?? '', bloco: nd.bloco ?? '' } }];"
+      },
+      "id": "81dde896-c1f6-4e19-9acd-1bb7a9b156ff",
+      "name": "Lógica Cadastro",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1264,
+        576
+      ]
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/sessoes?telefone=eq.{{ $json.from }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "e0b48092-7407-4de0-a97c-17dbd9533d9c",
+      "name": "DELETE Sessao",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1360,
+        704
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "c2",
+              "leftValue": "={{ $('Lógica Cadastro').item.json.ok }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "0e374be9-3210-4fb9-80e9-ecb1637e5ef9",
+      "name": "Cadastro OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1552,
+        720
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/sessoes",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ telefone: $('Lógica Cadastro').item.json.from, etapa: $('Lógica Cadastro').item.json.prox, dados: JSON.parse($('Lógica Cadastro').item.json.nd), updated_at: new Date().toISOString() }) }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "9982b412-5677-44ad-96d6-cb19bd12182f",
+      "name": "INSERT Sessao",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1920,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/moradores",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "nome",
+              "value": "={{ $('Lógica Cadastro').item.json.nome  }}"
+            },
+            {
+              "name": "telefone",
+              "value": "={{ $('Lógica Cadastro').item.json.from  }}"
+            },
+            {
+              "name": "apartamento",
+              "value": "={{ $('Lógica Cadastro').item.json.apto  }}"
+            },
+            {
+              "name": "bloco",
+              "value": "={{ $('Lógica Cadastro').item.json.bloco }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "a7555a42-aa92-4a19-9424-ebe1b2ac2021",
+      "name": "INSERT Morador",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1904,
+        752
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://evolution.automacaopme.com.br/message/sendText/{{ $('Lógica Cadastro').item.json.instance }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "F5E45E6A06AC-4857-807A-923D226DE8E1"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('Lógica Cadastro').item.json.from }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $('Lógica Cadastro').item.json.resp }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "003831ef-fb4c-4a11-b373-03b0ce5aab87",
+      "name": "Enviar Cadastro",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2144,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $json;\nconst t = (d.texto ?? '').trim();\nconst upper = t.toUpperCase();\nconst b = d.buttonId;\nconst etapa = d.sessaoEtapa ?? '';\n\nlet rota = 'menu';\nif (upper === 'CANCELAR') rota = 'cancelar';\nelse if (etapa.startsWith('visitante_')) rota = 'visitantes';\nelse if (etapa.startsWith('ocorrencia_')) rota = 'ocorrencias';\nelse if (b === 'btn_encomendas' || t === '1') rota = 'encomendas';\nelse if (b === 'btn_visitantes' || t === '2') rota = 'visitantes';\nelse if (b === 'btn_ocorrencias' || t === '3') rota = 'ocorrencias';\nelse if (upper.startsWith('RETIREI')) rota = 'retirada';\n\nreturn [{ json: { ...d, rota } }];"
+      },
+      "id": "3786a63a-e727-469a-a208-38f85a860f1f",
+      "name": "Roteador",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1264,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.rota }}",
+                    "rightValue": "encomendas",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "encomendas"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.rota }}",
+                    "rightValue": "visitantes",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "visitantes"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.rota }}",
+                    "rightValue": "ocorrencias",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "ocorrencias"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.rota }}",
+                    "rightValue": "retirada",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "retirada"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.rota }}",
+                    "rightValue": "menu",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "menu"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.rota }}",
+                    "rightValue": "cancelar",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "cancelar"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8e4c1453-ae65-451a-a99e-fed8478c90bb",
+      "name": "Switch Rota",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1408,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://evolution.automacaopme.com.br/message/sendText/{{ $json.instance }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "F5E45E6A06AC-4857-807A-923D226DE8E1"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $json.from }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ '🏢 *Portaria Digital*\\n\\nOlá, *' + $json.moradorNome + '*! 👋\\nAp. ' + $json.moradorApto + ' - Bloco ' + $json.moradorBloco + '\\n\\nComo posso ajudar?\\n\\n1️⃣  📦 Minhas Encomendas\\n2️⃣  🚗 Autorizar Visitante\\n3️⃣  ⚠️ Registrar Ocorrência\\n\\n_Digite o número da opção desejada_' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "98c06261-298e-47d1-95ac-58ac4cede21a",
+      "name": "Enviar Menu",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1680,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/encomendas?morador_id=eq.{{ $json.moradorId }}&status=eq.aguardando&select=id,descricao,data_recebimento&order=id.asc",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true,
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "08f885b1-774f-4fbb-9cb2-c586af6c9db5",
+      "name": "GET Encomendas",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1680,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.data ?? $input.first().json;\nlet lista = [];\ntry { lista = typeof raw === 'string' ? JSON.parse(raw) : (Array.isArray(raw) ? raw : []); } catch(e) { lista = []; }\nconst ctx = $('Roteador').item.json;\nconst from = ctx.from, instance = ctx.instance, nome = ctx.moradorNome;\nif (lista.length === 0) {\n  return [{ json: { from, instance, msg: `📭 *Sem encomendas*\\n\\nOlá, ${nome}! Não há encomendas aguardando retirada.\\n\\nAssim que chegar algo, avisamos! 😊` } }];\n}\nlet t = `📦 *Suas Encomendas* (${lista.length})\\n\\n`;\nlista.forEach((e, i) => {\n  const dt = e.data_recebimento ? new Date(e.data_recebimento).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '?';\n  t += `*${i+1}. ${e.descricao}*\\n   📅 ${dt}\\n\\n`;\n});\nt += `_Retire na portaria com documento. 🏢_\\n\\nPara confirmar retirada envie: *RETIREI 1*`;\nreturn [{ json: { from, instance, msg: t } }];"
+      },
+      "id": "c5167c68-2c4b-4ad7-abac-413848ac8196",
+      "name": "Formatar Encomendas",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1920,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://evolution.automacaopme.com.br/message/sendText/{{ $json.instance }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "F5E45E6A06AC-4857-807A-923D226DE8E1"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $json.from }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.msg  }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "eefe5d60-96f9-4628-8ecd-aa055201c21f",
+      "name": "Enviar Encomendas",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2144,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://evolution.automacaopme.com.br/message/sendText/{{ $json.instance }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "720C1736902E-49CB-9666-33787B6209FE"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $json.from }}"
+            },
+            {
+              "name": "text",
+              "value": "🚗 *Autorizar Visitante*\n\nEm breve disponível!\nPor enquanto ligue para a portaria. 😊"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fd5fa00b-0db3-4f16-894d-48fbbc2fea53",
+      "name": "Resp Visitantes",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1040,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://evolution.automacaopme.com.br/message/sendText/{{ $json.instance }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "720C1736902E-49CB-9666-33787B6209FE"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $json.from }}"
+            },
+            {
+              "name": "text",
+              "value": "⚠️ *Registrar Ocorrência*\n\nEm breve disponível!\nPor enquanto fale com o síndico. 😊"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "bd96fc56-e0c6-4f91-aac7-152d57aec208",
+      "name": "Resp Ocorrencias",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        816,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const ctx = $('Roteador').item.json;\nconst texto = (ctx.texto ?? '').trim();\nconst indice = parseInt(texto.toUpperCase().split(' ')[1] ?? '0', 10);\nif (isNaN(indice) || indice < 1) {\n  return [{ json: { from: ctx.from, instance: ctx.instance, moradorId: ctx.moradorId, moradorNome: ctx.moradorNome, indice: 0, erroFormato: true } }];\n}\nreturn [{ json: { from: ctx.from, instance: ctx.instance, moradorId: ctx.moradorId, moradorNome: ctx.moradorNome, indice, erroFormato: false } }];"
+      },
+      "id": "d71a7770-d03c-4cc8-a4cd-7f3728a7489b",
+      "name": "Parsear RETIREI",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1424,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "c3",
+              "leftValue": "={{ $json.erroFormato }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "9cf07f54-3567-48bd-b571-c760da894f91",
+      "name": "Formato válido?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1920,
+        624
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://evolution.automacaopme.com.br/message/sendText/{{ $json.instance }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "F5E45E6A06AC-4857-807A-923D226DE8E1"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $json.from }}"
+            },
+            {
+              "name": "text",
+              "value": "⚠️ Formato inválido.\nUse: *RETIREI 1*"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c4222736-0074-4c7e-8e55-6d56f34e2d3f",
+      "name": "Erro Formato",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2144,
+        752
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/encomendas?morador_id=eq.{{ $json.moradorId }}&status=eq.aguardando&select=id,descricao&order=id.asc&limit=1&offset={{ $json.indice - 1 }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true,
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "23cae236-eeeb-4012-961d-79feb27320dc",
+      "name": "GET Enc Retirada",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2144,
+        608
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.data ?? $input.first().json;\nlet lista = [];\ntry { lista = typeof raw === 'string' ? JSON.parse(raw) : (Array.isArray(raw) ? raw : []); } catch(e) { lista = []; }\nconst ctx = $('Parsear RETIREI').item.json;\nif (lista.length === 0) {\n  return [{ json: { from: ctx.from, instance: ctx.instance, moradorNome: ctx.moradorNome, encId: null, encDesc: null, naoAchada: true } }];\n}\nreturn [{ json: { from: ctx.from, instance: ctx.instance, moradorNome: ctx.moradorNome, encId: lista[0].id, encDesc: lista[0].descricao, naoAchada: false } }];"
+      },
+      "id": "9a268233-ba76-4148-9347-ba47e220e2f7",
+      "name": "Check Enc",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2368,
+        576
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "c4",
+              "leftValue": "={{ $json.naoAchada }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "ff49d586-faaf-46a2-b22f-8e6bfec26e50",
+      "name": "Enc encontrada?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2560,
+        624
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/encomendas?id=eq.{{ $json.encId }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "status",
+              "value": "retirado"
+            },
+            {
+              "name": "retirada_em",
+              "value": "={{ new Date().toISOString() }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "bfe42e76-6086-4e28-9b11-493b324a1cac",
+      "name": "PATCH Retirada",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2736,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://evolution.automacaopme.com.br/message/sendText/{{ $('Check Enc').item.json.instance }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "F5E45E6A06AC-4857-807A-923D226DE8E1"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('Check Enc').item.json.from }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ '✅ *Retirada confirmada!*\\n\\n📦 ' + $('Check Enc').item.json.encDesc + '\\n\\nObrigado, ' + $('Check Enc').item.json.moradorNome + '! 😊' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d3ab7835-202f-4687-8cd1-7ea2f481e664",
+      "name": "Confirmar Retirada",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2912,
+        576
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://evolution.automacaopme.com.br/message/sendText/{{ $json.instance }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "F5E45E6A06AC-4857-807A-923D226DE8E1"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $json.from }}"
+            },
+            {
+              "name": "text",
+              "value": "❌ Encomenda não encontrada.\n\nEnvie *1* para ver suas encomendas."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8c1fca0f-e223-46cd-8470-425cf2ee9055",
+      "name": "Enc Nao Encontrada",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2736,
+        688
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $json;\nconst texto = (d.texto ?? '').trim();\nconst etapa = d.sessaoEtapa;\nconst dados = d.sessaoDados ?? {};\n\nconst base = {\n  from: d.from,\n  instance: d.instance,\n  moradorId: d.moradorId,\n  moradorNome: d.moradorNome,\n  moradorApto: d.moradorApto,\n  moradorBloco: d.moradorBloco,\n};\n\nif (texto.toUpperCase() === 'CANCELAR') {\n  return [{ json: { ...base, ok: true, prox: null, nd: '{}', resp: 'Cadastro de visitante cancelado.\\n\\nDigite *menu* para voltar ao menu principal.' } }];\n}\n\nlet prox;\nlet nd = { ...dados };\nlet resp;\nlet ok = false;\n\nif (!etapa || !etapa.startsWith('visitante_')) {\n  prox = 'visitante_nome';\n  nd = {};\n  resp = '🚗 *Autorizar Visitante*\\n\\nQual é o nome completo do visitante?\\n\\n_Para cancelar, digite CANCELAR._';\n} else if (etapa === 'visitante_nome') {\n  if (texto.length < 3) {\n    prox = 'visitante_nome';\n    resp = 'Por favor, informe o nome completo do visitante.';\n  } else {\n    nd.nome = texto;\n    prox = 'visitante_documento';\n    resp = 'Informe o RG/CPF do visitante.\\n\\nSe não tiver, digite *PULAR*.';\n  }\n} else if (etapa === 'visitante_documento') {\n  nd.documento = /^pular$/i.test(texto) ? null : texto;\n  prox = 'visitante_data';\n  resp = 'Para qual dia e horário deseja autorizar?\\n\\nExemplo: *hoje 19h* ou *25/05 14h*.';\n} else if (etapa === 'visitante_data') {\n  if (texto.length < 3) {\n    prox = 'visitante_data';\n    resp = 'Informe o dia e horário da visita.';\n  } else {\n    nd.data_hora = texto;\n    prox = 'visitante_motivo';\n    resp = 'Qual é o motivo da visita?\\n\\nExemplo: entrega, familiar, prestador de serviço.';\n  }\n} else if (etapa === 'visitante_motivo') {\n  nd.motivo = texto || 'Não informado';\n  ok = true;\n  prox = null;\n  resp = '✅ *Visitante autorizado!*\\n\\n' +\n    '*Visitante:* ' + nd.nome + '\\n' +\n    '*Documento:* ' + (nd.documento ?? 'Não informado') + '\\n' +\n    '*Data/Hora:* ' + nd.data_hora + '\\n' +\n    '*Motivo:* ' + nd.motivo + '\\n\\n' +\n    'A portaria já pode conferir estes dados pelo atendimento.';\n} else {\n  prox = 'visitante_nome';\n  nd = {};\n  resp = 'Vamos começar de novo. Qual é o nome completo do visitante?';\n}\n\nreturn [{ json: { ...base, ok, prox, nd: JSON.stringify(nd), resp } }];"
+      },
+      "id": "97e84aa9-58b2-40d5-8088-b44dea4bf1fb",
+      "name": "Lógica Visitante",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/sessoes?telefone=eq.{{ $json.from }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "3d4bcc60-b034-4e5b-87e6-42036776696c",
+      "name": "DELETE Sessao Visitante",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1920,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "d020b32f-0e54-4697-85b6-49f44ed18ced",
+              "leftValue": "={{ $('Lógica Visitante').item.json.ok }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "dff4eeb0-9732-4cc0-821b-67f84005cd3e",
+      "name": "Visitante OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2144,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/sessoes",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ telefone: $('Lógica Visitante').item.json.from, etapa: $('Lógica Visitante').item.json.prox, dados: JSON.parse($('Lógica Visitante').item.json.nd), updated_at: new Date().toISOString() }) }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "db799648-525f-4bf8-a3cc-ffd16b0607bc",
+      "name": "INSERT Sessao Visitante",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2368,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://evolution.automacaopme.com.br/message/sendText/{{ $('Lógica Visitante').item.json.instance }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "F5E45E6A06AC-4857-807A-923D226DE8E1"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('Lógica Visitante').item.json.from }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $('Lógica Visitante').item.json.resp }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "44235e69-d920-43c9-8e4d-03009f33f96a",
+      "name": "Enviar Visitante",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2592,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $json;\nconst texto = (d.texto ?? '').trim();\nconst etapa = d.sessaoEtapa;\nconst dados = d.sessaoDados ?? {};\n\nconst base = {\n  from: d.from,\n  instance: d.instance,\n  moradorId: d.moradorId,\n  moradorNome: d.moradorNome,\n  moradorApto: d.moradorApto,\n  moradorBloco: d.moradorBloco,\n};\n\nif (texto.toUpperCase() === 'CANCELAR') {\n  return [{ json: { ...base, ok: true, prox: null, nd: '{}', resp: 'Registro de ocorrência cancelado.\\n\\nDigite *menu* para voltar ao menu principal.' } }];\n}\n\nlet prox;\nlet nd = { ...dados };\nlet resp;\nlet ok = false;\n\nif (!etapa || !etapa.startsWith('ocorrencia_')) {\n  prox = 'ocorrencia_tipo';\n  nd = {};\n  resp = '⚠️ *Registrar Ocorrência*\\n\\nQual é o tipo da ocorrência?\\n\\nExemplos: barulho, vazamento, segurança, manutenção.\\n\\n_Para cancelar, digite CANCELAR._';\n} else if (etapa === 'ocorrencia_tipo') {\n  if (texto.length < 3) {\n    prox = 'ocorrencia_tipo';\n    resp = 'Informe o tipo da ocorrência.';\n  } else {\n    nd.tipo = texto;\n    prox = 'ocorrencia_local';\n    resp = 'Onde ocorreu?\\n\\nExemplo: garagem, bloco A, hall, apartamento 101.';\n  }\n} else if (etapa === 'ocorrencia_local') {\n  if (texto.length < 2) {\n    prox = 'ocorrencia_local';\n    resp = 'Informe o local da ocorrência.';\n  } else {\n    nd.local = texto;\n    prox = 'ocorrencia_descricao';\n    resp = 'Descreva a ocorrência com os detalhes principais.';\n  }\n} else if (etapa === 'ocorrencia_descricao') {\n  if (texto.length < 5) {\n    prox = 'ocorrencia_descricao';\n    resp = 'Descreva a ocorrência com um pouco mais de detalhe.';\n  } else {\n    nd.descricao = texto;\n    prox = 'ocorrencia_urgencia';\n    resp = 'Qual é a urgência?\\n\\nResponda: *baixa*, *média* ou *alta*.';\n  }\n} else if (etapa === 'ocorrencia_urgencia') {\n  const normalizada = texto.toLowerCase();\n  nd.urgencia = ['baixa', 'media', 'média', 'alta'].includes(normalizada) ? texto : 'Não informada';\n  ok = true;\n  prox = null;\n  resp = '✅ *Ocorrência registrada!*\\n\\n' +\n    '*Tipo:* ' + nd.tipo + '\\n' +\n    '*Local:* ' + nd.local + '\\n' +\n    '*Urgência:* ' + nd.urgencia + '\\n' +\n    '*Descrição:* ' + nd.descricao + '\\n\\n' +\n    'Protocolo: OC-' + Date.now().toString().slice(-6);\n} else {\n  prox = 'ocorrencia_tipo';\n  nd = {};\n  resp = 'Vamos começar de novo. Qual é o tipo da ocorrência?';\n}\n\nreturn [{ json: { ...base, ok, prox, nd: JSON.stringify(nd), resp } }];"
+      },
+      "id": "d25da7ea-c603-4ec2-811f-06a8eedf0525",
+      "name": "Lógica Ocorrencia",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1696,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/sessoes?telefone=eq.{{ $json.from }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "dfc4db9c-b988-473c-90cf-b503c345e9be",
+      "name": "DELETE Sessao Ocorrencia",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1920,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "ff0345d5-b0f7-4eb5-9f98-be54511f0b3b",
+              "leftValue": "={{ $('Lógica Ocorrencia').item.json.ok }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "5b26818e-840c-47b8-bfa7-0336b7a39389",
+      "name": "Ocorrencia OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2144,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/sessoes",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ telefone: $('Lógica Ocorrencia').item.json.from, etapa: $('Lógica Ocorrencia').item.json.prox, dados: JSON.parse($('Lógica Ocorrencia').item.json.nd), updated_at: new Date().toISOString() }) }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "20c1b107-1760-4e98-b106-8dc99795db12",
+      "name": "INSERT Sessao Ocorrencia",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2368,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://evolution.automacaopme.com.br/message/sendText/{{ $('Lógica Ocorrencia').item.json.instance }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "F5E45E6A06AC-4857-807A-923D226DE8E1"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('Lógica Ocorrencia').item.json.from }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $('Lógica Ocorrencia').item.json.resp }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "bfd4a3a2-3487-49cd-965f-e82fb9c1b8f9",
+      "name": "Enviar Ocorrencia",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2560,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { ...$json, ok: true, prox: null, nd: '{}', resp: 'Fluxo cancelado.\\n\\nDigite *menu* para ver as opções novamente.' } }];"
+      },
+      "id": "bae6c2ba-5f47-4ba4-92ad-0798dd5b10df",
+      "name": "Cancelar Fluxo",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1696,
+        576
+      ]
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/sessoes?telefone=eq.{{ $json.from }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "a6d42212-d8e9-43b4-8a80-09a1a61c6a97",
+      "name": "DELETE Sessao Cancelar",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1904,
+        896
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://evolution.automacaopme.com.br/message/sendText/{{ $('Cancelar Fluxo').item.json.instance }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "F5E45E6A06AC-4857-807A-923D226DE8E1"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('Cancelar Fluxo').item.json.from }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $('Cancelar Fluxo').item.json.resp }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ff4b0563-0c81-4247-b685-6ea5fe617edc",
+      "name": "Enviar Cancelamento",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2144,
+        896
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/visitantes",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ (function(){ const nd = JSON.parse($('Lógica Visitante').item.json.nd); return JSON.stringify({ nome: nd.nome, morador_id: $('Lógica Visitante').item.json.moradorId, documento: nd.documento || null, entrada: new Date().toISOString() }); })() }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "69606f5d-aadf-45e5-976b-f9f343a42e5e",
+      "name": "INSERT Visitante",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2368,
+        288
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/atendimentos",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ (function(){ const nd = JSON.parse($('Lógica Ocorrencia').item.json.nd); return JSON.stringify({ telefone: $('Lógica Ocorrencia').item.json.from, mensagem: nd.tipo + ' - ' + nd.local + ': ' + nd.descricao + ' (urgência: ' + nd.urgencia + ')', status: 'aberta' }); })() }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "62428014-3547-4e59-a57b-343a1420a431",
+      "name": "INSERT Atendimento",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2368,
+        720
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Respond 200",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Parsear Mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parsear Mensagem": {
+      "main": [
+        [
+          {
+            "node": "GET Morador",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Morador": {
+      "main": [
+        [
+          {
+            "node": "GET Sessao",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Sessao": {
+      "main": [
+        [
+          {
+            "node": "Consolidar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consolidar": {
+      "main": [
+        [
+          {
+            "node": "Morador existe?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Morador existe?": {
+      "main": [
+        [
+          {
+            "node": "Roteador",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Lógica Cadastro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lógica Cadastro": {
+      "main": [
+        [
+          {
+            "node": "DELETE Sessao",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DELETE Sessao": {
+      "main": [
+        [
+          {
+            "node": "Cadastro OK?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cadastro OK?": {
+      "main": [
+        [
+          {
+            "node": "INSERT Sessao",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "INSERT Morador",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INSERT Sessao": {
+      "main": [
+        [
+          {
+            "node": "Enviar Cadastro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INSERT Morador": {
+      "main": [
+        [
+          {
+            "node": "Enviar Cadastro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Roteador": {
+      "main": [
+        [
+          {
+            "node": "Switch Rota",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch Rota": {
+      "main": [
+        [
+          {
+            "node": "GET Encomendas",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Lógica Visitante",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Lógica Ocorrencia",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Parsear RETIREI",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar Menu",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Cancelar Fluxo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Encomendas": {
+      "main": [
+        [
+          {
+            "node": "Formatar Encomendas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatar Encomendas": {
+      "main": [
+        [
+          {
+            "node": "Enviar Encomendas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parsear RETIREI": {
+      "main": [
+        [
+          {
+            "node": "Formato válido?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formato válido?": {
+      "main": [
+        [
+          {
+            "node": "GET Enc Retirada",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Erro Formato",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Enc Retirada": {
+      "main": [
+        [
+          {
+            "node": "Check Enc",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Enc": {
+      "main": [
+        [
+          {
+            "node": "Enc encontrada?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enc encontrada?": {
+      "main": [
+        [
+          {
+            "node": "PATCH Retirada",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enc Nao Encontrada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PATCH Retirada": {
+      "main": [
+        [
+          {
+            "node": "Confirmar Retirada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lógica Visitante": {
+      "main": [
+        [
+          {
+            "node": "DELETE Sessao Visitante",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DELETE Sessao Visitante": {
+      "main": [
+        [
+          {
+            "node": "Visitante OK?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Visitante OK?": {
+      "main": [
+        [
+          {
+            "node": "INSERT Sessao Visitante",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "INSERT Visitante",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INSERT Sessao Visitante": {
+      "main": [
+        [
+          {
+            "node": "Enviar Visitante",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lógica Ocorrencia": {
+      "main": [
+        [
+          {
+            "node": "DELETE Sessao Ocorrencia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DELETE Sessao Ocorrencia": {
+      "main": [
+        [
+          {
+            "node": "Ocorrencia OK?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ocorrencia OK?": {
+      "main": [
+        [
+          {
+            "node": "INSERT Sessao Ocorrencia",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "INSERT Atendimento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INSERT Sessao Ocorrencia": {
+      "main": [
+        [
+          {
+            "node": "Enviar Ocorrencia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cancelar Fluxo": {
+      "main": [
+        [
+          {
+            "node": "DELETE Sessao Cancelar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DELETE Sessao Cancelar": {
+      "main": [
+        [
+          {
+            "node": "Enviar Cancelamento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INSERT Visitante": {
+      "main": [
+        [
+          {
+            "node": "Enviar Visitante",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INSERT Atendimento": {
+      "main": [
+        [
+          {
+            "node": "Enviar Ocorrencia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "4f9781a2-c1d8-42ab-918a-14c02ef46ebb",
+  "meta": {
+    "instanceId": "dae3f5f4275d86df3c5e049fcd5237b1473d43f01f25c1b5bcb6457151767513"
+  },
+  "nodeGroups": [],
+  "id": "hPgmEzfyA1rxfT7n",
+  "tags": []
+}
