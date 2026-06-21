@@ -1731,11 +1731,16 @@
 
         <div class="form-grid">
           <label class="form-field">
-            <span class="form-label">Morador / Apartamento</span>
-            <input type="text" id="package-input-resident" placeholder="Ex: Apto 304 - Maria Souza">
+            <span class="form-label">Apartamento <span style="color:var(--status-danger-fg)">*</span></span>
+            <input type="text" id="package-input-apto" placeholder="Ex: 304">
           </label>
 
           <label class="form-field">
+            <span class="form-label">Bloco</span>
+            <input type="text" id="package-input-bloco" placeholder="Ex: A (opcional)">
+          </label>
+
+          <label class="form-field form-field-full">
             <span class="form-label">Descrição</span>
             <input type="text" id="package-input-description" placeholder="Ex: Caixa média, Mercado Livre">
           </label>
@@ -2442,7 +2447,8 @@
 
     function create(data){
       var description = data.description || 'Encomenda';
-      var residentText = data.resident || '';
+      var apto  = (data.apto  || '').trim();
+      var bloco = (data.bloco || '').trim();
 
       function savePackage(moradorId, moradorNome, moradorPhone){
         var payload = {
@@ -2455,7 +2461,7 @@
           var row = Array.isArray(rows) ? rows[0] : rows;
           var pkg = {
             id: row ? row.id : ('tmp-' + Date.now()),
-            resident: moradorNome || residentText || 'Não informado',
+            resident: moradorNome || ('Ap. ' + apto + (bloco ? ' Bl.' + bloco : '')),
             moradorNome: moradorNome || '',
             moradorPhone: moradorPhone || '',
             description: description,
@@ -2470,19 +2476,23 @@
         });
       }
 
-      if(!residentText){ savePackage(null, '', ''); return; }
+      if(!apto){ savePackage(null, '', ''); return; }
 
-      /* busca morador por nome ou apartamento */
-      supaApi('GET', '/moradores?or=(nome.ilike.*' + encodeURIComponent(residentText) + '*,apartamento.ilike.*' + encodeURIComponent(residentText) + '*)&select=id,nome,telefone,apartamento,bloco&limit=1').then(function(rows){
+      /* busca morador por apartamento (e bloco se informado) */
+      var query = '/moradores?apartamento=eq.' + encodeURIComponent(apto);
+      if(bloco) query += '&bloco=eq.' + encodeURIComponent(bloco);
+      query += '&select=id,nome,telefone,apartamento,bloco&limit=1';
+
+      supaApi('GET', query).then(function(rows){
         if(rows && rows.length){
           var m = rows[0];
-          var label = m.nome + (m.apartamento ? ' · Ap. ' + m.apartamento : '') + (m.bloco ? ' Bl.' + m.bloco : '');
+          var label = m.nome + ' · Ap. ' + m.apartamento + (m.bloco ? ' Bl.' + m.bloco : '');
           savePackage(m.id, label, m.telefone);
         } else {
-          savePackage(null, residentText, '');
+          showToast('Apto ' + apto + ' não encontrado. Verifique o cadastro.', 'error');
         }
       }).catch(function(){
-        savePackage(null, residentText, '');
+        savePackage(null, 'Ap. ' + apto, '');
       });
     }
 
@@ -2517,21 +2527,20 @@
     });
 
     btnSave.addEventListener('click', function(){
-      var resident = document.getElementById('package-input-resident').value.trim();
-      var description = document.getElementById('package-input-description').value.trim();
-
-      if(!resident){
-        document.getElementById('package-input-resident').focus();
-        return;
-      }
-
-      PackageApp.create({ resident: resident, description: description });
+      var apto = document.getElementById('package-input-apto').value.trim();
+      if(!apto){ showToast('Informe o apartamento', 'error'); document.getElementById('package-input-apto').focus(); return; }
+      PackageApp.create({
+        apto: apto,
+        bloco: document.getElementById('package-input-bloco').value.trim(),
+        description: document.getElementById('package-input-description').value.trim()
+      });
       form.hidden = true;
       clearForm();
     });
 
     function clearForm(){
-      document.getElementById('package-input-resident').value = '';
+      document.getElementById('package-input-apto').value = '';
+      document.getElementById('package-input-bloco').value = '';
       document.getElementById('package-input-description').value = '';
     }
   })();
