@@ -831,6 +831,37 @@
   .comm-time{ font-size: 11px; color: var(--text-tertiary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   /* ============================================
+     FILTER BAR (pagina reservas)
+     ============================================ */
+  .filter-bar{
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .filter-btn{
+    font-size: 12px;
+    font-weight: 600;
+    padding: 0.4rem 0.875rem;
+    border-radius: 999px;
+    border: 1px solid var(--border-default);
+    background: var(--bg-surface);
+    color: var(--text-secondary);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+  }
+  .filter-btn.active{
+    background: var(--status-info-bg);
+    border-color: var(--brand-primary);
+    color: var(--brand-primary);
+  }
+  .filter-btn:hover:not(.active){
+    background: var(--bg-surface-hover);
+    color: var(--text-primary);
+  }
+
+  /* ============================================
      TOOLBAR DE PAGINA (ex: Ocorrencias)
      ============================================ */
   .page-toolbar{
@@ -1308,6 +1339,7 @@
     <a href="#" class="nav-item" data-page="encomendas"><svg class="icon" aria-hidden="true"><use href="#icon-package"/></svg> Encomendas <span class="badge" id="badge-encomendas-sidebar">3</span></a>
     <a href="#" class="nav-item" data-page="visitantes"><svg class="icon" aria-hidden="true"><use href="#icon-id-badge-2"/></svg> Visitantes</a>
     <a href="#" class="nav-item" data-page="moradores"><svg class="icon" aria-hidden="true"><use href="#icon-users"/></svg> Moradores</a>
+    <a href="#" class="nav-item" data-page="reservas"><svg class="icon" aria-hidden="true"><use href="#icon-calendar-event"/></svg> Reservas</a>
 
     <div class="nav-section-label">SISTEMA</div>
     <a href="#" class="nav-item"><svg class="icon" aria-hidden="true"><use href="#icon-settings"/></svg> Configurações</a>
@@ -1493,44 +1525,12 @@
         <div class="section">
           <div class="section-head">
             <div class="section-title"><svg class="icon" aria-hidden="true"><use href="#icon-calendar-event"/></svg> Próximas reservas</div>
-            <a href="#" class="section-link">Ver agenda <svg class="icon" aria-hidden="true"><use href="#icon-chevron-right"/></svg></a>
+            <a href="#" class="section-link" data-page-link="reservas">Ver agenda <svg class="icon" aria-hidden="true"><use href="#icon-chevron-right"/></svg></a>
           </div>
 
-          <div class="reservation-list">
-            <div class="reservation-item">
-              <div class="reservation-date">
-                <span class="reservation-day">21</span>
-                <span class="reservation-month">jun</span>
-              </div>
-              <div class="reservation-info">
-                <div class="reservation-title">Salão de festas</div>
-                <div class="reservation-meta">19h-23h · Apto 304</div>
-              </div>
-              <span class="badge badge-warning">Pendente</span>
-            </div>
-
-            <div class="reservation-item">
-              <div class="reservation-date">
-                <span class="reservation-day">22</span>
-                <span class="reservation-month">jun</span>
-              </div>
-              <div class="reservation-info">
-                <div class="reservation-title">Churrasqueira 2</div>
-                <div class="reservation-meta">12h-17h · Apto 108</div>
-              </div>
-              <span class="badge badge-success">Confirmada</span>
-            </div>
-
-            <div class="reservation-item">
-              <div class="reservation-date">
-                <span class="reservation-day">28</span>
-                <span class="reservation-month">jun</span>
-              </div>
-              <div class="reservation-info">
-                <div class="reservation-title">Quadra esportiva</div>
-                <div class="reservation-meta">9h-11h · Apto 215</div>
-              </div>
-              <span class="badge badge-success">Confirmada</span>
+          <div class="reservation-list" id="dash-reservas-list">
+            <div class="empty-state" style="padding:1rem 0;">
+              <div class="empty-state-sub">Carregando...</div>
             </div>
           </div>
         </div>
@@ -1539,27 +1539,10 @@
         <div class="section">
           <div class="section-head">
             <div class="section-title"><svg class="icon" aria-hidden="true"><use href="#icon-speakerphone"/></svg> Comunicados</div>
-            <button class="btn-new-comm"><svg class="icon" aria-hidden="true"><use href="#icon-plus"/></svg> Novo</button>
+            <button class="btn-new-comm" id="btn-new-comunicado"><svg class="icon" aria-hidden="true"><use href="#icon-plus"/></svg> Novo</button>
           </div>
-
-          <div class="comm-list">
-            <div class="comm-item">
-              <div class="comm-title">Manutenção do elevador social</div>
-              <div class="comm-desc">Elevador ficará indisponível das 14h às 17h para manutenção preventiva.</div>
-              <div class="comm-meta">
-                <span class="badge badge-info">Enviado</span>
-                <span class="comm-time">Hoje, 09:00 · 128 destinatários</span>
-              </div>
-            </div>
-
-            <div class="comm-item">
-              <div class="comm-title">Assembleia geral ordinária</div>
-              <div class="comm-desc">Convocação para assembleia no dia 25/06 às 19h no salão de festas.</div>
-              <div class="comm-meta">
-                <span class="badge badge-neutral">Agendado</span>
-                <span class="comm-time">Envio em 18/06, 08:00</span>
-              </div>
-            </div>
+          <div class="comm-list" id="dash-comunicados-list">
+            <div style="padding:0.75rem 0;color:var(--text-tertiary);font-size:13px;">Carregando...</div>
           </div>
         </div>
 
@@ -1621,6 +1604,65 @@
     </div>
 
     </div><!-- /page-dashboard -->
+
+    <!-- ============ PAGINA: RESERVAS ============ -->
+    <div class="page" id="page-reservas">
+
+      <div class="page-toolbar">
+        <div class="filter-bar">
+          <button class="filter-btn active" data-res-filter="todas">Todas</button>
+          <button class="filter-btn" data-res-filter="pendente">Pendentes</button>
+          <button class="filter-btn" data-res-filter="confirmada">Confirmadas</button>
+          <button class="filter-btn" data-res-filter="cancelada">Canceladas</button>
+        </div>
+        <button class="btn-primary" id="btn-new-reserva">
+          <svg class="icon" aria-hidden="true"><use href="#icon-plus"/></svg> Nova reserva
+        </button>
+      </div>
+
+      <!-- FORMULARIO NOVA RESERVA (oculto por padrao) -->
+      <div class="occ-form-card" id="reserva-form" hidden>
+        <div class="section-title" style="margin-bottom:1rem;">Nova reserva</div>
+        <div class="form-grid">
+          <label class="form-field">
+            <span class="form-label">Apartamento <span style="color:var(--status-danger-fg)">*</span></span>
+            <input type="text" id="res-input-apto" placeholder="Ex: 304" autocomplete="off">
+          </label>
+          <label class="form-field">
+            <span class="form-label">Bloco <span style="color:var(--status-danger-fg)">*</span></span>
+            <input type="text" id="res-input-bloco" placeholder="Ex: A">
+          </label>
+          <label class="form-field form-field-full" id="res-morador-preview" style="display:none;">
+            <span class="form-label">Morador</span>
+            <div id="res-morador-nome" style="padding:0.5rem;background:var(--status-success-bg);border-radius:var(--radius-sm);color:var(--status-success-fg);font-weight:600;"></div>
+          </label>
+          <label class="form-field">
+            <span class="form-label">Área <span style="color:var(--status-danger-fg)">*</span></span>
+            <select id="res-input-area">
+              <option value="Salão de Festas">Salão de Festas</option>
+              <option value="Churrasqueira">Churrasqueira</option>
+              <option value="Quadra Esportiva">Quadra Esportiva</option>
+            </select>
+          </label>
+          <label class="form-field">
+            <span class="form-label">Data <span style="color:var(--status-danger-fg)">*</span></span>
+            <input type="date" id="res-input-data">
+          </label>
+          <label class="form-field">
+            <span class="form-label">Horário <span style="color:var(--status-danger-fg)">*</span></span>
+            <input type="text" id="res-input-horario" placeholder="Ex: 14h às 18h">
+          </label>
+        </div>
+        <div class="form-actions">
+          <button class="btn-secondary" id="btn-cancel-reserva">Cancelar</button>
+          <button class="btn-primary" id="btn-save-reserva">Salvar reserva</button>
+        </div>
+      </div>
+
+      <!-- LISTA DE RESERVAS -->
+      <div id="reserva-list-container" style="display:flex;flex-direction:column;gap:0.75rem;margin-top:1rem;"></div>
+
+    </div><!-- /page-reservas -->
 
     <!-- ============ PAGINA: REQUISICOES (KANBAN) ============ -->
     <div class="page" id="page-requisicoes">
@@ -1972,7 +2014,33 @@
   <a href="#" class="bottom-nav-item" data-page="ocorrencias"><svg class="icon" aria-hidden="true"><use href="#icon-alert-triangle"/></svg> Ocorrências <span class="badge" id="badge-ocorrencias-bottom">2</span></a>
   <a href="#" class="bottom-nav-item" data-page="encomendas"><svg class="icon" aria-hidden="true"><use href="#icon-package"/></svg> Encomendas <span class="badge" id="badge-encomendas-bottom">3</span></a>
   <a href="#" class="bottom-nav-item" data-page="moradores"><svg class="icon" aria-hidden="true"><use href="#icon-users"/></svg> Moradores</a>
+  <a href="#" class="bottom-nav-item" data-page="reservas"><svg class="icon" aria-hidden="true"><use href="#icon-calendar-event"/></svg> Reservas</a>
 </nav>
+
+<!-- MODAL NOVO COMUNICADO -->
+<div id="comunicado-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;padding:1rem;">
+  <div class="occ-form-card" style="max-width:520px;width:100%;margin:0;">
+    <div class="section-title" style="margin-bottom:1rem;">Novo comunicado</div>
+    <div class="form-grid">
+      <label class="form-field form-field-full">
+        <span class="form-label">Título <span style="color:var(--status-danger-fg)">*</span></span>
+        <input type="text" id="comm-input-titulo" placeholder="Ex: Manutenção do elevador">
+      </label>
+      <label class="form-field form-field-full">
+        <span class="form-label">Mensagem <span style="color:var(--status-danger-fg)">*</span></span>
+        <textarea id="comm-input-mensagem" rows="4" placeholder="Texto completo do comunicado..."></textarea>
+      </label>
+    </div>
+    <div class="form-actions" style="justify-content:space-between;flex-wrap:wrap;gap:0.5rem;">
+      <button class="btn-secondary" id="btn-cancel-comunicado">Cancelar</button>
+      <div style="display:flex;gap:0.5rem;">
+        <button class="btn-secondary" id="btn-save-rascunho">Salvar rascunho</button>
+        <button class="btn-primary" id="btn-send-comunicado">📢 Enviar a todos</button>
+      </div>
+    </div>
+    <div id="comm-send-progress" style="display:none;margin-top:0.75rem;font-size:12px;color:var(--text-secondary);"></div>
+  </div>
+</div>
 
 <script>
   (function(){
@@ -2678,7 +2746,8 @@
       ocorrencias: ['Ocorrências', 'Registro e acompanhamento de ocorrências do condomínio'],
       encomendas: ['Encomendas', 'Gestão de recebimento e retirada'],
       visitantes: ['Visitantes', 'Controle de acesso e registro de entradas'],
-      moradores: ['Moradores', 'Cadastro e gestão de moradores do condomínio']
+      moradores: ['Moradores', 'Cadastro e gestão de moradores do condomínio'],
+      reservas: ['Reservas', 'Gestão de reservas de áreas comuns']
     };
 
     var loaded = {};
@@ -2700,6 +2769,8 @@
       if(pageId === 'encomendas') PackageApp.loadFromSupabase();
       if(pageId === 'visitantes') VisitorApp.loadFromSupabase();
       if(pageId === 'moradores') MoradorApp.loadFromSupabase();
+      if(pageId === 'reservas') ReservaApp.loadFromSupabase();
+      if(pageId === 'dashboard'){ ReservaApp.loadFromSupabase(); ComunicadoApp.loadFromSupabase(); }
     }
 
     navItems.forEach(function(item){
@@ -3086,6 +3157,311 @@
     }
   })();
 
+  /* ================================================
+     RESERVAS APP
+     ================================================ */
+  var ReservaApp = (function(){
+    var reservas = [];
+    var currentFilter = 'todas';
+    var foundMoradorRes = null;
+
+    var AREAS_EMOJI = { 'Salão de Festas': '🎉', 'Churrasqueira': '🔥', 'Quadra Esportiva': '🏃' };
+
+    function statusBadge(s){
+      if(s === 'pendente') return '<span class="badge badge-warning">Pendente</span>';
+      if(s === 'confirmada') return '<span class="badge badge-success">Confirmada</span>';
+      if(s === 'cancelada') return '<span class="badge badge-neutral">Cancelada</span>';
+      return '<span class="badge">' + s + '</span>';
+    }
+
+    function fmtDataBr(iso){
+      if(!iso) return '';
+      var parts = iso.split('-');
+      if(parts.length < 3) return iso;
+      return parts[2] + '/' + parts[1] + '/' + parts[0];
+    }
+
+    function renderCard(r){
+      var m = r.moradores || {};
+      var moradorStr = m.nome ? (m.nome + ' · Ap. ' + (m.apartamento||'?') + (m.bloco ? ' · Bl. ' + m.bloco : '')) : 'Morador não vinculado';
+      var emoji = AREAS_EMOJI[r.area] || '📅';
+      var actionBtns = '';
+      if(r.status === 'pendente'){
+        actionBtns = '<div style="display:flex;gap:0.5rem;margin-top:0.75rem;">' +
+          '<button class="btn-primary" style="flex:1;font-size:12px;padding:0.4rem 0.75rem;" data-confirm-reserva="' + r.id + '">✓ Confirmar</button>' +
+          '<button class="btn-secondary" style="flex:1;font-size:12px;padding:0.4rem 0.75rem;" data-cancel-reserva="' + r.id + '">✕ Recusar</button>' +
+          '</div>';
+      }
+      return '<div class="occ-form-card" style="position:relative;padding:1rem;">' +
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:0.5rem;">' +
+          '<div>' +
+            '<div style="font-size:14px;font-weight:700;">' + emoji + ' ' + r.area + '</div>' +
+            '<div style="font-size:12px;color:var(--text-secondary);margin-top:2px;">' + moradorStr + '</div>' +
+            '<div style="font-size:12px;color:var(--text-secondary);">📅 ' + fmtDataBr(r.data) + (r.horario ? ' · 🕐 ' + r.horario : '') + '</div>' +
+          '</div>' +
+          statusBadge(r.status) +
+        '</div>' +
+        actionBtns +
+      '</div>';
+    }
+
+    function renderDashWidget(){
+      var el = document.getElementById('dash-reservas-list');
+      if(!el) return;
+      var upcoming = reservas.filter(function(r){ return r.status !== 'cancelada'; })
+        .sort(function(a,b){ return a.data < b.data ? -1 : 1; }).slice(0, 5);
+      if(!upcoming.length){
+        el.innerHTML = '<div style="padding:0.75rem 0;color:var(--text-tertiary);font-size:13px;">Nenhuma reserva próxima</div>';
+        return;
+      }
+      el.innerHTML = upcoming.map(function(r){
+        var parts = (r.data || '').split('-');
+        var day = parts[2] || '--';
+        var months = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+        var mon = parts[1] ? months[parseInt(parts[1])-1] : '';
+        var m = r.moradores || {};
+        var aptoStr = m.apartamento ? 'Ap. ' + m.apartamento : '';
+        return '<div class="reservation-item">' +
+          '<div class="reservation-date"><span class="reservation-day">' + day + '</span><span class="reservation-month">' + mon + '</span></div>' +
+          '<div class="reservation-info">' +
+            '<div class="reservation-title">' + r.area + '</div>' +
+            '<div class="reservation-meta">' + (r.horario || '') + (aptoStr ? ' · ' + aptoStr : '') + '</div>' +
+          '</div>' +
+          statusBadge(r.status) +
+        '</div>';
+      }).join('');
+    }
+
+    function renderList(){
+      var el = document.getElementById('reserva-list-container');
+      if(!el) return;
+      var filtered = currentFilter === 'todas' ? reservas : reservas.filter(function(r){ return r.status === currentFilter; });
+      if(!filtered.length){
+        el.innerHTML = '<div class="empty-state"><div class="empty-state-title">Nenhuma reserva</div></div>';
+        return;
+      }
+      el.innerHTML = filtered.map(renderCard).join('');
+    }
+
+    function updateStatus(id, status){
+      supaApi('PATCH', '/reservas?id=eq.' + id, { status: status }).then(function(){
+        reservas = reservas.map(function(r){ return r.id == id ? Object.assign({}, r, { status: status }) : r; });
+        renderList(); renderDashWidget();
+        showToast(status === 'confirmada' ? 'Reserva confirmada!' : 'Reserva recusada');
+      });
+    }
+
+    function loadFromSupabase(){
+      supaApi('GET', '/reservas?select=*,moradores(nome,apartamento,bloco)&order=data.asc')
+        .then(function(rows){ reservas = rows || []; renderList(); renderDashWidget(); })
+        .catch(function(){ renderDashWidget(); });
+    }
+
+    /* form morador lookup */
+    function setupForm(){
+      var aptoIn = document.getElementById('res-input-apto');
+      var blocoIn = document.getElementById('res-input-bloco');
+      var preview = document.getElementById('res-morador-preview');
+      var previewNome = document.getElementById('res-morador-nome');
+      var btnSave = document.getElementById('btn-save-reserva');
+      var btnCancel = document.getElementById('btn-cancel-reserva');
+      var btnNew = document.getElementById('btn-new-reserva');
+      var form = document.getElementById('reserva-form');
+
+      if(btnNew) btnNew.addEventListener('click', function(){
+        form.hidden = false; foundMoradorRes = null;
+        if(preview) preview.style.display = 'none';
+      });
+      if(btnCancel) btnCancel.addEventListener('click', function(){ form.hidden = true; });
+
+      function doLookup(){
+        var apto = aptoIn ? aptoIn.value.trim() : '';
+        var bloco = blocoIn ? blocoIn.value.trim() : '';
+        if(!apto || !bloco) return;
+        supaApi('GET', '/moradores?apartamento=eq.' + encodeURIComponent(apto) + '&bloco=eq.' + encodeURIComponent(bloco) + '&limit=1')
+          .then(function(rows){
+            if(rows && rows.length){
+              foundMoradorRes = rows[0];
+              if(previewNome) previewNome.textContent = rows[0].nome;
+              if(preview) preview.style.display = '';
+            } else {
+              foundMoradorRes = null;
+              if(preview) preview.style.display = 'none';
+            }
+          });
+      }
+      if(aptoIn) aptoIn.addEventListener('input', doLookup);
+      if(blocoIn) blocoIn.addEventListener('input', doLookup);
+
+      if(btnSave) btnSave.addEventListener('click', function(){
+        if(!foundMoradorRes){ showToast('Morador não encontrado', 'error'); return; }
+        var area = document.getElementById('res-input-area') ? document.getElementById('res-input-area').value : '';
+        var data = document.getElementById('res-input-data') ? document.getElementById('res-input-data').value : '';
+        var horario = document.getElementById('res-input-horario') ? document.getElementById('res-input-horario').value.trim() : '';
+        if(!area || !data){ showToast('Preencha todos os campos', 'error'); return; }
+        supaApi('POST', '/reservas', { morador_id: foundMoradorRes.id, area: area, data: data, horario: horario, status: 'pendente' })
+          .then(function(){
+            form.hidden = true; foundMoradorRes = null;
+            loadFromSupabase(); showToast('Reserva registrada!');
+          });
+      });
+    }
+
+    function init(){
+      setupForm();
+      document.querySelectorAll('[data-res-filter]').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          currentFilter = btn.getAttribute('data-res-filter');
+          document.querySelectorAll('[data-res-filter]').forEach(function(b){ b.classList.toggle('active', b === btn); });
+          renderList();
+        });
+      });
+      document.addEventListener('click', function(e){
+        var cf = e.target.closest('[data-confirm-reserva]');
+        if(cf){ updateStatus(cf.getAttribute('data-confirm-reserva'), 'confirmada'); return; }
+        var cr = e.target.closest('[data-cancel-reserva]');
+        if(cr){ updateStatus(cr.getAttribute('data-cancel-reserva'), 'cancelada'); }
+      });
+    }
+
+    return { init: init, loadFromSupabase: loadFromSupabase };
+  })();
+
+  /* ================================================
+     COMUNICADOS APP
+     ================================================ */
+  var ComunicadoApp = (function(){
+    var comunicados = [];
+
+    var N8N_NOTIF_URL = 'https://n8n.automacaopme.com.br/webhook/notificar-encomenda';
+
+    function sendWhatsAppMsg(phone, text){
+      var digits = phone.replace(/\D/g,'');
+      if(digits.length <= 11) digits = '55' + digits;
+      var url = N8N_NOTIF_URL + '?number=' + encodeURIComponent(digits) + '&text=' + encodeURIComponent(text);
+      return fetch(url);
+    }
+
+    function fmtDate(iso){
+      if(!iso) return '';
+      var d = new Date(iso);
+      return d.toLocaleDateString('pt-BR') + ', ' + d.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
+    }
+
+    function renderWidget(){
+      var el = document.getElementById('dash-comunicados-list');
+      if(!el) return;
+      var items = comunicados.slice(0, 5);
+      if(!items.length){
+        el.innerHTML = '<div style="padding:0.75rem 0;color:var(--text-tertiary);font-size:13px;">Nenhum comunicado ainda</div>';
+        return;
+      }
+      el.innerHTML = items.map(function(c){
+        var badge = c.status === 'enviado'
+          ? '<span class="badge badge-info">Enviado</span>'
+          : '<span class="badge badge-neutral">Rascunho</span>';
+        var meta = c.status === 'enviado'
+          ? fmtDate(c.enviado_em) + (c.destinatarios ? ' · ' + c.destinatarios + ' destinatários' : '')
+          : 'Rascunho';
+        return '<div class="comm-item">' +
+          '<div class="comm-title">' + c.titulo + '</div>' +
+          '<div class="comm-desc">' + c.mensagem + '</div>' +
+          '<div class="comm-meta">' + badge + '<span class="comm-time">' + meta + '</span></div>' +
+        '</div>';
+      }).join('');
+    }
+
+    function loadFromSupabase(){
+      supaApi('GET', '/comunicados?order=created_at.desc&limit=10')
+        .then(function(rows){ comunicados = rows || []; renderWidget(); })
+        .catch(function(){});
+    }
+
+    async function sendToAll(titulo, mensagem, commId){
+      var progress = document.getElementById('comm-send-progress');
+      if(progress){ progress.style.display = ''; progress.textContent = 'Buscando moradores...'; }
+      var moradores = await supaApi('GET', '/moradores?select=telefone&telefone=not.is.null');
+      if(!moradores || !moradores.length){
+        if(progress) progress.textContent = 'Nenhum morador encontrado.';
+        return 0;
+      }
+      var text = '📢 *Comunicado do Condomínio*\n\n*' + titulo + '*\n\n' + mensagem;
+      var sent = 0;
+      for(var i = 0; i < moradores.length; i++){
+        var tel = moradores[i].telefone;
+        if(!tel) continue;
+        try { await sendWhatsAppMsg(tel, text); sent++; } catch(e){}
+        if(progress) progress.textContent = 'Enviando... ' + sent + '/' + moradores.length;
+      }
+      await supaApi('PATCH', '/comunicados?id=eq.' + commId, {
+        status: 'enviado', enviado_em: new Date().toISOString(), destinatarios: sent
+      });
+      return sent;
+    }
+
+    function openModal(){ document.getElementById('comunicado-overlay').style.display = 'flex'; }
+    function closeModal(){
+      document.getElementById('comunicado-overlay').style.display = 'none';
+      var p = document.getElementById('comm-send-progress');
+      if(p) p.style.display = 'none';
+      var ti = document.getElementById('comm-input-titulo');
+      var ms = document.getElementById('comm-input-mensagem');
+      if(ti) ti.value = '';
+      if(ms) ms.value = '';
+    }
+
+    function getInputs(){
+      var titulo = (document.getElementById('comm-input-titulo') || {}).value.trim();
+      var mensagem = (document.getElementById('comm-input-mensagem') || {}).value.trim();
+      return { titulo: titulo, mensagem: mensagem };
+    }
+
+    function init(){
+      var btnNew = document.getElementById('btn-new-comunicado');
+      var btnCancel = document.getElementById('btn-cancel-comunicado');
+      var btnRascunho = document.getElementById('btn-save-rascunho');
+      var btnSend = document.getElementById('btn-send-comunicado');
+
+      if(btnNew) btnNew.addEventListener('click', openModal);
+      if(btnCancel) btnCancel.addEventListener('click', closeModal);
+
+      if(btnRascunho) btnRascunho.addEventListener('click', function(){
+        var inp = getInputs();
+        if(!inp.titulo || !inp.mensagem){ showToast('Preencha título e mensagem', 'error'); return; }
+        supaApi('POST', '/comunicados', { titulo: inp.titulo, mensagem: inp.mensagem, status: 'rascunho' })
+          .then(function(){ closeModal(); loadFromSupabase(); showToast('Rascunho salvo!'); });
+      });
+
+      if(btnSend) btnSend.addEventListener('click', async function(){
+        var inp = getInputs();
+        if(!inp.titulo || !inp.mensagem){ showToast('Preencha título e mensagem', 'error'); return; }
+        if(!confirm('Enviar este comunicado via WhatsApp para TODOS os moradores?')) return;
+        btnSend.disabled = true; btnSend.textContent = 'Enviando...';
+        try {
+          var rows = await supaApi('POST', '/comunicados', { titulo: inp.titulo, mensagem: inp.mensagem, status: 'rascunho' });
+          var commId = rows && rows[0] && rows[0].id;
+          if(!commId){
+            var all = await supaApi('GET', '/comunicados?titulo=eq.' + encodeURIComponent(inp.titulo) + '&order=created_at.desc&limit=1');
+            commId = all && all[0] && all[0].id;
+          }
+          var sent = await sendToAll(inp.titulo, inp.mensagem, commId);
+          closeModal(); loadFromSupabase();
+          showToast('Comunicado enviado para ' + sent + ' moradores!');
+        } catch(e){
+          showToast('Erro ao enviar: ' + (e.message||''), 'error');
+        }
+        btnSend.disabled = false; btnSend.textContent = '📢 Enviar a todos';
+      });
+    }
+
+    return { init: init, loadFromSupabase: loadFromSupabase };
+  })();
+
+  ReservaApp.init();
+  ComunicadoApp.init();
+  ReservaApp.loadFromSupabase();
+  ComunicadoApp.loadFromSupabase();
+
   // Botão atualizar do topbar
   (function(){
     var btn = document.querySelector('[aria-label="Atualizar"]');
@@ -3094,6 +3470,8 @@
       PackageApp.loadFromSupabase();
       VisitorApp.loadFromSupabase();
       MoradorApp.loadFromSupabase();
+      ReservaApp.loadFromSupabase();
+      ComunicadoApp.loadFromSupabase();
       loadDashboardMetrics();
       showToast('Dados atualizados!');
     });
@@ -3106,6 +3484,8 @@
     PackageApp.loadFromSupabase();
     VisitorApp.loadFromSupabase();
     MoradorApp.loadFromSupabase();
+    ReservaApp.loadFromSupabase();
+    ComunicadoApp.loadFromSupabase();
     loadDashboardMetrics();
   }, 60000);
 

@@ -31,6 +31,8 @@ encomendas   — id, morador_id (FK→moradores), descricao, data_recebimento, s
 visitantes   — id, nome, morador_id, documento, entrada
 atendimentos — id, telefone, titulo, mensagem, local_ocorrencia, urgencia, status, created_at
 requisicoes  — id, telefone, morador_id, tipo, local_servico, descricao, urgencia, status, created_at
+reservas     — id, morador_id (FK→moradores), area, data (date), horario, status, created_at
+comunicados  — id, titulo, mensagem, status, enviado_em, destinatarios, created_at
 ```
 
 **Status de encomenda:** `aguardando` → `retirado`
@@ -82,6 +84,7 @@ Morador existe? [true] → Roteador → Switch Rota
   ├── visitantes   → texto="2", "btn_visitantes" ou etapa.startsWith("visitante_")
   ├── servicos     → texto="3", "btn_servicos" ou etapa.startsWith("servico_")
   ├── ocorrencias  → texto="4", "btn_ocorrencias" ou etapa.startsWith("ocorrencia_")
+  ├── reservas     → texto="5", "btn_reservas" ou etapa.startsWith("reserva_")
   ├── retirada     → texto começa com "RETIREI" (ex: "RETIREI 2")
   ├── cancelar     → texto é "CANCELAR" (maiúsculo)
   └── menu         → qualquer outra coisa
@@ -93,6 +96,7 @@ Morador existe? [true] → Roteador → Switch Rota
 2️⃣  🚗 Autorizar Visitantes
 3️⃣  🔧 Solicitar Serviços
 4️⃣  ⚠️ Registrar Ocorrências
+5️⃣  📅 Reservar Área Comum
 ```
 
 ### Fluxo de encomendas
@@ -143,6 +147,15 @@ Ao concluir: INSERT em `atendimentos` com campos separados: `titulo` (tipo + loc
 
 Urgências aceitas: `baixa`, `média`/`media`, `alta`. Qualquer outro valor vira `Não informada`.
 
+### Fluxo de reservas de áreas comuns (multi-step)
+**Etapas de sessão:**
+```
+reserva_area → reserva_data → reserva_horario → (ok=true)
+```
+Áreas disponíveis: `1` → Salão de Festas, `2` → Churrasqueira, `3` → Quadra Esportiva.
+
+Data aceita no formato DD/MM/AAAA (validação por regex). Ao concluir: INSERT em `reservas` com `morador_id`, `area`, `data` (ISO YYYY-MM-DD), `horario`, `status='pendente'`. O administrador confirma ou recusa pelo dashboard.
+
 ### Fluxo de cancelamento
 ```
 Cancelar Fluxo → DELETE Sessao Cancelar → Enviar Cancelamento
@@ -172,12 +185,13 @@ SPA pura: nenhum framework, nenhum build. Abre direto no browser. Navegação cl
 ### Páginas
 | Página | Conteúdo |
 |---|---|
-| **Dashboard** | Status do bot, métricas (ocorrências, visitantes, encomendas, moradores), fila de aprovações, ocorrências em aberto (top 3), reservas, comunicados, atividade recente |
+| **Dashboard** | Status do bot, métricas (ocorrências, visitantes, encomendas, moradores), fila de aprovações, ocorrências em aberto (top 3), reservas dinâmicas, comunicados dinâmicos, atividade recente |
 | **Requisições** | Kanban conectado à tabela `requisicoes` |
 | **Ocorrências** | Kanban 4 colunas: Aberta → Em análise → Em andamento → Resolvida — conectado à tabela `atendimentos` |
 | **Encomendas** | Kanban 3 colunas: Recebida → Notificado → Retirada. Avançar para "Notificado" dispara WhatsApp via webhook n8n |
 | **Visitantes** | Lista com filtros (todos/hoje/sem saída) + form de registro manual |
 | **Moradores** | Busca + lista agrupada por bloco (ordem numérica de apartamento) + form de cadastro + edição inline + exclusão |
+| **Reservas** | Lista filtrada por status (todas/pendentes/confirmadas/canceladas) + form de nova reserva + confirmar/recusar por card |
 
 ### Funcionalidades do dashboard por módulo
 
@@ -270,6 +284,8 @@ Todas as páginas recarregam dados do Supabase ao serem navegadas. Auto-refresh 
 | `PackageApp` | `encomendas` | PATCH status + DELETE + POST via `createWithMorador()` |
 | `VisitorApp` | `visitantes` | POST + lista |
 | `MoradorApp` | `moradores` | POST + PATCH (edição) + DELETE + busca |
+| `ReservaApp` | `reservas` | POST + PATCH status (confirmar/cancelar) |
+| `ComunicadoApp` | `comunicados` | POST (rascunho ou envio) + PATCH status após envio em massa via WhatsApp |
 
 ---
 
@@ -296,9 +312,33 @@ Todas as páginas recarregam dados do Supabase ao serem navegadas. Auto-refresh 
   );
   ALTER TABLE requisicoes ENABLE ROW LEVEL SECURITY;
   CREATE POLICY "anon all" ON requisicoes USING (true) WITH CHECK (true);
+
+  CREATE TABLE IF NOT EXISTS reservas (
+    id bigint generated always as identity primary key,
+    morador_id bigint REFERENCES moradores(id),
+    area text NOT NULL,
+    data date NOT NULL,
+    horario text,
+    status text DEFAULT 'pendente',
+    created_at timestamptz DEFAULT now()
+  );
+  ALTER TABLE reservas ENABLE ROW LEVEL SECURITY;
+  CREATE POLICY "anon all" ON reservas USING (true) WITH CHECK (true);
+
+  CREATE TABLE IF NOT EXISTS comunicados (
+    id bigint generated always as identity primary key,
+    titulo text NOT NULL,
+    mensagem text NOT NULL,
+    status text DEFAULT 'rascunho',
+    enviado_em timestamptz,
+    destinatarios int DEFAULT 0,
+    created_at timestamptz DEFAULT now()
+  );
+  ALTER TABLE comunicados ENABLE ROW LEVEL SECURITY;
+  CREATE POLICY "anon all" ON comunicados USING (true) WITH CHECK (true);
   ```
-- **Reservas de áreas comuns** — UI no dashboard está pronta (seção "Próximas reservas"), mas o bot ainda não tem fluxo. A fila de aprovações também está mockada.
-- **Comunicados** — UI existe, sem integração real com o banco ainda.
+- **Reservas de áreas comuns** — implementado: bot com fluxo multi-step (`reserva_area` → `reserva_data` → `reserva_horario`), página de gestão no dashboard (`ReservaApp`), widget dinâmico na dashboard, SQL acima. A fila de aprovações ainda está mockada.
+- **Comunicados** — implementado: modal para criar/enviar comunicados, `ComunicadoApp` conectado à tabela `comunicados`, envio em massa via webhook n8n WhatsApp.
 - **Painel de aprovações** — botões de aprovar/rejeitar existem no HTML mas sem JS conectado.
 - **Nós legados** — `Resp Visitantes` e `Resp Ocorrencias` (usando API key `720C1736...`) são stubs antigos que foram substituídos pelos fluxos multi-step. Podem ser removidos do workflow.
 - **Segurança** — mover as chaves de API (Supabase anon key e Evolution API key) para variáveis de ambiente do n8n antes de usar em produção com múltiplos clientes.

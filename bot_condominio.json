@@ -404,7 +404,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const d = $json;\nconst t = (d.texto ?? '').trim();\nconst upper = t.toUpperCase();\nconst b = d.buttonId;\nconst etapa = d.sessaoEtapa ?? '';\n\nlet rota = 'menu';\nif (upper === 'CANCELAR') rota = 'cancelar';\nelse if (etapa.startsWith('visitante_')) rota = 'visitantes';\nelse if (etapa.startsWith('ocorrencia_')) rota = 'ocorrencias';\nelse if (etapa.startsWith('servico_')) rota = 'servicos';\nelse if (b === 'btn_encomendas' || t === '1') rota = 'encomendas';\nelse if (b === 'btn_visitantes' || t === '2') rota = 'visitantes';\nelse if (b === 'btn_servicos' || t === '3') rota = 'servicos';\nelse if (b === 'btn_ocorrencias' || t === '4') rota = 'ocorrencias';\nelse if (upper.startsWith('RETIREI')) rota = 'retirada';\n\nreturn [{ json: { ...d, rota } }];"
+        "jsCode": "const d = $json;\nconst t = (d.texto ?? '').trim();\nconst upper = t.toUpperCase();\nconst b = d.buttonId;\nconst etapa = d.sessaoEtapa ?? '';\n\nlet rota = 'menu';\nif (upper === 'CANCELAR') rota = 'cancelar';\nelse if (etapa.startsWith('visitante_')) rota = 'visitantes';\nelse if (etapa.startsWith('ocorrencia_')) rota = 'ocorrencias';\nelse if (etapa.startsWith('servico_')) rota = 'servicos';\nelse if (b === 'btn_encomendas' || t === '1') rota = 'encomendas';\nelse if (b === 'btn_visitantes' || t === '2') rota = 'visitantes';\nelse if (b === 'btn_servicos' || t === '3') rota = 'servicos';\nelse if (b === 'btn_ocorrencias' || t === '4') rota = 'ocorrencias';\nelse if (etapa.startsWith('reserva_')) rota = 'reservas';\nelse if (b === 'btn_reservas' || t === '5') rota = 'reservas';\nelse if (upper.startsWith('RETIREI')) rota = 'retirada';\n\nreturn [{ json: { ...d, rota } }];"
       },
       "id": "3786a63a-e727-469a-a208-38f85a860f1f",
       "name": "Roteador",
@@ -579,6 +579,29 @@
               },
               "renameOutput": true,
               "outputKey": "cancelar"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.rota }}",
+                    "rightValue": "reservas",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "reservas"
             }
           ]
         },
@@ -619,7 +642,7 @@
             },
             {
               "name": "text",
-              "value": "={{ '🏢 *Portaria Digital*\\n\\nOlá, *' + $json.moradorNome + '*! 👋\\nAp. ' + $json.moradorApto + ' - Bloco ' + $json.moradorBloco + '\\n\\nComo posso ajudar?\\n\\n1️⃣  📦 Minhas Encomendas\\n2️⃣  🚗 Autorizar Visitantes\\n3️⃣  🔧 Solicitar Serviços\\n4️⃣  ⚠️ Registrar Ocorrências\\n\\n_Digite o número da opção desejada_' }}"
+              "value": "={{ '🏢 *Portaria Digital*\\n\\nOlá, *' + $json.moradorNome + '*! 👋\\nAp. ' + $json.moradorApto + ' - Bloco ' + $json.moradorBloco + '\\n\\nComo posso ajudar?\\n\\n1️⃣  📦 Minhas Encomendas\\n2️⃣  🚗 Autorizar Visitantes\\n3️⃣  🔧 Solicitar Serviços\\n4️⃣  ⚠️ Registrar Ocorrências\\n5️⃣  📅 Reservar Área Comum\\n\\n_Digite o número da opção desejada_' }}"
             }
           ]
         },
@@ -1850,6 +1873,223 @@
         2560,
         960
       ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $json;\nconst texto = (d.texto ?? '').trim();\nconst etapa = d.sessaoEtapa;\nconst dados = d.sessaoDados ?? {};\nconst base = { from: d.from, instance: d.instance, moradorId: d.moradorId, moradorNome: d.moradorNome, moradorApto: d.moradorApto, moradorBloco: d.moradorBloco };\nif (texto.toUpperCase() === 'CANCELAR') {\n  return [{ json: { ...base, ok: true, prox: null, nd: '{}', resp: 'Reserva cancelada.\\n\\nDigite *menu* para voltar ao menu principal.' } }];\n}\nlet prox, nd = { ...dados }, resp, ok = false;\nconst areas = { '1': 'Salão de Festas', '2': 'Churrasqueira', '3': 'Quadra Esportiva' };\nif (!etapa || !etapa.startsWith('reserva_')) {\n  prox = 'reserva_area'; nd = {};\n  resp = '📅 *Reservar Área Comum*\\n\\nQual área deseja reservar?\\n\\n1️⃣  Salão de Festas\\n2️⃣  Churrasqueira\\n3️⃣  Quadra Esportiva\\n\\n_Para cancelar, digite CANCELAR._';\n} else if (etapa === 'reserva_area') {\n  const area = areas[texto];\n  if (!area) { prox = 'reserva_area'; resp = 'Opção inválida. Digite 1, 2 ou 3 para escolher a área.'; }\n  else { nd.area = area; prox = 'reserva_data'; resp = 'Qual data deseja reservar a *' + area + '*?\\n\\nFormato: DD/MM/AAAA (ex: 25/07/2026)'; }\n} else if (etapa === 'reserva_data') {\n  if (!/^\\d{2}\\/\\d{2}\\/\\d{4}$/.test(texto)) { prox = 'reserva_data'; resp = 'Data inválida. Use o formato DD/MM/AAAA (ex: 25/07/2026).'; }\n  else { nd.data = texto; prox = 'reserva_horario'; resp = 'Qual horário? Informe o início e fim.\\n\\nExemplo: 14h às 18h'; }\n} else if (etapa === 'reserva_horario') {\n  if (texto.length < 3) { prox = 'reserva_horario'; resp = 'Informe o horário.'; }\n  else {\n    nd.horario = texto; ok = true; prox = null;\n    const [d2, m, y] = nd.data.split('/');\n    const dataIso = y + '-' + m + '-' + d2;\n    nd.dataIso = dataIso;\n    resp = '✅ *Reserva solicitada!*\\n\\n📍 *Área:* ' + nd.area + '\\n📅 *Data:* ' + nd.data + '\\n🕐 *Horário:* ' + nd.horario + '\\n\\nSua reserva está *aguardando aprovação* da administração. Você será notificado assim que for confirmada!';\n  }\n} else {\n  prox = 'reserva_area'; nd = {};\n  resp = 'Vamos começar de novo. Qual área deseja reservar?\\n\\n1️⃣  Salão de Festas\\n2️⃣  Churrasqueira\\n3️⃣  Quadra Esportiva';\n}\nreturn [{ json: { ...base, ok, prox, nd: JSON.stringify(nd), resp } }];"
+      },
+      "id": "res00001-0001-0001-0001-000000000001",
+      "name": "Lógica Reserva",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1696,
+        1100
+      ]
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/sessoes?telefone=eq.{{ $json.from }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "res00001-0001-0001-0001-000000000002",
+      "name": "DELETE Sessao Reserva",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1920,
+        1100
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "res00001-cond-0001",
+              "leftValue": "={{ $('Lógica Reserva').item.json.ok }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "res00001-0001-0001-0001-000000000003",
+      "name": "Reserva OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2144,
+        1100
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/sessoes",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ telefone: $('Lógica Reserva').item.json.from, etapa: $('Lógica Reserva').item.json.prox, dados: JSON.parse($('Lógica Reserva').item.json.nd), updated_at: new Date().toISOString() }) }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "res00001-0001-0001-0001-000000000004",
+      "name": "INSERT Sessao Reserva",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2368,
+        1020
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/reservas",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ (function(){ const nd = JSON.parse($('Lógica Reserva').item.json.nd); return JSON.stringify({ morador_id: $('Lógica Reserva').item.json.moradorId, area: nd.area, data: nd.dataIso, horario: nd.horario, status: 'pendente' }); })() }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "res00001-0001-0001-0001-000000000005",
+      "name": "INSERT Reserva",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2368,
+        1180
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://evolution.automacaopme.com.br/message/sendText/{{ $('Lógica Reserva').item.json.instance }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "F5E45E6A06AC-4857-807A-923D226DE8E1"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('Lógica Reserva').item.json.from }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $('Lógica Reserva').item.json.resp }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "res00001-0001-0001-0001-000000000006",
+      "name": "Enviar Reserva",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2560,
+        1180
+      ]
     }
   ],
   "pinData": {},
@@ -2052,6 +2292,13 @@
         [
           {
             "node": "Cancelar Fluxo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Lógica Reserva",
             "type": "main",
             "index": 0
           }
@@ -2362,6 +2609,68 @@
         [
           {
             "node": "Enviar Ocorrencia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lógica Reserva": {
+      "main": [
+        [
+          {
+            "node": "DELETE Sessao Reserva",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DELETE Sessao Reserva": {
+      "main": [
+        [
+          {
+            "node": "Reserva OK?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reserva OK?": {
+      "main": [
+        [
+          {
+            "node": "INSERT Sessao Reserva",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "INSERT Reserva",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INSERT Sessao Reserva": {
+      "main": [
+        [
+          {
+            "node": "Enviar Reserva",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INSERT Reserva": {
+      "main": [
+        [
+          {
+            "node": "Enviar Reserva",
             "type": "main",
             "index": 0
           }
