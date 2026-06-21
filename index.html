@@ -1896,6 +1896,36 @@
         </div>
       </div>
 
+      <!-- MODAL EDITAR MORADOR -->
+      <div id="morador-edit-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;padding:1rem;">
+        <div class="occ-form-card" style="max-width:480px;width:100%;margin:0;">
+          <div class="section-title" style="margin-bottom:1rem;">Editar morador</div>
+          <input type="hidden" id="mor-edit-id">
+          <div class="form-grid">
+            <label class="form-field form-field-full">
+              <span class="form-label">Nome completo</span>
+              <input type="text" id="mor-edit-nome" placeholder="Ex: Maria Souza">
+            </label>
+            <label class="form-field">
+              <span class="form-label">Apartamento</span>
+              <input type="text" id="mor-edit-apto" placeholder="Ex: 304">
+            </label>
+            <label class="form-field">
+              <span class="form-label">Bloco</span>
+              <input type="text" id="mor-edit-bloco" placeholder="Ex: A">
+            </label>
+            <label class="form-field form-field-full">
+              <span class="form-label">Telefone <span style="color:var(--status-danger-fg)">*</span></span>
+              <input type="text" id="mor-edit-tel" placeholder="Ex: 5511999990000">
+            </label>
+          </div>
+          <div class="form-actions">
+            <button class="btn-secondary" id="btn-cancel-edit-morador">Cancelar</button>
+            <button class="btn-primary" id="btn-save-edit-morador">Salvar alterações</button>
+          </div>
+        </div>
+      </div>
+
     </div><!-- /page-moradores -->
 
     <footer class="app-footer">
@@ -2873,7 +2903,10 @@
                 '<div class="occ-desc" style="margin:0;">' + apto + '</div>' +
               '</div>' +
             '</div>' +
-            '<button class="btn-resolve" style="background:var(--status-danger-bg);color:var(--status-danger-fg);border-color:transparent;" onclick="MoradorApp.excluir(' + m.id + ')">🗑 Excluir</button>' +
+            '<div style="display:flex;gap:8px;">' +
+              '<button class="btn-resolve" data-edit-morador="' + m.id + '" style="background:var(--status-info-bg);color:var(--brand-primary);border-color:transparent;">✏️ Editar</button>' +
+              '<button class="btn-resolve" style="background:var(--status-danger-bg);color:var(--status-danger-fg);border-color:transparent;" onclick="MoradorApp.excluir(' + m.id + ')">🗑 Excluir</button>' +
+            '</div>' +
           '</div>' +
           (m.telefone ? '<div class="occ-bottom" style="margin-top:0.5rem;"><div class="occ-meta"><span class="occ-meta-item">📞 ' + escHtml(m.telefone) + '</span></div></div>' : '') +
         '</div>';
@@ -2901,13 +2934,67 @@
       }));
     }
 
-    return { loadFromSupabase: loadFromSupabase, render: render, excluir: excluir, create: create, search: search };
+    function openEdit(id){
+      var m = moradores.find(function(x){ return x.id == id; });
+      if(!m) return;
+      document.getElementById('mor-edit-id').value   = m.id;
+      document.getElementById('mor-edit-nome').value  = m.nome || '';
+      document.getElementById('mor-edit-apto').value  = m.apartamento || '';
+      document.getElementById('mor-edit-bloco').value = m.bloco || '';
+      document.getElementById('mor-edit-tel').value   = m.telefone || '';
+      var overlay = document.getElementById('morador-edit-overlay');
+      overlay.style.display = 'flex';
+    }
+
+    function closeEdit(){
+      document.getElementById('morador-edit-overlay').style.display = 'none';
+    }
+
+    function update(id, data){
+      if(!data.nome || !data.apartamento || !data.telefone){
+        showToast('Nome, apartamento e telefone são obrigatórios', 'error'); return;
+      }
+      supaApi('PATCH', '/moradores?id=eq.' + id, data).then(function(){
+        var m = moradores.find(function(x){ return x.id == id; });
+        if(m){ m.nome=data.nome; m.apartamento=data.apartamento; m.bloco=data.bloco||null; m.telefone=data.telefone; }
+        render();
+        closeEdit();
+        showToast('Morador atualizado!');
+      }).catch(function(e){ showToast('Erro ao atualizar: ' + (e.message||''), 'error'); });
+    }
+
+    return { loadFromSupabase:loadFromSupabase, render:render, excluir:excluir, create:create, search:search, openEdit:openEdit, closeEdit:closeEdit, update:update };
   })();
 
   // Busca de moradores
   (function(){
     var input = document.getElementById('morador-search');
     if(input) input.addEventListener('input', function(){ MoradorApp.search(this.value); });
+  })();
+
+  // Delegação: botão Editar nos cards de moradores
+  document.getElementById('morador-list').addEventListener('click', function(e){
+    var btn = e.target.closest('[data-edit-morador]');
+    if(btn) MoradorApp.openEdit(btn.getAttribute('data-edit-morador'));
+  });
+
+  // Modal editar morador
+  (function(){
+    var btnCancel = document.getElementById('btn-cancel-edit-morador');
+    var btnSave   = document.getElementById('btn-save-edit-morador');
+    var overlay   = document.getElementById('morador-edit-overlay');
+    if(btnCancel) btnCancel.addEventListener('click', MoradorApp.closeEdit);
+    /* fechar ao clicar fora do card */
+    if(overlay) overlay.addEventListener('click', function(e){ if(e.target === overlay) MoradorApp.closeEdit(); });
+    if(btnSave) btnSave.addEventListener('click', function(){
+      var id = document.getElementById('mor-edit-id').value;
+      MoradorApp.update(id, {
+        nome:        document.getElementById('mor-edit-nome').value.trim(),
+        apartamento: document.getElementById('mor-edit-apto').value.trim(),
+        bloco:       document.getElementById('mor-edit-bloco').value.trim() || null,
+        telefone:    document.getElementById('mor-edit-tel').value.trim()
+      });
+    });
   })();
 
   // Formulário novo morador
