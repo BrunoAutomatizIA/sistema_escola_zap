@@ -2431,17 +2431,14 @@
       if(metric) metric.textContent = pending;
     }
 
-    /* Proxy n8n — evita bloqueio de CORS do browser para Evolution API */
+    /* GET sem preflight CORS — browser envia diretamente ao n8n */
     var N8N_NOTIF_URL = 'https://n8n.automacaopme.com.br/webhook/notificar-encomenda';
 
     function sendWhatsApp(phone, text){
       var digits = phone.replace(/\D/g, '');
       if(digits.length <= 11) digits = '55' + digits;
-      return fetch(N8N_NOTIF_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ number: digits, text: text })
-      });
+      var url = N8N_NOTIF_URL + '?number=' + encodeURIComponent(digits) + '&text=' + encodeURIComponent(text);
+      return fetch(url); /* GET implícito, sem custom headers → sem CORS preflight */
     }
 
     function loadFromSupabase(){
