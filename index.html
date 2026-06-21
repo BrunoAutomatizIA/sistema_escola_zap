@@ -2385,7 +2385,10 @@
             (aptoLabel ? '<span style="font-size:12px;color:var(--text-secondary);">' + escapeHtml(aptoLabel) + '</span>' : '') +
           '</div>'
         : '<div style="font-size:12px;color:var(--status-danger-fg);margin-bottom:0.5rem;">⚠ Morador não vinculado</div>';
+      var deleteBtn = '<button class="kanban-card-delete" data-delete-package="' + pkg.id + '" title="Excluir encomenda" style="position:absolute;top:8px;right:8px;background:none;border:none;cursor:pointer;color:var(--text-tertiary);padding:2px 4px;border-radius:4px;font-size:14px;line-height:1;" onmouseenter="this.style.color=\'var(--status-danger-fg)\'" onmouseleave="this.style.color=\'var(--text-tertiary)\'">✕</button>';
+      card.style.position = 'relative';
       card.innerHTML =
+        deleteBtn +
         '<div class="kanban-card-head">' +
           '<span class="badge badge-neutral">ENCOMENDA</span>' +
         '</div>' +
@@ -2515,12 +2518,23 @@
       }).catch(function(e){ showToast('Erro ao salvar: ' + (e.message || ''), 'error'); });
     }
 
-    return { loadFromSupabase: loadFromSupabase, renderAll: renderAll, advance: advance, createWithMorador: createWithMorador };
+    function remove(id){
+      if(!confirm('Excluir esta encomenda?')) return;
+      supaApi('DELETE', '/encomendas?id=eq.' + id).then(function(){
+        packages = packages.filter(function(p){ return p.id != id; });
+        renderAll();
+        showToast('Encomenda excluída');
+      }).catch(function(e){ showToast('Erro ao excluir: ' + (e.message||''), 'error'); });
+    }
+
+    return { loadFromSupabase: loadFromSupabase, renderAll: renderAll, advance: advance, createWithMorador: createWithMorador, remove: remove };
   })();
 
   PackageApp.loadFromSupabase();
 
   document.addEventListener('click', function(e){
+    var del = e.target.closest('[data-delete-package]');
+    if(del){ PackageApp.remove(del.getAttribute('data-delete-package')); return; }
     var btn = e.target.closest('[data-advance-package]');
     if(btn){
       PackageApp.advance(btn.getAttribute('data-advance-package'));
