@@ -404,7 +404,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const d = $json;\nconst t = (d.texto ?? '').trim();\nconst upper = t.toUpperCase();\nconst b = d.buttonId;\nconst etapa = d.sessaoEtapa ?? '';\n\nlet rota = 'menu';\nif (upper === 'CANCELAR') rota = 'cancelar';\nelse if (etapa.startsWith('visitante_')) rota = 'visitantes';\nelse if (etapa.startsWith('ocorrencia_')) rota = 'ocorrencias';\nelse if (etapa.startsWith('servico_')) rota = 'servicos';\nelse if (b === 'btn_encomendas' || t === '1') rota = 'encomendas';\nelse if (b === 'btn_visitantes' || t === '2') rota = 'visitantes';\nelse if (b === 'btn_servicos' || t === '3') rota = 'servicos';\nelse if (b === 'btn_ocorrencias' || t === '4') rota = 'ocorrencias';\nelse if (etapa.startsWith('reserva_')) rota = 'reservas';\nelse if (b === 'btn_reservas' || t === '5') rota = 'reservas';\nelse if (upper.startsWith('RETIREI')) rota = 'retirada';\n\nreturn [{ json: { ...d, rota } }];"
+        "jsCode": "const d = $json;\nconst t = (d.texto ?? '').trim();\nconst upper = t.toUpperCase();\nconst b = d.buttonId;\nconst etapa = d.sessaoEtapa ?? '';\n\nlet rota = 'menu';\nif (upper === 'CANCELAR') rota = 'cancelar';\nelse if (etapa.startsWith('visitante_')) rota = 'visitantes';\nelse if (etapa.startsWith('ocorrencia_')) rota = 'ocorrencias';\nelse if (etapa.startsWith('servico_')) rota = 'servicos';\nelse if (b === 'btn_encomendas' || t === '1') rota = 'encomendas';\nelse if (b === 'btn_visitantes' || t === '2') rota = 'visitantes';\nelse if (b === 'btn_servicos' || t === '3') rota = 'servicos';\nelse if (etapa.startsWith('reserva_')) rota = 'reservas';\nelse if (b === 'btn_reservas' || t === '4') rota = 'reservas';\nelse if (b === 'btn_ocorrencias' || t === '5') rota = 'ocorrencias';\nelse if (upper.startsWith('RETIREI')) rota = 'retirada';\n\nreturn [{ json: { ...d, rota } }];"
       },
       "id": "3786a63a-e727-469a-a208-38f85a860f1f",
       "name": "Roteador",
@@ -642,7 +642,7 @@
             },
             {
               "name": "text",
-              "value": "={{ '🏢 *Portaria Digital*\\n\\nOlá, *' + $json.moradorNome + '*! 👋\\nAp. ' + $json.moradorApto + ' - Bloco ' + $json.moradorBloco + '\\n\\nComo posso ajudar?\\n\\n1️⃣  📦 Minhas Encomendas\\n2️⃣  🚗 Autorizar Visitantes\\n3️⃣  🔧 Solicitar Serviços\\n4️⃣  ⚠️ Registrar Ocorrências\\n5️⃣  📅 Reservar Área Comum\\n\\n_Digite o número da opção desejada_' }}"
+              "value": "={{ '🏢 *Portaria Digital*\\n\\nOlá, *' + $json.moradorNome + '*! 👋\\nAp. ' + $json.moradorApto + ' - Bloco ' + $json.moradorBloco + '\\n\\nComo posso ajudar?\\n\\n1️⃣  📦 Minhas Encomendas\\n2️⃣  🚗 Autorizar Visitantes\\n3️⃣  🔧 Solicitar Serviços\\n4️⃣  📅 Fazer Reserva\\n5️⃣  ⚠️ Registrar Ocorrências\\n\\n_Digite o número da opção desejada_' }}"
             }
           ]
         },

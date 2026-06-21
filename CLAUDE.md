@@ -83,8 +83,8 @@ Morador existe? [true] → Roteador → Switch Rota
   ├── encomendas   → texto="1" ou buttonId="btn_encomendas"
   ├── visitantes   → texto="2", "btn_visitantes" ou etapa.startsWith("visitante_")
   ├── servicos     → texto="3", "btn_servicos" ou etapa.startsWith("servico_")
-  ├── ocorrencias  → texto="4", "btn_ocorrencias" ou etapa.startsWith("ocorrencia_")
-  ├── reservas     → texto="5", "btn_reservas" ou etapa.startsWith("reserva_")
+  ├── reservas     → texto="4", "btn_reservas" ou etapa.startsWith("reserva_")
+  ├── ocorrencias  → texto="5", "btn_ocorrencias" ou etapa.startsWith("ocorrencia_")
   ├── retirada     → texto começa com "RETIREI" (ex: "RETIREI 2")
   ├── cancelar     → texto é "CANCELAR" (maiúsculo)
   └── menu         → qualquer outra coisa
@@ -95,8 +95,8 @@ Morador existe? [true] → Roteador → Switch Rota
 1️⃣  📦 Minhas Encomendas
 2️⃣  🚗 Autorizar Visitantes
 3️⃣  🔧 Solicitar Serviços
-4️⃣  ⚠️ Registrar Ocorrências
-5️⃣  📅 Reservar Área Comum
+4️⃣  📅 Fazer Reserva
+5️⃣  ⚠️ Registrar Ocorrências
 ```
 
 ### Fluxo de encomendas
