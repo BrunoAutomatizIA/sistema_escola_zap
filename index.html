@@ -1995,14 +1995,17 @@
 
   function fmtRelative(dateStr){
     if(!dateStr) return '—';
-    var diff = Date.now() - new Date(dateStr).getTime();
+    var d = new Date(dateStr);
+    var now = new Date();
+    var diff = now - d;
     var mins = Math.floor(diff / 60000);
-    if(mins < 1)  return 'agora mesmo';
-    if(mins < 60) return 'há ' + mins + 'min';
-    var hrs = Math.floor(mins / 60);
-    if(hrs < 24)  return 'há ' + hrs + 'h';
-    var days = Math.floor(hrs / 24);
-    if(days === 1) return 'ontem';
+    var hm = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    if(mins < 2)  return 'agora mesmo';
+    /* mesmo dia: mostra a hora real */
+    if(d.toDateString() === now.toDateString()) return 'hoje ' + hm;
+    var yesterday = new Date(now); yesterday.setDate(now.getDate() - 1);
+    if(d.toDateString() === yesterday.toDateString()) return 'ontem ' + hm;
+    var days = Math.floor(diff / 86400000);
     return 'há ' + days + ' dias';
   }
 
@@ -2466,7 +2469,7 @@
     }
 
     function advance(id){
-      var pkg = packages.find(function(p){ return p.id === id; });
+      var pkg = packages.find(function(p){ return p.id == id; }); /* == porque id vem como string do HTML */
       if(!pkg) return;
       var idx = statusFlow.indexOf(pkg.status);
       if(idx >= statusFlow.length - 1) return;
