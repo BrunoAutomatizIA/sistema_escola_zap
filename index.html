@@ -1732,18 +1732,21 @@
         <div class="form-grid">
           <label class="form-field">
             <span class="form-label">Apartamento <span style="color:var(--status-danger-fg)">*</span></span>
-            <input type="text" id="package-input-apto" placeholder="Ex: 304">
+            <input type="text" id="package-input-apto" placeholder="Ex: 304" autocomplete="off">
           </label>
 
           <div class="form-field">
             <span class="form-label">Bloco <span style="color:var(--status-danger-fg)">*</span></span>
             <div style="display:flex;gap:8px;align-items:center;">
-              <input type="text" id="package-input-bloco" placeholder="Ex: A" style="flex:1">
+              <input type="text" id="package-input-bloco" placeholder="Ex: A" style="flex:1" autocomplete="off">
               <label style="display:flex;align-items:center;gap:5px;font-size:13px;color:var(--text-secondary);cursor:pointer;white-space:nowrap;">
                 <input type="checkbox" id="package-bloco-na" style="accent-color:var(--brand-primary);width:15px;height:15px;cursor:pointer;"> N/A
               </label>
             </div>
           </div>
+
+          <!-- preview do morador encontrado -->
+          <div id="package-morador-preview" class="form-field-full" style="display:none;padding:8px 12px;border-radius:var(--radius-sm);font-size:13px;"></div>
 
           <label class="form-field form-field-full">
             <span class="form-label">Descrição</span>
@@ -2532,11 +2535,51 @@
     });
 
     /* checkbox N/A desabilita o campo bloco */
-    var blocoNa = document.getElementById('package-bloco-na');
+    var blocoNa    = document.getElementById('package-bloco-na');
     var blocoInput = document.getElementById('package-input-bloco');
+    var aptoInput  = document.getElementById('package-input-apto');
+    var preview    = document.getElementById('package-morador-preview');
+    var lookupTimer;
+
+    function showPreview(msg, ok){
+      if(!preview) return;
+      preview.style.display = 'block';
+      preview.style.background = ok ? 'color-mix(in srgb, var(--status-success-fg) 12%, transparent)' : 'color-mix(in srgb, var(--status-danger-fg) 12%, transparent)';
+      preview.style.color = ok ? 'var(--status-success-fg)' : 'var(--status-danger-fg)';
+      preview.style.border = '1px solid ' + (ok ? 'var(--status-success-fg)' : 'var(--status-danger-fg)');
+      preview.innerHTML = msg;
+    }
+
+    function hidePreview(){ if(preview) preview.style.display='none'; }
+
+    function doLookup(){
+      var apto  = aptoInput ? aptoInput.value.trim() : '';
+      var na    = blocoNa && blocoNa.checked;
+      var bloco = na ? '' : (blocoInput ? blocoInput.value.trim() : '');
+      if(!apto){ hidePreview(); return; }
+      var q = '/moradores?apartamento=eq.' + encodeURIComponent(apto);
+      if(bloco) q += '&bloco=eq.' + encodeURIComponent(bloco);
+      q += '&select=id,nome,telefone,apartamento,bloco&limit=1';
+      supaApi('GET', q).then(function(rows){
+        if(rows && rows.length){
+          var m = rows[0];
+          var label = '✓ ' + m.nome + ' · Ap. ' + m.apartamento + (m.bloco ? ' Bl. ' + m.bloco : '') + (m.telefone ? ' · ' + m.telefone : '');
+          showPreview(label, true);
+        } else {
+          showPreview('✗ Apartamento não encontrado no cadastro de moradores', false);
+        }
+      }).catch(function(){ hidePreview(); });
+    }
+
+    function scheduleLookup(){ clearTimeout(lookupTimer); lookupTimer = setTimeout(doLookup, 400); }
+
+    if(aptoInput)  aptoInput.addEventListener('input', scheduleLookup);
+    if(blocoInput) blocoInput.addEventListener('input', scheduleLookup);
+
     if(blocoNa) blocoNa.addEventListener('change', function(){
       blocoInput.disabled = this.checked;
       if(this.checked) blocoInput.value = '';
+      doLookup();
     });
 
     btnSave.addEventListener('click', function(){
@@ -2560,6 +2603,7 @@
       document.getElementById('package-input-bloco').disabled = false;
       document.getElementById('package-bloco-na').checked = false;
       document.getElementById('package-input-description').value = '';
+      hidePreview();
     }
   })();
 
