@@ -3138,38 +3138,23 @@
       if(!name){ showToast('Informe o nome do bot', 'error'); nameInput && nameInput.focus(); return; }
       btnSave.disabled = true;
       btnSave.textContent = 'Salvando...';
-      /* tenta os dois caminhos conhecidos da Evolution API */
-      var endpoints = [
-        { method: 'POST', url: EVOL_BASE + '/instance/updateProfileName/' + INSTANCE },
-        { method: 'PUT',  url: EVOL_BASE + '/instance/updateProfileName/' + INSTANCE },
-        { method: 'POST', url: EVOL_BASE + '/profile/updateProfileName/' + INSTANCE }
-      ];
-      var body = JSON.stringify({ name: name, profileName: name });
-      var headers = { 'apikey': EVOL_KEY, 'Content-Type': 'application/json' };
-
-      function tryNext(i){
-        if(i >= endpoints.length){
-          showToast('Endpoint não encontrado nesta versão da Evolution API. Verifique o Swagger em ' + EVOL_BASE, 'error');
+      fetch(EVOL_BASE + '/chat/updateProfileName/' + INSTANCE, {
+        method: 'POST',
+        headers: { 'apikey': EVOL_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name })
+      }).then(function(r){ return r.text().then(function(t){ return { ok: r.ok, status: r.status, text: t }; }); })
+        .then(function(res){
+          if(res.ok){
+            showToast('Nome do bot atualizado! Pode levar alguns minutos para aparecer no WhatsApp.');
+            close();
+          } else {
+            showToast('Erro da API (' + res.status + '): ' + res.text, 'error');
+          }
           btnSave.disabled = false; btnSave.textContent = 'Salvar nome';
-          return;
-        }
-        var ep = endpoints[i];
-        fetch(ep.url, { method: ep.method, headers: headers, body: body })
-          .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, status: r.status, body: j }; }); })
-          .then(function(res){
-            if(res.ok || res.status === 200){
-              showToast('Nome do bot atualizado! Pode levar alguns minutos para aparecer no WhatsApp.');
-              close();
-              btnSave.disabled = false; btnSave.textContent = 'Salvar nome';
-            } else if(res.status === 404){
-              tryNext(i + 1);
-            } else {
-              showToast('Erro da API: ' + JSON.stringify(res.body), 'error');
-              btnSave.disabled = false; btnSave.textContent = 'Salvar nome';
-            }
-          }).catch(function(){ tryNext(i + 1); });
-      }
-      tryNext(0);
+        }).catch(function(e){
+          showToast('Erro ao conectar: ' + (e.message || 'verifique a conexão'), 'error');
+          btnSave.disabled = false; btnSave.textContent = 'Salvar nome';
+        });
     });
   })();
 
