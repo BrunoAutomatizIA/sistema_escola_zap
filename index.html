@@ -3714,6 +3714,10 @@
      ================================================ */
   var ApprovalApp = (function(){
     var AREAS_EMOJI = { 'Salão de Festas': '🎉', 'Churrasqueira': '🔥', 'Quadra Esportiva': '🏃' };
+    var N8N_NOTIF_URL = 'https://n8n.automacaopme.com.br/webhook/notificar-encomenda';
+
+    /* cache das reservas pendentes carregadas — para achar telefone ao clicar */
+    var pendingItems = [];
 
     function fmtDataBr(iso){
       if(!iso) return '';
@@ -3721,14 +3725,37 @@
       return p.length < 3 ? iso : p[2] + '/' + p[1] + '/' + p[0];
     }
 
+    function sendWhatsApp(phone, text){
+      if(!phone) return;
+      fetch(N8N_NOTIF_URL + '?number=' + encodeURIComponent(phone) + '&text=' + encodeURIComponent(text))
+        .catch(function(){});
+    }
+
+    function buildMsg(action, r){
+      var dataHora = fmtDataBr(r.data) + (r.horario ? ' às ' + r.horario : '');
+      if(action === 'confirmada'){
+        return '✅ *Sua reserva foi confirmada!*\n\n' +
+          '📅 *' + r.area + '*\n' +
+          '🗓 ' + dataHora + '\n\n' +
+          '_Portaria Digital_';
+      } else {
+        return '❌ *Sua reserva foi cancelada.*\n\n' +
+          '📅 *' + r.area + '*\n' +
+          '🗓 ' + dataHora + '\n\n' +
+          'Em caso de dúvidas, fale com a administração.\n\n' +
+          '_Portaria Digital_';
+      }
+    }
+
     function render(items){
+      pendingItems = items || [];
       var el = document.getElementById('approval-list');
       if(!el) return;
-      if(!items || !items.length){
+      if(!pendingItems.length){
         el.innerHTML = '<div class="empty-state" style="padding:0.75rem 0;"><div class="empty-state-sub">Nenhuma reserva aguardando aprovação</div></div>';
         return;
       }
-      el.innerHTML = items.map(function(r){
+      el.innerHTML = pendingItems.map(function(r){
         var m = r.moradores || {};
         var emoji = AREAS_EMOJI[r.area] || '📅';
         var aptoStr = m.apartamento ? 'Apto ' + m.apartamento : '';
@@ -3749,7 +3776,7 @@
     }
 
     function loadFromSupabase(){
-      supaApi('GET', '/reservas?status=eq.pendente&select=*,moradores(nome,apartamento,bloco)&order=created_at.asc&limit=5')
+      supaApi('GET', '/reservas?status=eq.pendente&select=*,moradores(nome,apartamento,bloco,telefone)&order=created_at.asc&limit=5')
         .then(function(rows){ render(rows); })
         .catch(function(){ render([]); });
     }
@@ -3760,10 +3787,14 @@
         if(!btn) return;
         var id     = btn.getAttribute('data-apv-id');
         var action = btn.getAttribute('data-apv-action');
+        var reserva = pendingItems.find(function(r){ return String(r.id) === String(id); });
         btn.disabled = true;
         supaApi('PATCH', '/reservas?id=eq.' + id, { status: action })
           .then(function(){
-            showToast(action === 'confirmada' ? 'Reserva confirmada!' : 'Reserva recusada');
+            if(reserva && reserva.moradores && reserva.moradores.telefone){
+              sendWhatsApp(reserva.moradores.telefone, buildMsg(action, reserva));
+            }
+            showToast(action === 'confirmada' ? 'Reserva confirmada! Morador notificado.' : 'Reserva recusada. Morador notificado.');
             loadFromSupabase();
             ReservaApp.loadFromSupabase();
           })
