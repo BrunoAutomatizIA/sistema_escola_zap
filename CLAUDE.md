@@ -209,6 +209,19 @@ SPA pura: nenhum framework, nenhum build. Abre direto no browser. Navegação cl
 - Telefone obrigatório no cadastro
 - Bloco obrigatório com opção N/A (checkbox desabilita campo)
 
+**Reservas (`ReservaApp`):**
+- Lista filtrada por status com botões Confirmar / Recusar em cada card pendente
+- PATCH `status='confirmada'` ou `'cancelada'` no Supabase ao clicar nos botões
+- Form de nova reserva (admin): busca morador por apto+bloco com preview; campos área, data (type=date), horário
+- Widget "Próximas reservas" no dashboard: 5 próximas reservas não canceladas, ordenadas por data
+- `fmtDataBr()` converte ISO YYYY-MM-DD para DD/MM/AAAA na exibição
+
+**Comunicados (`ComunicadoApp`):**
+- Widget no dashboard mostra últimos 10 comunicados com badge Enviado / Rascunho
+- Modal "+ Novo": título + mensagem; dois botões: "Salvar rascunho" e "Enviar a todos"
+- "Enviar a todos": cria registro no banco, busca todos os moradores com telefone, envia WhatsApp a cada um via webhook n8n, atualiza `status='enviado'`, `enviado_em` e `destinatarios`
+- Envio é sequencial com barra de progresso (ex: "Enviando... 47/128")
+
 **Configurações do Bot (modal):**
 - Ícone ⚙️ na topbar abre modal de configurações
 - Campo para alterar o nome do bot no WhatsApp via `POST /chat/updateProfileName/Bot_Condominio` com body `{ "name": "..." }` (Evolution API v2.3.7)
@@ -257,10 +270,10 @@ showToast('Algo deu errado', 'error')
 ## Como editar o workflow do bot
 
 1. Abra o n8n e importe `bot_condominio.json` (ou edite diretamente se já importado).
-2. Ao adicionar um novo módulo (ex: reservas de áreas comuns), siga o padrão:
-   - Prefixo de sessão único (ex: `reserva_`)
-   - Adicionar nova rota no **Roteador** (Code node) e no **Switch Rota**
-   - DELETE sessão → lógica → INSERT sessão (se continua) ou INSERT dado final (se concluiu)
+2. Ao adicionar um novo módulo (ex: votação em assembleia), siga o padrão:
+   - Prefixo de sessão único (ex: `votacao_`)
+   - Adicionar nova rota no **Roteador** (Code node) e uma nova saída no **Switch Rota**
+   - DELETE sessão → Lógica → IF ok? → INSERT sessão (se continua) ou INSERT dado final (se concluiu) → Enviar mensagem
 3. Exporte como JSON e substitua `bot_condominio.json`.
 
 ## Como editar o dashboard
