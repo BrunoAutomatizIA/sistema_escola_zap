@@ -2378,12 +2378,19 @@
           '<svg class="icon" aria-hidden="true"><use href="#icon-circle-check"/></svg> Retirada</button>';
       }
 
+      var aptoLabel = pkg.moradorApto ? ('Ap. ' + pkg.moradorApto + (pkg.moradorBloco ? ' · Bl. ' + pkg.moradorBloco : '')) : '';
+      var moradorHtml = pkg.moradorNome
+        ? '<div style="display:flex;flex-direction:column;gap:2px;margin-bottom:0.5rem;">' +
+            '<span style="font-size:13px;font-weight:600;color:var(--text-primary);">' + escapeHtml(pkg.moradorNome) + '</span>' +
+            (aptoLabel ? '<span style="font-size:12px;color:var(--text-secondary);">' + escapeHtml(aptoLabel) + '</span>' : '') +
+          '</div>'
+        : '<div style="font-size:12px;color:var(--status-danger-fg);margin-bottom:0.5rem;">⚠ Morador não vinculado</div>';
       card.innerHTML =
         '<div class="kanban-card-head">' +
-          '<span class="badge badge-neutral">Encomenda</span>' +
+          '<span class="badge badge-neutral">ENCOMENDA</span>' +
         '</div>' +
         '<div class="kanban-card-title">' + escapeHtml(pkg.description) + '</div>' +
-        '<div class="kanban-card-meta">' + escapeHtml(pkg.resident) + '</div>' +
+        moradorHtml +
         '<div class="kanban-card-footer">' +
           '<span class="kanban-card-time"><svg class="icon" aria-hidden="true"><use href="#icon-clock"/></svg> ' + escapeHtml(pkg.timeLabel) + '</span>' +
           '<span class="kanban-card-source"><svg class="icon" aria-hidden="true"><use href="#icon-robot"/></svg> via bot</span>' +
@@ -2436,12 +2443,12 @@
       return supaApi('GET', '/encomendas?select=*,moradores(id,nome,telefone,apartamento,bloco)&order=data_recebimento.desc').then(function(rows){
         packages = rows.map(function(r){
           var m = r.moradores || {};
-          var resident = m.nome ? (m.nome + (m.apartamento ? ' · Ap. ' + m.apartamento : '') + (m.bloco ? ' Bl.' + m.bloco : '')) : (r.morador_id ? 'Morador #' + r.morador_id : 'Não informado');
           var kanbanStatus = supaToKanban[r.status] || 'recebida';
           return {
             id: r.id,
-            resident: resident,
-            moradorNome: m.nome || '',
+            moradorNome:  m.nome || '',
+            moradorApto:  m.apartamento || '',
+            moradorBloco: m.bloco || '',
             moradorPhone: m.telefone || '',
             description: r.descricao || 'Encomenda',
             status: kanbanStatus,
@@ -2483,58 +2490,32 @@
       });
     }
 
-    function create(data){
-      var description = data.description || 'Encomenda';
-      var apto  = (data.apto  || '').trim();
-      var bloco = (data.bloco || '').trim();
-
-      function savePackage(moradorId, moradorNome, moradorPhone){
-        var payload = {
-          descricao: description,
-          status: 'aguardando',
-          data_recebimento: new Date().toISOString()
+    function createWithMorador(morador, description){
+      /* morador: { id, nome, telefone, apartamento, bloco } */
+      supaApi('POST', '/encomendas', {
+        morador_id: morador.id,
+        descricao: description || 'Encomenda',
+        status: 'aguardando',
+        data_recebimento: new Date().toISOString()
+      }).then(function(rows){
+        var row = Array.isArray(rows) ? rows[0] : rows;
+        var pkg = {
+          id: row ? row.id : ('tmp-' + Date.now()),
+          moradorNome:  morador.nome  || '',
+          moradorApto:  morador.apartamento || '',
+          moradorBloco: morador.bloco || '',
+          moradorPhone: morador.telefone || '',
+          description: description || 'Encomenda',
+          status: 'recebida',
+          timeLabel: 'agora mesmo'
         };
-        if(moradorId) payload.morador_id = moradorId;
-        supaApi('POST', '/encomendas', payload).then(function(rows){
-          var row = Array.isArray(rows) ? rows[0] : rows;
-          var pkg = {
-            id: row ? row.id : ('tmp-' + Date.now()),
-            resident: moradorNome || ('Ap. ' + apto + (bloco ? ' Bl.' + bloco : '')),
-            moradorNome: moradorNome || '',
-            moradorPhone: moradorPhone || '',
-            description: description,
-            status: 'recebida',
-            timeLabel: 'agora mesmo'
-          };
-          packages.unshift(pkg);
-          renderAll();
-          showToast('Encomenda registrada!');
-        }).catch(function(e){
-          showToast('Erro ao salvar: ' + (e.message || ''), 'error');
-        });
-      }
-
-      if(!apto){ savePackage(null, '', ''); return; }
-
-      /* busca morador por apartamento (bloco só filtra se não for N/A) */
-      var query = '/moradores?apartamento=eq.' + encodeURIComponent(apto);
-      if(bloco && bloco !== 'N/A') query += '&bloco=eq.' + encodeURIComponent(bloco);
-      query += '&select=id,nome,telefone,apartamento,bloco&limit=1';
-
-      supaApi('GET', query).then(function(rows){
-        if(rows && rows.length){
-          var m = rows[0];
-          var label = m.nome + ' · Ap. ' + m.apartamento + (m.bloco ? ' Bl.' + m.bloco : '');
-          savePackage(m.id, label, m.telefone);
-        } else {
-          showToast('Apto ' + apto + ' não encontrado. Verifique o cadastro.', 'error');
-        }
-      }).catch(function(){
-        savePackage(null, 'Ap. ' + apto, '');
-      });
+        packages.unshift(pkg);
+        renderAll();
+        showToast('Encomenda registrada!');
+      }).catch(function(e){ showToast('Erro ao salvar: ' + (e.message || ''), 'error'); });
     }
 
-    return { loadFromSupabase: loadFromSupabase, renderAll: renderAll, advance: advance, create: create };
+    return { loadFromSupabase: loadFromSupabase, renderAll: renderAll, advance: advance, createWithMorador: createWithMorador };
   })();
 
   PackageApp.loadFromSupabase();
@@ -2570,6 +2551,7 @@
     var aptoInput  = document.getElementById('package-input-apto');
     var preview    = document.getElementById('package-morador-preview');
     var lookupTimer;
+    var foundMorador = null; /* morador encontrado pelo preview */
 
     function showPreview(msg, ok){
       if(!preview) return;
@@ -2580,25 +2562,28 @@
       preview.innerHTML = msg;
     }
 
-    function hidePreview(){ if(preview) preview.style.display='none'; }
+    function hidePreview(){ if(preview) preview.style.display='none'; foundMorador = null; }
 
     function doLookup(){
       var apto  = aptoInput ? aptoInput.value.trim() : '';
       var na    = blocoNa && blocoNa.checked;
       var bloco = na ? '' : (blocoInput ? blocoInput.value.trim() : '');
+      foundMorador = null;
       if(!apto){ hidePreview(); return; }
       var q = '/moradores?apartamento=eq.' + encodeURIComponent(apto);
       if(bloco) q += '&bloco=eq.' + encodeURIComponent(bloco);
       q += '&select=id,nome,telefone,apartamento,bloco&limit=1';
       supaApi('GET', q).then(function(rows){
         if(rows && rows.length){
-          var m = rows[0];
+          foundMorador = rows[0];
+          var m = foundMorador;
           var label = '✓ ' + m.nome + ' · Ap. ' + m.apartamento + (m.bloco ? ' Bl. ' + m.bloco : '') + (m.telefone ? ' · ' + m.telefone : '');
           showPreview(label, true);
         } else {
+          foundMorador = null;
           showPreview('✗ Apartamento não encontrado no cadastro de moradores', false);
         }
-      }).catch(function(){ hidePreview(); });
+      }).catch(function(){ foundMorador = null; hidePreview(); });
     }
 
     function scheduleLookup(){ clearTimeout(lookupTimer); lookupTimer = setTimeout(doLookup, 400); }
@@ -2618,11 +2603,8 @@
       var bloco = na ? 'N/A' : document.getElementById('package-input-bloco').value.trim();
       if(!apto) { showToast('Informe o apartamento', 'error'); document.getElementById('package-input-apto').focus(); return; }
       if(!bloco){ showToast('Informe o bloco ou marque N/A', 'error'); document.getElementById('package-input-bloco').focus(); return; }
-      PackageApp.create({
-        apto: apto,
-        bloco: bloco,
-        description: document.getElementById('package-input-description').value.trim()
-      });
+      if(!foundMorador){ showToast('Aguarde o apartamento ser localizado no cadastro', 'error'); return; }
+      PackageApp.createWithMorador(foundMorador, document.getElementById('package-input-description').value.trim());
       form.hidden = true;
       clearForm();
     });
@@ -2633,6 +2615,7 @@
       document.getElementById('package-input-bloco').disabled = false;
       document.getElementById('package-bloco-na').checked = false;
       document.getElementById('package-input-description').value = '';
+      foundMorador = null;
       hidePreview();
     }
   })();
