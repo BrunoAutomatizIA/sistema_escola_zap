@@ -404,7 +404,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const d = $json;\nconst t = (d.texto ?? '').trim();\nconst upper = t.toUpperCase();\nconst b = d.buttonId;\nconst etapa = d.sessaoEtapa ?? '';\n\nlet rota = 'menu';\nif (upper === 'CANCELAR') rota = 'cancelar';\nelse if (etapa.startsWith('visitante_')) rota = 'visitantes';\nelse if (etapa.startsWith('ocorrencia_')) rota = 'ocorrencias';\nelse if (b === 'btn_encomendas' || t === '1') rota = 'encomendas';\nelse if (b === 'btn_visitantes' || t === '2') rota = 'visitantes';\nelse if (b === 'btn_ocorrencias' || t === '3') rota = 'ocorrencias';\nelse if (upper.startsWith('RETIREI')) rota = 'retirada';\n\nreturn [{ json: { ...d, rota } }];"
+        "jsCode": "const d = $json;\nconst t = (d.texto ?? '').trim();\nconst upper = t.toUpperCase();\nconst b = d.buttonId;\nconst etapa = d.sessaoEtapa ?? '';\n\nlet rota = 'menu';\nif (upper === 'CANCELAR') rota = 'cancelar';\nelse if (etapa.startsWith('visitante_')) rota = 'visitantes';\nelse if (etapa.startsWith('ocorrencia_')) rota = 'ocorrencias';\nelse if (etapa.startsWith('servico_')) rota = 'servicos';\nelse if (b === 'btn_encomendas' || t === '1') rota = 'encomendas';\nelse if (b === 'btn_visitantes' || t === '2') rota = 'visitantes';\nelse if (b === 'btn_servicos' || t === '3') rota = 'servicos';\nelse if (b === 'btn_ocorrencias' || t === '4') rota = 'ocorrencias';\nelse if (upper.startsWith('RETIREI')) rota = 'retirada';\n\nreturn [{ json: { ...d, rota } }];"
       },
       "id": "3786a63a-e727-469a-a208-38f85a860f1f",
       "name": "Roteador",
@@ -545,6 +545,29 @@
                 "conditions": [
                   {
                     "leftValue": "={{ $json.rota }}",
+                    "rightValue": "servicos",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "servicos"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.rota }}",
                     "rightValue": "cancelar",
                     "operator": {
                       "type": "string",
@@ -596,7 +619,7 @@
             },
             {
               "name": "text",
-              "value": "={{ '🏢 *Portaria Digital*\\n\\nOlá, *' + $json.moradorNome + '*! 👋\\nAp. ' + $json.moradorApto + ' - Bloco ' + $json.moradorBloco + '\\n\\nComo posso ajudar?\\n\\n1️⃣  📦 Minhas Encomendas\\n2️⃣  🚗 Autorizar Visitante\\n3️⃣  ⚠️ Registrar Ocorrência\\n\\n_Digite o número da opção desejada_' }}"
+              "value": "={{ '🏢 *Portaria Digital*\\n\\nOlá, *' + $json.moradorNome + '*! 👋\\nAp. ' + $json.moradorApto + ' - Bloco ' + $json.moradorBloco + '\\n\\nComo posso ajudar?\\n\\n1️⃣  📦 Minhas Encomendas\\n2️⃣  🚗 Autorizar Visitantes\\n3️⃣  🔧 Solicitar Serviços\\n4️⃣  ⚠️ Registrar Ocorrências\\n\\n_Digite o número da opção desejada_' }}"
             }
           ]
         },
@@ -1593,7 +1616,7 @@
         "sendBody": true,
         "contentType": "raw",
         "rawContentType": "application/json",
-        "body": "={{ (function(){ const nd = JSON.parse($('Lógica Ocorrencia').item.json.nd); return JSON.stringify({ telefone: $('Lógica Ocorrencia').item.json.from, mensagem: nd.tipo + ' - ' + nd.local + ': ' + nd.descricao + ' (urgência: ' + nd.urgencia + ')', status: 'aberta' }); })() }}",
+        "body": "={{ (function(){ const nd = JSON.parse($('Lógica Ocorrencia').item.json.nd); return JSON.stringify({ telefone: $('Lógica Ocorrencia').item.json.from, titulo: nd.tipo + ' - ' + nd.local, mensagem: nd.descricao, local_ocorrencia: nd.local, urgencia: nd.urgencia || 'media', status: 'aberta' }); })() }}",
         "options": {
           "response": {
             "response": {
@@ -1609,6 +1632,223 @@
       "position": [
         2368,
         720
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $json;\nconst texto = (d.texto ?? '').trim();\nconst etapa = d.sessaoEtapa;\nconst dados = d.sessaoDados ?? {};\nconst base = { from: d.from, instance: d.instance, moradorId: d.moradorId, moradorNome: d.moradorNome, moradorApto: d.moradorApto, moradorBloco: d.moradorBloco };\nif (texto.toUpperCase() === 'CANCELAR') {\n  return [{ json: { ...base, ok: true, prox: null, nd: '{}', resp: 'Solicitação de serviço cancelada.\\n\\nDigite *menu* para voltar ao menu principal.' } }];\n}\nlet prox, nd = { ...dados }, resp, ok = false;\nif (!etapa || !etapa.startsWith('servico_')) {\n  prox = 'servico_tipo'; nd = {};\n  resp = '🔧 *Solicitar Serviço*\\n\\nQual é o tipo de serviço?\\n\\nExemplos: elétrica, encanamento, limpeza, manutenção, jardinagem.\\n\\n_Para cancelar, digite CANCELAR._';\n} else if (etapa === 'servico_tipo') {\n  if (texto.length < 3) { prox = 'servico_tipo'; resp = 'Informe o tipo de serviço.'; }\n  else { nd.tipo = texto; prox = 'servico_local'; resp = 'Onde precisa do serviço?\\n\\nExemplo: Ap. 304, hall de entrada, garagem.'; }\n} else if (etapa === 'servico_local') {\n  if (texto.length < 2) { prox = 'servico_local'; resp = 'Informe o local.'; }\n  else { nd.local = texto; prox = 'servico_descricao'; resp = 'Descreva o problema ou o serviço necessário.'; }\n} else if (etapa === 'servico_descricao') {\n  if (texto.length < 5) { prox = 'servico_descricao'; resp = 'Descreva com um pouco mais de detalhe.'; }\n  else { nd.descricao = texto; prox = 'servico_urgencia'; resp = 'Qual é a urgência?\\n\\nResponda: *baixa*, *média* ou *alta*.'; }\n} else if (etapa === 'servico_urgencia') {\n  const norm = texto.toLowerCase();\n  nd.urgencia = ['baixa','media','média','alta'].includes(norm) ? texto : 'média';\n  ok = true; prox = null;\n  resp = '✅ *Serviço solicitado!*\\n\\n*Tipo:* ' + nd.tipo + '\\n*Local:* ' + nd.local + '\\n*Urgência:* ' + nd.urgencia + '\\n*Descrição:* ' + nd.descricao + '\\n\\nProtocolo: SV-' + Date.now().toString().slice(-6) + '\\nA equipe de manutenção será acionada em breve! 🔧';\n} else {\n  prox = 'servico_tipo'; nd = {};\n  resp = 'Vamos começar de novo. Qual é o tipo de serviço?';\n}\nreturn [{ json: { ...base, ok, prox, nd: JSON.stringify(nd), resp } }];"
+      },
+      "id": "aa001111-bbbb-4ccc-dddd-ee0011223344",
+      "name": "Lógica Servicos",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1696,
+        864
+      ]
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/sessoes?telefone=eq.{{ $json.from }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "bb112233-cccc-4ddd-eeee-ff0011223344",
+      "name": "DELETE Sessao Servicos",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1920,
+        864
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "cc223344-dddd-4eee-ffff-aa0011223344",
+              "leftValue": "={{ $('Lógica Servicos').item.json.ok }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "dd334455-eeee-4fff-aaaa-bb0011223344",
+      "name": "Servicos OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2144,
+        864
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/sessoes",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ telefone: $('Lógica Servicos').item.json.from, etapa: $('Lógica Servicos').item.json.prox, dados: JSON.parse($('Lógica Servicos').item.json.nd), updated_at: new Date().toISOString() }) }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "ee445566-ffff-4aaa-bbbb-cc0011223344",
+      "name": "INSERT Sessao Servicos",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2368,
+        780
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/requisicoes",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ (function(){ const nd = JSON.parse($('Lógica Servicos').item.json.nd); return JSON.stringify({ telefone: $('Lógica Servicos').item.json.from, morador_id: $('Lógica Servicos').item.json.moradorId, tipo: nd.tipo, local_servico: nd.local, descricao: nd.descricao, urgencia: nd.urgencia || 'média', status: 'pendente' }); })() }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "ff556677-aaaa-4bbb-cccc-dd0011223344",
+      "name": "INSERT Requisicao",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2368,
+        960
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://evolution.automacaopme.com.br/message/sendText/{{ $('Lógica Servicos').item.json.instance }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "F5E45E6A06AC-4857-807A-923D226DE8E1"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('Lógica Servicos').item.json.from }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $('Lógica Servicos').item.json.resp }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "aa667788-bbbb-4ccc-dddd-ee0011223344",
+      "name": "Enviar Servicos",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2560,
+        960
       ]
     }
   ],
@@ -1804,7 +2044,76 @@
         ],
         [
           {
+            "node": "Lógica Servicos",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
             "node": "Cancelar Fluxo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lógica Servicos": {
+      "main": [
+        [
+          {
+            "node": "DELETE Sessao Servicos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DELETE Sessao Servicos": {
+      "main": [
+        [
+          {
+            "node": "Servicos OK?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Servicos OK?": {
+      "main": [
+        [
+          {
+            "node": "INSERT Sessao Servicos",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "INSERT Requisicao",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INSERT Sessao Servicos": {
+      "main": [
+        [
+          {
+            "node": "Enviar Servicos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INSERT Requisicao": {
+      "main": [
+        [
+          {
+            "node": "Enviar Servicos",
             "type": "main",
             "index": 0
           }

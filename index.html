@@ -1370,7 +1370,7 @@
           <span class="metric-label">Visitantes</span>
           <div class="metric-icon"><svg class="icon" aria-hidden="true"><use href="#icon-id-badge-2"/></svg></div>
         </div>
-        <div class="metric-value">5</div>
+        <div class="metric-value" id="metric-visitantes-value">5</div>
         <div class="metric-meta">entradas hoje</div>
       </div>
 
@@ -1388,7 +1388,7 @@
           <span class="metric-label">Moradores</span>
           <div class="metric-icon"><svg class="icon" aria-hidden="true"><use href="#icon-users"/></svg></div>
         </div>
-        <div class="metric-value">128</div>
+        <div class="metric-value" id="metric-moradores-value">128</div>
         <div class="metric-meta">cadastrados</div>
       </div>
 
@@ -1634,16 +1634,11 @@
 
     </div><!-- /page-requisicoes -->
 
-    <!-- ============ PAGINA: OCORRENCIAS ============ -->
+    <!-- ============ PAGINA: OCORRENCIAS (KANBAN) ============ -->
     <div class="page" id="page-ocorrencias">
 
       <div class="page-toolbar">
-        <div class="filter-row" style="margin: 0; flex: 1;">
-          <button class="filter-chip active" data-occ-filter="todas">Todas</button>
-          <button class="filter-chip" data-occ-filter="aberta">Abertas</button>
-          <button class="filter-chip" data-occ-filter="analise">Em análise</button>
-          <button class="filter-chip" data-occ-filter="resolvida">Resolvidas</button>
-        </div>
+        <div></div>
         <button class="btn-primary" id="btn-new-occurrence">
           <svg class="icon" aria-hidden="true"><use href="#icon-plus"/></svg> Nova ocorrência
         </button>
@@ -1652,23 +1647,19 @@
       <!-- FORMULARIO NOVA OCORRENCIA (oculto por padrao) -->
       <div class="occ-form-card" id="occ-form" hidden>
         <div class="section-title" style="margin-bottom: 1rem;">Nova ocorrência</div>
-
         <div class="form-grid">
           <label class="form-field">
             <span class="form-label">Título</span>
             <input type="text" id="occ-input-title" placeholder="Ex: Barulho excessivo">
           </label>
-
           <label class="form-field">
             <span class="form-label">Local / Apartamento</span>
             <input type="text" id="occ-input-location" placeholder="Ex: Apto 304 ou Subsolo 2">
           </label>
-
           <label class="form-field form-field-full">
             <span class="form-label">Descrição</span>
             <textarea id="occ-input-description" rows="3" placeholder="Descreva o ocorrido..."></textarea>
           </label>
-
           <label class="form-field">
             <span class="form-label">Urgência</span>
             <select id="occ-input-urgency">
@@ -1679,20 +1670,47 @@
             </select>
           </label>
         </div>
-
         <div class="form-actions">
           <button class="btn-secondary" id="btn-cancel-occurrence">Cancelar</button>
           <button class="btn-primary" id="btn-save-occurrence">Salvar ocorrência</button>
         </div>
       </div>
 
-      <!-- LISTA DE OCORRENCIAS -->
-      <div class="occurrence-list" id="occurrence-full-list"></div>
+      <!-- KANBAN DE OCORRENCIAS -->
+      <div class="kanban-board" id="occ-board">
 
-      <div class="empty-state" id="occ-empty-state" hidden>
-        <svg class="icon" aria-hidden="true"><use href="#icon-circle-check"/></svg>
-        <div class="empty-state-title">Nenhuma ocorrência encontrada</div>
-        <div class="empty-state-sub">Ajuste os filtros ou crie uma nova ocorrência</div>
+        <div class="kanban-column" data-status="aberta">
+          <div class="kanban-column-head">
+            <span class="kanban-column-title"><span class="kanban-dot" style="background:var(--status-danger-fg)"></span> Aberta</span>
+            <span class="kanban-count" id="occ-count-aberta">0</span>
+          </div>
+          <div class="kanban-cards" data-occ-column="aberta"></div>
+        </div>
+
+        <div class="kanban-column" data-status="analise">
+          <div class="kanban-column-head">
+            <span class="kanban-column-title"><span class="kanban-dot warning"></span> Em análise</span>
+            <span class="kanban-count" id="occ-count-analise">0</span>
+          </div>
+          <div class="kanban-cards" data-occ-column="analise"></div>
+        </div>
+
+        <div class="kanban-column" data-status="andamento">
+          <div class="kanban-column-head">
+            <span class="kanban-column-title"><span class="kanban-dot brand"></span> Em andamento</span>
+            <span class="kanban-count" id="occ-count-andamento">0</span>
+          </div>
+          <div class="kanban-cards" data-occ-column="andamento"></div>
+        </div>
+
+        <div class="kanban-column" data-status="resolvida">
+          <div class="kanban-column-head">
+            <span class="kanban-column-title"><span class="kanban-dot success"></span> Resolvida</span>
+            <span class="kanban-count" id="occ-count-resolvida">0</span>
+          </div>
+          <div class="kanban-cards" data-occ-column="resolvida"></div>
+        </div>
+
       </div>
 
     </div><!-- /page-ocorrencias -->
@@ -1840,8 +1858,8 @@
             <input type="text" id="mor-input-bloco" placeholder="Ex: A">
           </label>
           <label class="form-field">
-            <span class="form-label">Telefone</span>
-            <input type="text" id="mor-input-tel" placeholder="Ex: (11) 99999-0000">
+            <span class="form-label">Telefone <span style="color:var(--status-danger-fg)">*</span></span>
+            <input type="text" id="mor-input-tel" placeholder="Ex: 5511999990000 (com DDI e DDD)">
           </label>
         </div>
         <div class="form-actions">
@@ -1964,463 +1982,321 @@
   }
 
   /* ============================================
-     OCORRENCIAS - estado e renderizacao (Supabase)
+     OCORRENCIAS - Kanban com Supabase
      ============================================ */
   var OccApp = (function(){
     var occurrences = [];
+    var statusFlow = ['aberta','analise','andamento','resolvida'];
+    var statusLabels = { aberta:'Aberta', analise:'Em análise', andamento:'Em andamento', resolvida:'Resolvida' };
+    var urgencyLabels = { critica:'Crítica', alta:'Alta', media:'Média', baixa:'Baixa' };
+    var urgencyBadge = { critica:'badge-critical', alta:'badge-danger', media:'badge-warning', baixa:'badge-success' };
+    var urgencyOrder = { critica:0, alta:1, media:2, baixa:3 };
 
-    var urgencyLabels = { critica: 'Crítica', alta: 'Alta', media: 'Média', baixa: 'Baixa' };
-    var urgencyBadgeClass = { critica: 'badge-critical', alta: 'badge-danger', media: 'badge-warning', baixa: 'badge-success' };
-    var urgencyOrder = { critica: 0, alta: 1, media: 2, baixa: 3 };
-    var statusLabels = {
-      aberta: 'Aberta',
-      analise: 'Em análise',
-      andamento: 'Em andamento',
-      resolvida: 'Resolvida'
-    };
-    var statusBadgeClass = {
-      aberta: 'badge-neutral',
-      analise: 'badge-warning',
-      andamento: 'badge-info',
-      resolvida: 'badge-success'
-    };
+    function escapeHtml(str){ var d=document.createElement('div'); d.textContent=str||''; return d.innerHTML; }
 
-    var currentFilter = 'todas';
-    var nextId = 4;
-
-    function openCount(){
-      return occurrences.filter(function(o){ return o.status !== 'resolvida'; }).length;
-    }
-
-    function buildCard(occ, withResolve){
-      var resolved = occ.status === 'resolvida';
+    function buildKanbanCard(occ){
       var card = document.createElement('div');
-      card.className = 'occurrence-card urgency-' + occ.urgency;
-
-      var resolveBtn = '';
-      if(withResolve){
-        resolveBtn = '<button class="btn-resolve" data-resolve="' + occ.id + '"' + (resolved ? ' disabled' : '') + '>' +
-          '<svg class="icon" aria-hidden="true"><use href="#icon-circle-check"/></svg>' +
-          (resolved ? 'Resolvida' : 'Resolver') +
-          '</button>';
-      }
-
+      card.className = 'kanban-card';
+      card.setAttribute('data-urgency', occ.urgency);
+      var nextStatus = statusFlow[statusFlow.indexOf(occ.status)+1];
+      var advBtn = nextStatus
+        ? '<button class="kanban-card-advance" data-advance-occ="'+occ.id+'">' +
+            '<svg class="icon" aria-hidden="true"><use href="#icon-chevron-right"/></svg> Mover para '+statusLabels[nextStatus]+
+          '</button>'
+        : '<button class="kanban-card-advance" disabled>' +
+            '<svg class="icon" aria-hidden="true"><use href="#icon-circle-check"/></svg> Resolvida</button>';
       card.innerHTML =
-        '<div class="occ-top">' +
-          '<div class="occ-title">' + escapeHtml(occ.title) + '</div>' +
-          '<span class="badge ' + urgencyBadgeClass[occ.urgency] + '">' + urgencyLabels[occ.urgency] + '</span>' +
-        '</div>' +
-        '<div class="occ-desc">' + escapeHtml(occ.description) + '</div>' +
-        '<div class="occ-bottom">' +
-          '<div class="occ-meta">' +
-            '<span class="occ-meta-item"><svg class="icon" aria-hidden="true"><use href="#icon-clock"/></svg> ' + escapeHtml(occ.timeLabel) + '</span>' +
-            '<span class="occ-meta-item"><svg class="icon" aria-hidden="true"><use href="#icon-' + occ.locationIcon + '"/></svg> ' + escapeHtml(occ.location) + '</span>' +
-          '</div>' +
-          '<div style="display:flex; align-items:center; gap:8px;">' +
-            '<span class="badge ' + statusBadgeClass[occ.status] + '">' + statusLabels[occ.status] + '</span>' +
-            resolveBtn +
-          '</div>' +
-        '</div>';
-
+        '<div class="kanban-card-head"><span class="badge '+(urgencyBadge[occ.urgency]||'badge-neutral')+'">'+escapeHtml(urgencyLabels[occ.urgency]||'Média')+'</span></div>'+
+        '<div class="kanban-card-title">'+escapeHtml(occ.title)+'</div>'+
+        '<div class="kanban-card-meta">'+escapeHtml(occ.location)+'</div>'+
+        '<div class="kanban-card-footer">'+
+          '<span class="kanban-card-time"><svg class="icon" aria-hidden="true"><use href="#icon-clock"/></svg> '+escapeHtml(occ.timeLabel)+'</span>'+
+          '<span class="kanban-card-source"><svg class="icon" aria-hidden="true"><use href="#icon-robot"/></svg> via bot</span>'+
+        '</div>'+advBtn;
       return card;
     }
 
-    function escapeHtml(str){
-      var div = document.createElement('div');
-      div.textContent = str;
-      return div.innerHTML;
+    function renderBoard(){
+      statusFlow.forEach(function(status){
+        var col = document.querySelector('[data-occ-column="'+status+'"]');
+        var cnt = document.getElementById('occ-count-'+status);
+        if(!col) return;
+        col.innerHTML = '';
+        var items = occurrences.filter(function(o){ return o.status===status; })
+          .sort(function(a,b){ return (urgencyOrder[a.urgency]||2)-(urgencyOrder[b.urgency]||2); });
+        items.forEach(function(o){ col.appendChild(buildKanbanCard(o)); });
+        if(cnt) cnt.textContent = items.length;
+      });
+      updateBadges();
+      renderSummary();
     }
 
     function renderSummary(){
       var container = document.getElementById('occurrence-summary-list');
       if(!container) return;
       container.innerHTML = '';
-      var open = occurrences.filter(function(o){ return o.status !== 'resolvida'; })
-        .slice()
-        .sort(function(a, b){
-          var ao = urgencyOrder.hasOwnProperty(a.urgency) ? urgencyOrder[a.urgency] : 99;
-          var bo = urgencyOrder.hasOwnProperty(b.urgency) ? urgencyOrder[b.urgency] : 99;
-          return ao - bo;
-        })
-        .slice(0, 3);
-      if(open.length === 0){
-        var empty = document.createElement('div');
-        empty.className = 'empty-state';
-        empty.innerHTML = '<svg class="icon" aria-hidden="true"><use href="#icon-circle-check"/></svg>' +
-          '<div class="empty-state-title">Nenhuma ocorrência em aberto</div>' +
-          '<div class="empty-state-sub">Tudo certo por aqui</div>';
-        container.appendChild(empty);
+      var open = occurrences.filter(function(o){ return o.status!=='resolvida'; })
+        .sort(function(a,b){ return (urgencyOrder[a.urgency]||2)-(urgencyOrder[b.urgency]||2); })
+        .slice(0,3);
+      if(!open.length){
+        container.innerHTML='<div class="empty-state"><svg class="icon" aria-hidden="true"><use href="#icon-circle-check"/></svg><div class="empty-state-title">Nenhuma ocorrência em aberto</div><div class="empty-state-sub">Tudo certo por aqui</div></div>';
         return;
       }
       open.forEach(function(occ){
-        container.appendChild(buildCard(occ, false));
-      });
-    }
-
-    function renderFullList(){
-      var container = document.getElementById('occurrence-full-list');
-      var emptyState = document.getElementById('occ-empty-state');
-      if(!container) return;
-      container.innerHTML = '';
-
-      var filtered = occurrences.filter(function(o){
-        if(currentFilter === 'todas') return true;
-        return o.status === currentFilter || (currentFilter === 'aberta' && o.status === 'andamento');
-      });
-
-      filtered = filtered.slice().sort(function(a, b){
-        var ao = urgencyOrder.hasOwnProperty(a.urgency) ? urgencyOrder[a.urgency] : 99;
-        var bo = urgencyOrder.hasOwnProperty(b.urgency) ? urgencyOrder[b.urgency] : 99;
-        return ao - bo;
-      });
-
-      if(filtered.length === 0){
-        container.hidden = true;
-        if(emptyState) emptyState.hidden = false;
-        return;
-      }
-
-      container.hidden = false;
-      if(emptyState) emptyState.hidden = true;
-
-      filtered.forEach(function(occ){
-        container.appendChild(buildCard(occ, true));
+        var card=document.createElement('div');
+        card.className='occurrence-card urgency-'+occ.urgency;
+        card.innerHTML=
+          '<div class="occ-top"><div class="occ-title">'+escapeHtml(occ.title)+'</div>'+
+          '<span class="badge '+(urgencyBadge[occ.urgency]||'badge-neutral')+'">'+(urgencyLabels[occ.urgency]||'Média')+'</span></div>'+
+          '<div class="occ-desc">'+escapeHtml(occ.description)+'</div>';
+        container.appendChild(card);
       });
     }
 
     function updateBadges(){
-      var count = openCount();
-      var s1 = document.getElementById('badge-ocorrencias-sidebar');
-      var s2 = document.getElementById('badge-ocorrencias-bottom');
-      var metric = document.getElementById('metric-ocorrencias-value');
-      if(s1) s1.textContent = count;
-      if(s2) s2.textContent = count;
-      if(metric) metric.textContent = count;
-    }
-
-    function addActivity(dotClass, html, when){
-      var list = document.getElementById('activity-list');
-      if(!list) return;
-      var item = document.createElement('div');
-      item.className = 'activity-item';
-      item.innerHTML = '<div class="activity-dot ' + dotClass + '"></div><div><div class="activity-text">' + html + '</div><div class="activity-time">' + when + '</div></div>';
-      list.insertBefore(item, list.firstChild);
-    }
-
-    function renderAll(){
-      renderSummary();
-      renderFullList();
-      updateBadges();
+      var count=occurrences.filter(function(o){ return o.status!=='resolvida'; }).length;
+      ['badge-ocorrencias-sidebar','badge-ocorrencias-bottom'].forEach(function(id){ var el=document.getElementById(id); if(el) el.textContent=count; });
+      var metric=document.getElementById('metric-ocorrencias-value'); if(metric) metric.textContent=count;
     }
 
     function loadFromSupabase(){
-      return supaApi('GET', '/atendimentos?select=*&order=created_at.desc').then(function(rows){
-        occurrences = rows.map(function(r){
-          var s = r.status || 'aberta';
-          // mapeia status do supabase para os usados no dashboard
-          var statusMap = { aberta: 'aberta', resolvida: 'resolvida', andamento: 'andamento', analise: 'analise' };
+      return supaApi('GET','/atendimentos?select=*&order=created_at.desc').then(function(rows){
+        occurrences=rows.map(function(r){
+          var statusMap={aberta:'aberta',analise:'analise',andamento:'andamento',resolvida:'resolvida'};
           return {
             id: r.id,
-            title: r.mensagem ? r.mensagem.substring(0, 60) : 'Ocorrência #' + r.id,
-            location: r.telefone || 'Portaria',
-            description: r.mensagem || '',
-            urgency: r.urgency || 'media',
-            status: statusMap[s] || 'aberta',
-            timeLabel: fmtRelative(r.created_at),
-            locationIcon: 'map-pin'
+            title: r.titulo||(r.mensagem?r.mensagem.substring(0,60):'Ocorrência #'+r.id),
+            location: r.local_ocorrencia||r.telefone||'Portaria',
+            description: r.mensagem||'',
+            urgency: r.urgencia||'media',
+            status: statusMap[r.status]||'aberta',
+            timeLabel: fmtRelative(r.created_at)
           };
         });
-        renderAll();
-      }).catch(function(e){
-        console.error('OccApp load error:', e);
-        showToast('Erro ao carregar ocorrências', 'error');
-      });
+        renderBoard();
+      }).catch(function(e){ console.error('OccApp:',e); showToast('Erro ao carregar ocorrências','error'); });
     }
 
-    function resolve(id){
-      var occ = occurrences.find(function(o){ return o.id === id; });
-      if(!occ || occ.status === 'resolvida') return;
-      supaApi('PATCH', '/atendimentos?id=eq.' + id, { status: 'resolvida' }).then(function(){
-        occ.status = 'resolvida';
-        addActivity('success', '<strong>Ocorrência resolvida:</strong> ' + escapeHtml(occ.title), 'agora mesmo');
-        renderAll();
-        showToast('Ocorrência resolvida!');
-      }).catch(function(e){
-        showToast('Erro ao resolver: ' + (e.message || 'tente novamente'), 'error');
-      });
+    function advance(id){
+      var occ=occurrences.find(function(o){ return o.id==id; });
+      if(!occ) return;
+      var idx=statusFlow.indexOf(occ.status);
+      if(idx>=statusFlow.length-1) return;
+      var next=statusFlow[idx+1];
+      supaApi('PATCH','/atendimentos?id=eq.'+id,{status:next}).then(function(){
+        occ.status=next; occ.timeLabel='agora mesmo'; renderBoard(); showToast('Status atualizado!');
+      }).catch(function(e){ showToast('Erro: '+(e.message||''),'error'); });
     }
 
     function create(data){
-      var now = new Date();
-      var when = now.toLocaleDateString('pt-BR') + ', ' + now.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'});
-      var payload = {
-        mensagem: data.description ? (data.title + (data.location ? ' — ' + data.location : '') + (data.description ? ': ' + data.description : '')) : data.title,
-        telefone: data.location || 'portaria',
-        status: 'aberta'
+      var payload={
+        mensagem: data.title+(data.location?' — '+data.location:'')+(data.description?': '+data.description:''),
+        titulo: data.title,
+        local_ocorrencia: data.location||'Portaria',
+        urgencia: data.urgency||'media',
+        telefone: data.location||'portaria',
+        status:'aberta'
       };
-      supaApi('POST', '/atendimentos', payload).then(function(rows){
-        var row = Array.isArray(rows) ? rows[0] : rows;
-        var occ = {
-          id: row ? row.id : ('tmp-' + Date.now()),
-          title: data.title || 'Ocorrência sem título',
-          location: data.location || 'Não informado',
-          description: data.description || '',
-          urgency: data.urgency || 'media',
-          status: 'aberta',
-          timeLabel: 'agora mesmo',
-          locationIcon: 'map-pin'
-        };
-        occurrences.unshift(occ);
-        addActivity('danger', '<strong>Nova ocorrência:</strong> ' + escapeHtml(occ.title) + (occ.location ? ' — ' + escapeHtml(occ.location) : ''), when);
-        renderAll();
-        showToast('Ocorrência registrada!');
-      }).catch(function(e){
-        showToast('Erro ao salvar: ' + (e.message || 'tente novamente'), 'error');
-      });
+      supaApi('POST','/atendimentos',payload).then(function(rows){
+        var row=Array.isArray(rows)?rows[0]:rows;
+        var occ={id:row?row.id:('tmp-'+Date.now()),title:data.title,location:data.location||'',description:data.description||'',urgency:data.urgency||'media',status:'aberta',timeLabel:'agora mesmo'};
+        occurrences.unshift(occ); renderBoard(); showToast('Ocorrência registrada!');
+      }).catch(function(e){ showToast('Erro ao salvar: '+(e.message||''),'error'); });
     }
 
-    function setFilter(filter){
-      currentFilter = filter;
-      renderFullList();
-    }
+    /* stub mantido para não quebrar referências antigas */
+    function renderAll(){ renderBoard(); }
+    function setFilter(){ renderBoard(); }
 
-    return {
-      loadFromSupabase: loadFromSupabase,
-      renderAll: renderAll,
-      resolve: resolve,
-      create: create,
-      setFilter: setFilter
-    };
+    return { loadFromSupabase:loadFromSupabase, renderBoard:renderBoard, renderAll:renderAll, advance:advance, create:create, setFilter:setFilter };
   })();
 
   OccApp.loadFromSupabase();
 
-  /* Delegacao de clique para botoes "Resolver" (gerados dinamicamente) */
   document.addEventListener('click', function(e){
-    var btn = e.target.closest('[data-resolve]');
-    if(btn){
-      OccApp.resolve(btn.getAttribute('data-resolve'));
-    }
-  });
-
-  /* Filtros da pagina Ocorrencias */
-  document.querySelectorAll('[data-occ-filter]').forEach(function(chip){
-    chip.addEventListener('click', function(){
-      document.querySelectorAll('[data-occ-filter]').forEach(function(c){ c.classList.remove('active'); });
-      chip.classList.add('active');
-      OccApp.setFilter(chip.getAttribute('data-occ-filter'));
-    });
+    var btn=e.target.closest('[data-advance-occ]');
+    if(btn) OccApp.advance(btn.getAttribute('data-advance-occ'));
   });
 
   /* Formulario de nova ocorrencia */
   (function(){
-    var form = document.getElementById('occ-form');
-    var btnNew = document.getElementById('btn-new-occurrence');
-    var btnCancel = document.getElementById('btn-cancel-occurrence');
-    var btnSave = document.getElementById('btn-save-occurrence');
-
-    if(!form || !btnNew) return;
-
-    btnNew.addEventListener('click', function(){
-      form.hidden = !form.hidden;
+    var form=document.getElementById('occ-form');
+    var btnNew=document.getElementById('btn-new-occurrence');
+    var btnCancel=document.getElementById('btn-cancel-occurrence');
+    var btnSave=document.getElementById('btn-save-occurrence');
+    if(!form||!btnNew) return;
+    btnNew.addEventListener('click',function(){ form.hidden=!form.hidden; });
+    btnCancel.addEventListener('click',function(){ form.hidden=true; clearForm(); });
+    btnSave.addEventListener('click',function(){
+      var title=document.getElementById('occ-input-title').value.trim();
+      if(!title){ document.getElementById('occ-input-title').focus(); return; }
+      OccApp.create({
+        title:title,
+        location:document.getElementById('occ-input-location').value.trim(),
+        description:document.getElementById('occ-input-description').value.trim(),
+        urgency:document.getElementById('occ-input-urgency').value
+      });
+      form.hidden=true; clearForm();
     });
-
-    btnCancel.addEventListener('click', function(){
-      form.hidden = true;
-      clearForm();
-    });
-
-    btnSave.addEventListener('click', function(){
-      var title = document.getElementById('occ-input-title').value.trim();
-      var location = document.getElementById('occ-input-location').value.trim();
-      var description = document.getElementById('occ-input-description').value.trim();
-      var urgency = document.getElementById('occ-input-urgency').value;
-
-      if(!title){
-        document.getElementById('occ-input-title').focus();
-        return;
-      }
-
-      OccApp.create({ title: title, location: location, description: description, urgency: urgency });
-      form.hidden = true;
-      clearForm();
-    });
-
     function clearForm(){
-      document.getElementById('occ-input-title').value = '';
-      document.getElementById('occ-input-location').value = '';
-      document.getElementById('occ-input-description').value = '';
-      document.getElementById('occ-input-urgency').value = 'media';
+      document.getElementById('occ-input-title').value='';
+      document.getElementById('occ-input-location').value='';
+      document.getElementById('occ-input-description').value='';
+      document.getElementById('occ-input-urgency').value='media';
     }
   })();
 
+  /* ============================================ BLOCO REMOVIDO — filtros antigos de ocorrência ============================================ */
+  /* (chips de filtro foram removidos junto com a lista; o kanban não usa filtros) */
+
+  /* dummy para não quebrar referência */
+  function _noop(){}
+
   /* ============================================
-     REQUISICOES - matriz urgencia x status
+     PLACEHOLDER — início do bloco OccApp antigo (removido)
+     ============================================ */
+  /* O código abaixo (que existia aqui) foi substituído pelo OccApp acima */
+  /* Mantemos apenas o delimitador para facilitar o merge futuro */
+
+  /* ============================================
+     abaixo: trecho legado removido do OccApp
+     (renderFullList, updateBadges, addActivity, etc.)
+     ============================================ */
+
+  /* ============================================
+     REQUISICOES - Kanban com Supabase (Solicitar Serviços)
      ============================================ */
   var ReqApp = (function(){
-    var urgencyOrder = ['critica', 'alta', 'media', 'baixa'];
-    var urgencyLabels = { critica: 'Crítica', alta: 'Alta', media: 'Média', baixa: 'Baixa' };
+    var urgencyOrder = ['critica','alta','media','baixa'];
+    var urgencyLabels = { critica:'Crítica', alta:'Alta', media:'Média', baixa:'Baixa' };
+    var urgencyBadge = { critica:'badge-critical', alta:'badge-danger', media:'badge-warning', baixa:'badge-success' };
+    var statusFlow = ['pendente','analise','andamento','resolvido'];
+    var statusLabels = { pendente:'Pendente', analise:'Em análise', andamento:'Em andamento', resolvido:'Resolvido' };
+    var statusDotClass = { pendente:'warning', analise:'info', andamento:'brand', resolvido:'success' };
 
-    var statusFlow = ['pendente', 'analise', 'andamento', 'resolvido'];
-    var statusLabels = { pendente: 'Pendente', analise: 'Em análise', andamento: 'Em andamento', resolvido: 'Resolvido' };
-    var statusDotClass = { pendente: 'warning', analise: 'info', andamento: 'brand', resolvido: 'success' };
+    var items = [];
 
-    var items = [
-      { id: 'req-1', type: 'Reserva', typeBadge: 'badge-warning', title: 'Salão de festas', meta: 'Apto 304 · Maria Souza', timeLabel: 'há 2h', urgency: 'media', status: 'pendente' },
-      { id: 'req-2', type: 'Encomenda', typeBadge: 'badge-neutral', title: 'Entrega antecipada', meta: 'Apto 507 · Ana Ferreira', timeLabel: 'há 15min', urgency: 'media', status: 'pendente' },
-      { id: 'req-3', type: 'Visitante', typeBadge: 'badge-info', title: 'Liberação recorrente', meta: 'Apto 112 · Carlos Lima', timeLabel: 'há 40min', urgency: 'baixa', status: 'pendente' },
-      { id: 'req-4', type: 'Ocorrência', typeBadge: 'badge-danger', title: 'Vaga de garagem ocupada', meta: 'Subsolo 2 · Vaga 34', timeLabel: 'há 3h', urgency: 'media', status: 'analise' },
-      { id: 'req-5', type: 'Ocorrência', typeBadge: 'badge-danger', title: 'Barulho do vizinho de cima', meta: 'Apto 201', timeLabel: 'há 1 dia', urgency: 'alta', status: 'andamento' },
-      { id: 'req-6', type: 'Manutenção', typeBadge: 'badge-success', title: 'Portão da garagem com defeito', meta: 'Subsolo 1', timeLabel: 'ontem', urgency: 'media', status: 'resolvido' }
-    ];
+    function escapeHtml(str){ var d=document.createElement('div'); d.textContent=str||''; return d.innerHTML; }
 
-    function escapeHtml(str){
-      var div = document.createElement('div');
-      div.textContent = str;
-      return div.innerHTML;
-    }
+    function makeDiv(cls, html){ var d=document.createElement('div'); d.className=cls; d.innerHTML=html; return d; }
 
     function buildCard(item){
-      var card = document.createElement('div');
-      card.className = 'kanban-card';
+      var card=document.createElement('div');
+      card.className='kanban-card';
       card.setAttribute('data-urgency', item.urgency);
-
-      var nextStatus = statusFlow[statusFlow.indexOf(item.status) + 1];
-      var advanceBtn;
-      if(nextStatus){
-        advanceBtn = '<button class="kanban-card-advance" data-advance-req="' + item.id + '">' +
-          '<svg class="icon" aria-hidden="true"><use href="#icon-chevron-right"/></svg> Mover para ' + statusLabels[nextStatus] +
-          '</button>';
-      } else {
-        advanceBtn = '<button class="kanban-card-advance" disabled>' +
-          '<svg class="icon" aria-hidden="true"><use href="#icon-circle-check"/></svg> Resolvido</button>';
-      }
-
-      card.innerHTML =
-        '<div class="kanban-card-head">' +
-          '<span class="badge ' + item.typeBadge + '">' + escapeHtml(item.type) + '</span>' +
-        '</div>' +
-        '<div class="kanban-card-title">' + escapeHtml(item.title) + '</div>' +
-        '<div class="kanban-card-meta">' + escapeHtml(item.meta) + '</div>' +
-        '<div class="kanban-card-footer">' +
-          '<span class="kanban-card-time"><svg class="icon" aria-hidden="true"><use href="#icon-clock"/></svg> ' + escapeHtml(item.timeLabel) + '</span>' +
-          '<span class="kanban-card-source"><svg class="icon" aria-hidden="true"><use href="#icon-robot"/></svg> via bot</span>' +
-        '</div>' +
-        advanceBtn;
-
+      var nextStatus=statusFlow[statusFlow.indexOf(item.status)+1];
+      var advBtn=nextStatus
+        ? '<button class="kanban-card-advance" data-advance-req="'+item.id+'">' +
+            '<svg class="icon" aria-hidden="true"><use href="#icon-chevron-right"/></svg> Mover para '+statusLabels[nextStatus]+'</button>'
+        : '<button class="kanban-card-advance" disabled>' +
+            '<svg class="icon" aria-hidden="true"><use href="#icon-circle-check"/></svg> Resolvido</button>';
+      card.innerHTML=
+        '<div class="kanban-card-head">'+
+          '<span class="badge badge-info">'+escapeHtml(item.tipo||'Serviço')+'</span>'+
+          '<span class="badge '+(urgencyBadge[item.urgency]||'badge-neutral')+'">'+escapeHtml(urgencyLabels[item.urgency]||'Média')+'</span>'+
+        '</div>'+
+        '<div class="kanban-card-title">'+escapeHtml(item.descricao||'—')+'</div>'+
+        '<div class="kanban-card-meta">'+escapeHtml(item.meta)+'</div>'+
+        '<div class="kanban-card-footer">'+
+          '<span class="kanban-card-time"><svg class="icon" aria-hidden="true"><use href="#icon-clock"/></svg> '+escapeHtml(item.timeLabel)+'</span>'+
+          '<span class="kanban-card-source"><svg class="icon" aria-hidden="true"><use href="#icon-robot"/></svg> via bot</span>'+
+        '</div>'+advBtn;
       return card;
     }
 
     function renderMatrix(){
-      var container = document.getElementById('req-matrix');
+      var container=document.getElementById('req-matrix');
       if(!container) return;
-      container.innerHTML = '';
-
-      var grid = document.createElement('div');
-      grid.className = 'req-matrix-grid';
-
-      // cabecalho: canto vazio + colunas de status
-      grid.appendChild(makeDiv('req-matrix-corner', ''));
+      container.innerHTML='';
+      var grid=document.createElement('div');
+      grid.className='req-matrix-grid';
+      grid.appendChild(makeDiv('req-matrix-corner',''));
       statusFlow.forEach(function(status){
-        var head = makeDiv('req-matrix-col-head', '<span class="kanban-dot ' + statusDotClass[status] + '"></span> ' + statusLabels[status]);
-        grid.appendChild(head);
+        grid.appendChild(makeDiv('req-matrix-col-head','<span class="kanban-dot '+statusDotClass[status]+'"></span> '+statusLabels[status]));
       });
-
-      // linhas: urgencia + celulas por status
       urgencyOrder.forEach(function(urgency){
-        var rowHead = makeDiv('req-matrix-row-head ' + urgency, urgencyLabels[urgency]);
-        grid.appendChild(rowHead);
-
+        grid.appendChild(makeDiv('req-matrix-row-head '+urgency, urgencyLabels[urgency]));
         statusFlow.forEach(function(status){
-          var cell = document.createElement('div');
-          cell.className = 'req-matrix-cell';
-          var cellItems = items.filter(function(i){ return i.urgency === urgency && i.status === status; });
-          if(cellItems.length === 0){
-            cell.appendChild(makeDiv('req-matrix-cell-empty', '—'));
-          } else {
-            cellItems.forEach(function(item){
-              cell.appendChild(buildCard(item));
-            });
-          }
+          var cell=document.createElement('div');
+          cell.className='req-matrix-cell';
+          var ci=items.filter(function(i){ return i.urgency===urgency&&i.status===status; });
+          if(!ci.length){ cell.appendChild(makeDiv('req-matrix-cell-empty','—')); }
+          else { ci.forEach(function(i){ cell.appendChild(buildCard(i)); }); }
           grid.appendChild(cell);
         });
       });
-
       container.appendChild(grid);
     }
 
-    function makeDiv(className, html){
-      var div = document.createElement('div');
-      div.className = className;
-      div.innerHTML = html;
-      return div;
-    }
-
     function renderList(){
-      var container = document.getElementById('req-list');
+      var container=document.getElementById('req-list');
       if(!container) return;
-      container.innerHTML = '';
-
+      container.innerHTML='';
       urgencyOrder.forEach(function(urgency){
-        var groupItems = items.filter(function(i){ return i.urgency === urgency; });
-
-        var group = document.createElement('div');
-        var groupHead = makeDiv('req-group-head ' + urgency, urgencyLabels[urgency] + ' urgência (' + groupItems.length + ')');
-        group.appendChild(groupHead);
-
-        if(groupItems.length === 0){
-          group.appendChild(makeDiv('req-empty-group', 'Nenhum item nesta urgência'));
-          container.appendChild(group);
-          return;
-        }
-
+        var gi=items.filter(function(i){ return i.urgency===urgency; });
+        var group=document.createElement('div');
+        group.appendChild(makeDiv('req-group-head '+urgency, urgencyLabels[urgency]+' urgência ('+gi.length+')'));
+        if(!gi.length){ group.appendChild(makeDiv('req-empty-group','Nenhum item nesta urgência')); container.appendChild(group); return; }
         statusFlow.forEach(function(status){
-          var statusItems = groupItems.filter(function(i){ return i.status === status; });
-          if(statusItems.length === 0) return;
-
-          var block = document.createElement('div');
-          block.className = 'req-status-block';
-          block.appendChild(makeDiv('req-status-label', '<span class="kanban-dot ' + statusDotClass[status] + '"></span> ' + statusLabels[status]));
-
-          var cardsWrap = document.createElement('div');
-          cardsWrap.className = 'req-status-cards';
-          statusItems.forEach(function(item){
-            cardsWrap.appendChild(buildCard(item));
-          });
-          block.appendChild(cardsWrap);
+          var si=gi.filter(function(i){ return i.status===status; });
+          if(!si.length) return;
+          var block=document.createElement('div');
+          block.className='req-status-block';
+          block.appendChild(makeDiv('req-status-label','<span class="kanban-dot '+statusDotClass[status]+'"></span> '+statusLabels[status]));
+          var wrap=document.createElement('div');
+          wrap.className='req-status-cards';
+          si.forEach(function(i){ wrap.appendChild(buildCard(i)); });
+          block.appendChild(wrap);
           group.appendChild(block);
         });
-
         container.appendChild(group);
       });
     }
 
-    function renderAll(){
-      renderMatrix();
-      renderList();
+    function renderAll(){ renderMatrix(); renderList(); updateBadge(); }
+
+    function updateBadge(){
+      var count=items.filter(function(i){ return i.status!=='resolvido'; }).length;
+      document.querySelectorAll('[data-page="requisicoes"] .badge, [data-page="requisicoes"] ~ .badge').forEach(function(){});
+      /* badge no sidebar */
+      var nb=document.querySelector('.nav-item[data-page="requisicoes"] .badge');
+      if(nb) nb.textContent=count;
+    }
+
+    function loadFromSupabase(){
+      return supaApi('GET','/requisicoes?select=*,moradores(nome,apartamento)&order=created_at.desc').then(function(rows){
+        items=rows.map(function(r){
+          var m=r.moradores||{};
+          var meta=m.nome?(m.nome+(m.apartamento?' · Ap.'+m.apartamento:'')):r.telefone||'—';
+          return { id:r.id, tipo:r.tipo||'Serviço', descricao:r.descricao||'', meta:meta, urgency:r.urgencia||'media', status:r.status||'pendente', timeLabel:fmtRelative(r.created_at) };
+        });
+        renderAll();
+      }).catch(function(e){
+        console.warn('ReqApp: tabela requisicoes pode não existir ainda.', e.message);
+        items=[];
+        renderAll();
+      });
     }
 
     function advance(id){
-      var item = items.find(function(i){ return i.id === id; });
+      var item=items.find(function(i){ return i.id==id; });
       if(!item) return;
-      var idx = statusFlow.indexOf(item.status);
-      if(idx < statusFlow.length - 1){
-        item.status = statusFlow[idx + 1];
-        item.timeLabel = 'agora mesmo';
-        renderAll();
-      }
+      var idx=statusFlow.indexOf(item.status);
+      if(idx>=statusFlow.length-1) return;
+      var next=statusFlow[idx+1];
+      supaApi('PATCH','/requisicoes?id=eq.'+id,{status:next}).then(function(){
+        item.status=next; item.timeLabel='agora mesmo'; renderAll(); showToast('Status atualizado!');
+      }).catch(function(e){ showToast('Erro: '+(e.message||''),'error'); });
     }
 
-    return { renderAll: renderAll, advance: advance };
+    return { loadFromSupabase:loadFromSupabase, renderAll:renderAll, advance:advance };
   })();
 
-  ReqApp.renderAll();
+  ReqApp.loadFromSupabase();
 
   document.addEventListener('click', function(e){
-    var btn = e.target.closest('[data-advance-req]');
-    if(btn){
-      ReqApp.advance(btn.getAttribute('data-advance-req'));
-    }
+    var btn=e.target.closest('[data-advance-req]');
+    if(btn) ReqApp.advance(btn.getAttribute('data-advance-req'));
   });
 
   /* ============================================
@@ -2499,15 +2375,31 @@
       if(metric) metric.textContent = pending;
     }
 
+    var EVOL_URL = 'https://evolution.automacaopme.com.br/message/sendText/N8N-Portaria';
+    var EVOL_KEY = 'F5E45E6A06AC-4857-807A-923D226DE8E1';
+
+    function sendWhatsApp(phone, text){
+      /* normaliza: remove tudo que não é dígito, adiciona 55 se faltar */
+      var digits = phone.replace(/\D/g, '');
+      if(digits.length <= 11) digits = '55' + digits;
+      return fetch(EVOL_URL, {
+        method: 'POST',
+        headers: { 'apikey': EVOL_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ number: digits, text: text })
+      });
+    }
+
     function loadFromSupabase(){
-      return supaApi('GET', '/encomendas?select=*,moradores(nome,apartamento,bloco)&order=data_recebimento.desc').then(function(rows){
+      return supaApi('GET', '/encomendas?select=*,moradores(id,nome,telefone,apartamento,bloco)&order=data_recebimento.desc').then(function(rows){
         packages = rows.map(function(r){
           var m = r.moradores || {};
-          var resident = m.nome ? (m.nome + (m.apartamento ? ' · Ap. ' + m.apartamento : '') + (m.bloco ? ' Bl.' + m.bloco : '')) : 'Morador #' + r.morador_id;
+          var resident = m.nome ? (m.nome + (m.apartamento ? ' · Ap. ' + m.apartamento : '') + (m.bloco ? ' Bl.' + m.bloco : '')) : (r.morador_id ? 'Morador #' + r.morador_id : 'Não informado');
           var kanbanStatus = supaToKanban[r.status] || 'recebida';
           return {
             id: r.id,
             resident: resident,
+            moradorNome: m.nome || '',
+            moradorPhone: m.telefone || '',
             description: r.descricao || 'Encomenda',
             status: kanbanStatus,
             timeLabel: fmtRelative(r.data_recebimento)
@@ -2533,35 +2425,64 @@
         pkg.status = nextKanban;
         pkg.timeLabel = 'agora mesmo';
         renderAll();
-        showToast(nextKanban === 'notificado' ? 'Morador notificado!' : 'Retirada confirmada!');
+        if(nextKanban === 'notificado' && pkg.moradorPhone){
+          var msg = '📦 *Encomenda disponível!*\n\nOlá, ' + (pkg.moradorNome || 'morador') + '! Você tem uma encomenda aguardando na portaria.\n\n*Descrição:* ' + pkg.description + '\n\nEnvie *1* para ver suas encomendas e confirmar a retirada.';
+          sendWhatsApp(pkg.moradorPhone, msg).then(function(){
+            showToast('WhatsApp enviado ao morador!');
+          }).catch(function(){
+            showToast('Status atualizado, mas falha ao enviar WhatsApp', 'error');
+          });
+        } else {
+          showToast(nextKanban === 'notificado' ? 'Status atualizado (sem telefone cadastrado)' : 'Retirada confirmada!');
+        }
       }).catch(function(e){
         showToast('Erro: ' + (e.message || 'tente novamente'), 'error');
       });
     }
 
     function create(data){
-      // busca morador por nome/apto se possível, senão cria sem morador_id
-      var payload = {
-        descricao: data.description || 'Encomenda',
-        status: 'aguardando',
-        data_recebimento: new Date().toISOString()
-      };
-      // tenta extrair morador_id se data.residentId existir
-      if(data.residentId) payload.morador_id = data.residentId;
-      supaApi('POST', '/encomendas', payload).then(function(rows){
-        var row = Array.isArray(rows) ? rows[0] : rows;
-        var pkg = {
-          id: row ? row.id : ('tmp-' + Date.now()),
-          resident: data.resident || 'Não informado',
-          description: data.description || 'Encomenda sem descrição',
-          status: 'recebida',
-          timeLabel: 'agora mesmo'
+      var description = data.description || 'Encomenda';
+      var residentText = data.resident || '';
+
+      function savePackage(moradorId, moradorNome, moradorPhone){
+        var payload = {
+          descricao: description,
+          status: 'aguardando',
+          data_recebimento: new Date().toISOString()
         };
-        packages.unshift(pkg);
-        renderAll();
-        showToast('Encomenda registrada!');
-      }).catch(function(e){
-        showToast('Erro ao salvar: ' + (e.message || 'tente novamente'), 'error');
+        if(moradorId) payload.morador_id = moradorId;
+        supaApi('POST', '/encomendas', payload).then(function(rows){
+          var row = Array.isArray(rows) ? rows[0] : rows;
+          var pkg = {
+            id: row ? row.id : ('tmp-' + Date.now()),
+            resident: moradorNome || residentText || 'Não informado',
+            moradorNome: moradorNome || '',
+            moradorPhone: moradorPhone || '',
+            description: description,
+            status: 'recebida',
+            timeLabel: 'agora mesmo'
+          };
+          packages.unshift(pkg);
+          renderAll();
+          showToast('Encomenda registrada!');
+        }).catch(function(e){
+          showToast('Erro ao salvar: ' + (e.message || ''), 'error');
+        });
+      }
+
+      if(!residentText){ savePackage(null, '', ''); return; }
+
+      /* busca morador por nome ou apartamento */
+      supaApi('GET', '/moradores?or=(nome.ilike.*' + encodeURIComponent(residentText) + '*,apartamento.ilike.*' + encodeURIComponent(residentText) + '*)&select=id,nome,telefone,apartamento,bloco&limit=1').then(function(rows){
+        if(rows && rows.length){
+          var m = rows[0];
+          var label = m.nome + (m.apartamento ? ' · Ap. ' + m.apartamento : '') + (m.bloco ? ' Bl.' + m.bloco : '');
+          savePackage(m.id, label, m.telefone);
+        } else {
+          savePackage(null, residentText, '');
+        }
+      }).catch(function(){
+        savePackage(null, residentText, '');
       });
     }
 
@@ -2647,15 +2568,12 @@
         topbarTitle.textContent = titles[pageId][0];
         topbarSubtitle.textContent = titles[pageId][1];
       }
-      // Carrega dados ao entrar pela primeira vez na página
-      if(pageId === 'visitantes' && !loaded.visitantes){
-        loaded.visitantes = true;
-        VisitorApp.loadFromSupabase();
-      }
-      if(pageId === 'moradores' && !loaded.moradores){
-        loaded.moradores = true;
-        MoradorApp.loadFromSupabase();
-      }
+      /* recarrega dados frescos sempre que a página é aberta */
+      if(pageId === 'ocorrencias') OccApp.loadFromSupabase();
+      if(pageId === 'requisicoes') ReqApp.loadFromSupabase();
+      if(pageId === 'encomendas') PackageApp.loadFromSupabase();
+      if(pageId === 'visitantes') VisitorApp.loadFromSupabase();
+      if(pageId === 'moradores') MoradorApp.loadFromSupabase();
     }
 
     navItems.forEach(function(item){
@@ -2933,12 +2851,15 @@
     btnSave.addEventListener('click', function(){
       var nome = document.getElementById('mor-input-nome').value.trim();
       var apto = document.getElementById('mor-input-apto').value.trim();
-      if(!nome || !apto){ showToast('Nome e apartamento são obrigatórios', 'error'); return; }
+      var tel  = document.getElementById('mor-input-tel').value.trim();
+      if(!nome){ showToast('Nome é obrigatório', 'error'); document.getElementById('mor-input-nome').focus(); return; }
+      if(!apto){ showToast('Apartamento é obrigatório', 'error'); document.getElementById('mor-input-apto').focus(); return; }
+      if(!tel){  showToast('Telefone é obrigatório', 'error');  document.getElementById('mor-input-tel').focus();  return; }
       MoradorApp.create({
         nome: nome,
         apartamento: apto,
         bloco: document.getElementById('mor-input-bloco').value.trim() || null,
-        telefone: document.getElementById('mor-input-tel').value.trim() || null
+        telefone: tel
       });
       form.hidden = true; clearMor();
     });
@@ -2962,9 +2883,10 @@
     });
   })();
 
-  // Auto-refresh a cada 60s
+  /* Auto-refresh a cada 60s */
   setInterval(function(){
     OccApp.loadFromSupabase();
+    ReqApp.loadFromSupabase();
     PackageApp.loadFromSupabase();
     VisitorApp.loadFromSupabase();
     MoradorApp.loadFromSupabase();

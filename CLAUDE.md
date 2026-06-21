@@ -1,0 +1,270 @@
+# Condozap — Bot de Portaria para WhatsApp
+
+Produto da **Automatiz.ia** que automatiza a portaria de condomínios via WhatsApp. Composto por dois artefatos independentes:
+
+| Arquivo | O que é |
+|---|---|
+| `bot_condominio.json` | Workflow n8n (JSON exportado) — o cérebro do bot |
+| `index.html` | Dashboard admin SPA (HTML/CSS/JS puro, sem build) |
+
+---
+
+## Infraestrutura
+
+| Serviço | Uso | Credencial no projeto |
+|---|---|---|
+| **n8n** | Plataforma de automação que roda o workflow | — |
+| **Evolution API** | Gateway WhatsApp | `apikey: F5E45E6A06AC-4857-807A-923D226DE8E1` (host: `evolution.automacaopme.com.br`, instance: `N8N-Portaria`) |
+| **Supabase** | Banco PostgreSQL via REST | anon key hardcoded em ambos os arquivos (project: `rcghqqwbwxbhrxjwutqu`) |
+
+> As credenciais estão hardcoded nos dois arquivos. Ao escalar ou entregar para outros clientes, extraí-las para variáveis de ambiente no n8n ou para um arquivo de configuração separado.
+
+---
+
+## Schema do Banco (Supabase)
+
+```
+moradores    — id, nome, telefone (PK de negócio), apartamento, bloco
+sessoes      — telefone (PK), etapa, dados (JSONB), updated_at
+encomendas   — id, morador_id, descricao, data_recebimento, status, retirada_em
+visitantes   — id, nome, morador_id, documento, entrada
+atendimentos — id, telefone, titulo, mensagem, local_ocorrencia, urgencia, status, created_at
+requisicoes  — id, telefone, morador_id, tipo, local_servico, descricao, urgencia, status, created_at
+```
+
+**Status de encomenda:** `aguardando` → `retirado`
+
+**Status de atendimento/ocorrência:** `aberta` → `analise` → `andamento` → `resolvida` — movido pelo dashboard (Kanban).
+
+**Status de requisição de serviço:** `pendente` → `analise` → `andamento` → `resolvido` — movido pelo dashboard (Kanban).
+
+---
+
+## Workflow n8n — Arquitetura do Bot
+
+### Entrada e resposta imediata
+```
+Webhook (POST /testeteste)
+  ├─► Respond 200   ← responde HTTP imediatamente (padrão async)
+  └─► Parsear Mensagem
+```
+
+**Parsear Mensagem** descarta:
+- Mensagens enviadas pelo próprio bot (`fromMe === true`)
+- Mensagens de grupos (`remoteJid` contém `@g.us`)
+
+Extrai: `from` (telefone limpo), `texto`, `buttonId`, `instance`.
+
+### Lookup e consolidação
+```
+Parsear Mensagem → GET Morador → GET Sessao → Consolidar → Morador existe? (IF)
+```
+
+`Consolidar` mescla dados do morador e da sessão em um único objeto passado adiante.
+
+### Fluxo de cadastro (morador não encontrado)
+```
+Morador existe? [false] → Lógica Cadastro → DELETE Sessao → Cadastro OK? (IF)
+  ├─► [ainda em andamento] INSERT Sessao + Enviar Cadastro
+  └─► [ok=true] INSERT Morador + Enviar Cadastro
+```
+
+**Etapas de sessão do cadastro:**
+```
+null → aguardando_nome → aguardando_apto → aguardando_bloco → (ok=true, sem sessão)
+```
+
+### Roteamento principal (morador cadastrado)
+```
+Morador existe? [true] → Roteador → Switch Rota
+  ├── encomendas   → texto="1" ou buttonId="btn_encomendas"
+  ├── visitantes   → texto="2", "btn_visitantes" ou etapa.startsWith("visitante_")
+  ├── servicos     → texto="3", "btn_servicos" ou etapa.startsWith("servico_")
+  ├── ocorrencias  → texto="4", "btn_ocorrencias" ou etapa.startsWith("ocorrencia_")
+  ├── retirada     → texto começa com "RETIREI" (ex: "RETIREI 2")
+  ├── cancelar     → texto é "CANCELAR" (maiúsculo)
+  └── menu         → qualquer outra coisa
+```
+
+**Menu enviado ao morador:**
+```
+1️⃣  📦 Minhas Encomendas
+2️⃣  🚗 Autorizar Visitantes
+3️⃣  🔧 Solicitar Serviços
+4️⃣  ⚠️ Registrar Ocorrências
+```
+
+### Fluxo de encomendas
+```
+GET Encomendas (status=aguardando, order=id.asc) → Formatar Encomendas → Enviar Encomendas
+```
+Lista todas as encomendas aguardando e instrui o morador a usar `RETIREI N`.
+
+### Fluxo de retirada
+```
+Parsear RETIREI → Formato válido? (IF)
+  ├─► [inválido] Erro Formato
+  └─► [válido] GET Enc Retirada (offset=N-1) → Check Enc → Enc encontrada? (IF)
+        ├─► [sim] PATCH Retirada (status=retirado, retirada_em=now) → Confirmar Retirada
+        └─► [não] Enc Nao Encontrada
+```
+
+### Fluxo de visitantes (multi-step)
+**Etapas de sessão:**
+```
+visitante_nome → visitante_documento → visitante_data → visitante_motivo → (ok=true)
+```
+Ao concluir: INSERT em `visitantes` (nome, morador_id, documento, entrada=now).
+
+**Padrão de sessão em todos os fluxos multi-step:**
+```
+DELETE Sessao → Fluxo OK? (IF)
+  ├─► [ainda em andamento] INSERT Sessao (próxima etapa) → Enviar resposta
+  └─► [ok=true] INSERT dado final → Enviar resposta final
+```
+> A sessão usa DELETE+INSERT, não UPSERT. Isso garante sempre um único registro por telefone.
+
+### Fluxo de solicitação de serviço (multi-step) ← NOVO
+**Etapas de sessão:**
+```
+servico_tipo → servico_local → servico_descricao → servico_urgencia → (ok=true)
+```
+Ao concluir: INSERT em `requisicoes` (status='pendente'). Protocolo gerado: `SV-` + 6 últimos dígitos de `Date.now()`.
+
+Campos salvos: `tipo`, `local_servico`, `descricao`, `urgencia`, `morador_id`, `telefone`.
+
+### Fluxo de ocorrências (multi-step)
+**Etapas de sessão:**
+```
+ocorrencia_tipo → ocorrencia_local → ocorrencia_descricao → ocorrencia_urgencia → (ok=true)
+```
+Ao concluir: INSERT em `atendimentos` com campos separados: `titulo` (tipo + local), `mensagem` (descrição), `local_ocorrencia`, `urgencia`, status='aberta'. Protocolo gerado: `OC-` + 6 últimos dígitos de `Date.now()`.
+
+Urgências aceitas: `baixa`, `média`/`media`, `alta`. Qualquer outro valor vira `Não informada`.
+
+### Fluxo de cancelamento
+```
+Cancelar Fluxo → DELETE Sessao Cancelar → Enviar Cancelamento
+```
+Limpa a sessão e orienta o morador a digitar `menu`.
+
+---
+
+## Dashboard Admin (`index.html`)
+
+SPA pura: nenhum framework, nenhum build. Abre direto no browser. Navegação client-side via atributos `data-page`.
+
+### Páginas
+| Página | Conteúdo |
+|---|---|
+| **Dashboard** | Status do bot, métricas (ocorrências, visitantes, encomendas, moradores), fila de aprovações, ocorrências em aberto (top 3), reservas, comunicados, atividade recente |
+| **Requisições** | Kanban mobile (grupos por urgência→status) / matriz urgência×status no desktop — conectado à tabela `requisicoes` no Supabase |
+| **Ocorrências** | Kanban 4 colunas: Aberta → Em análise → Em andamento → Resolvida — conectado à tabela `atendimentos` no Supabase |
+| **Encomendas** | Kanban 3 colunas: Recebida → Notificado → Retirada |
+| **Visitantes** | Lista com filtros (todos/hoje/sem saída) + form de registro manual |
+| **Moradores** | Busca por nome/apt + lista + form de cadastro manual |
+
+### Tema
+- **Dark:** `--bg-page: #0B1623` (navy Automatiz.ia)
+- **Light:** `--bg-page: #F7F3EC` (off-white quente)
+- Persistido em `localStorage['portaria-theme']`. Padrão: `light`.
+
+### Cores de marca
+```css
+--brand-primary:      #3D8BFF  /* azul */
+--brand-primary-dark: #0E2D7A
+--brand-accent:       #F5A623  /* laranja */
+```
+
+### Fontes
+- **Outfit** (400/500/600/700/800) — UI principal
+- **Space Mono** (400/700) — labels monospace, métricas
+
+### Ícones
+SVG sprite inline no topo do `<body>`. Novos ícones devem ser adicionados ao sprite como `<symbol id="icon-NOME">`. Uso: `<svg class="icon"><use href="#icon-NOME"/></svg>`.
+
+### Helper Supabase
+```js
+supaApi(method, path, body)  // retorna Promise
+// Exemplos:
+supaApi('GET', '/moradores?select=*')
+supaApi('POST', '/moradores', { nome, telefone, apartamento, bloco })
+supaApi('PATCH', '/encomendas?id=eq.5', { status: 'retirado' })
+supaApi('DELETE', '/sessoes?telefone=eq.5511999999999')
+```
+
+### Toast
+```js
+showToast('Mensagem de sucesso')
+showToast('Algo deu errado', 'error')
+```
+
+### Responsivo
+- **Mobile (<768px):** bottom nav, colunas em 1 ou 2, Kanban em lista agrupada
+- **Desktop (≥768px):** sidebar lateral, grid 4 colunas, Kanban em matriz
+
+---
+
+## Como editar o workflow do bot
+
+1. Abra o n8n e importe `bot_condominio.json` (ou edite diretamente se já importado).
+2. Ao adicionar um novo módulo (ex: reservas de áreas comuns), siga o padrão:
+   - Prefixo de sessão único (ex: `reserva_`)
+   - Adicionar nova rota no **Roteador** (Code node) e no **Switch Rota**
+   - DELETE sessão → lógica → INSERT sessão (se continua) ou INSERT dado final (se concluiu)
+3. Exporte como JSON e substitua `bot_condominio.json`.
+
+## Como editar o dashboard
+
+`index.html` é auto-contido. Edite diretamente — não há processo de build, transpilação ou dependências locais. Ao adicionar uma nova página:
+1. Criar `<div class="page" id="page-NOME">` dentro de `<main class="main">`
+2. Adicionar item no `.sidebar` com `data-page="NOME"`
+3. Adicionar item no `.bottom-nav` com `data-page="NOME"`
+4. O sistema de navegação detecta automaticamente pelo atributo `data-page`.
+
+---
+
+## Persistência do dashboard
+
+Todas as páginas recarregam dados do Supabase ao serem navegadas (não apenas na primeira visita). Auto-refresh a cada 60s cobre todas as páginas. Apps e suas fontes:
+
+| App JS | Tabela Supabase | Padrão de escrita |
+|---|---|---|
+| `OccApp` | `atendimentos` | PATCH status via `advance()` |
+| `ReqApp` | `requisicoes` | PATCH status via `advance()` |
+| `PackageApp` | `encomendas` | PATCH status |
+| `VisitorApp` | `visitantes` | POST + lista |
+| `MoradorApp` | `moradores` | POST + busca |
+
+---
+
+## Módulos pendentes / TODOs
+
+- **SQL no Supabase** — rodar o script abaixo se ainda não aplicado:
+  ```sql
+  ALTER TABLE atendimentos
+    ADD COLUMN IF NOT EXISTS titulo text,
+    ADD COLUMN IF NOT EXISTS local_ocorrencia text,
+    ADD COLUMN IF NOT EXISTS urgencia text DEFAULT 'media',
+    ADD COLUMN IF NOT EXISTS created_at timestamptz DEFAULT now();
+
+  CREATE TABLE IF NOT EXISTS requisicoes (
+    id bigint generated always as identity primary key,
+    telefone text,
+    morador_id bigint REFERENCES moradores(id),
+    tipo text,
+    local_servico text,
+    descricao text,
+    urgencia text DEFAULT 'media',
+    status text DEFAULT 'pendente',
+    created_at timestamptz DEFAULT now()
+  );
+  ALTER TABLE requisicoes ENABLE ROW LEVEL SECURITY;
+  CREATE POLICY "anon all" ON requisicoes USING (true) WITH CHECK (true);
+  ```
+- **Reimportar bot no n8n** — após editar `bot_condominio.json`, reimportar ou editar os nós manualmente (Roteador + Switch Rota + Enviar Menu + novos nós do fluxo Serviços).
+- **Reservas de áreas comuns** — UI no dashboard está pronta (seção "Próximas reservas"), mas o bot ainda não tem fluxo. A fila de aprovações também está mockada.
+- **Comunicados** — UI existe, sem integração real com o banco ainda.
+- **Painel de aprovações** — botões de aprovar/rejeitar existem no HTML mas sem JS conectado.
+- **Nós legados** — `Resp Visitantes` e `Resp Ocorrencias` (usando API key `720C1736...`) são stubs antigos que foram substituídos pelos fluxos multi-step. Podem ser removidos do workflow.
+- **Segurança** — mover as chaves de API (Supabase anon key e Evolution API key) para variáveis de ambiente do n8n antes de usar em produção com múltiplos clientes.
