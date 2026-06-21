@@ -197,7 +197,7 @@ SPA pura: nenhum framework, nenhum build. Abre direto no browser. Navegação cl
 
 **Configurações do Bot (modal):**
 - Ícone ⚙️ na topbar abre modal de configurações
-- Campo para alterar o nome do bot no WhatsApp via `PUT /instance/updateProfileName/Bot_Condominio`
+- Campo para alterar o nome do bot no WhatsApp via `POST /chat/updateProfileName/Bot_Condominio` com body `{ "name": "..." }` (Evolution API v2.3.7)
 
 ### Tema
 - **Dark:** `--bg-page: #0B1623` (navy Automatiz.ia)
