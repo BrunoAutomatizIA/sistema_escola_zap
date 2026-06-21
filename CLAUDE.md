@@ -14,7 +14,7 @@ Produto da **Automatiz.ia** que automatiza a portaria de condomínios via WhatsA
 | Serviço | Uso | Credencial no projeto |
 |---|---|---|
 | **n8n** | Plataforma de automação que roda o workflow | — |
-| **Evolution API** | Gateway WhatsApp | `apikey: F5E45E6A06AC-4857-807A-923D226DE8E1` (host: `evolution.automacaopme.com.br`, instance: `N8N-Portaria`) |
+| **Evolution API** | Gateway WhatsApp | `apikey: F5E45E6A06AC-4857-807A-923D226DE8E1` (host: `evolution.automacaopme.com.br`, instance: `Bot_Condominio`) |
 | **Supabase** | Banco PostgreSQL via REST | anon key hardcoded em ambos os arquivos (project: `rcghqqwbwxbhrxjwutqu`) |
 
 > As credenciais estão hardcoded nos dois arquivos. Ao escalar ou entregar para outros clientes, extraí-las para variáveis de ambiente no n8n ou para um arquivo de configuração separado.

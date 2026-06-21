@@ -37,7 +37,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://evolution.automacaopme.com.br/message/sendText/N8N-Portaria",
+        "url": "https://evolution.automacaopme.com.br/message/sendText/Bot_Condominio",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
