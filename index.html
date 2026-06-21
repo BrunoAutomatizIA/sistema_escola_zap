@@ -3727,7 +3727,9 @@
 
     function sendWhatsApp(phone, text){
       if(!phone) return;
-      fetch(N8N_NOTIF_URL + '?number=' + encodeURIComponent(phone) + '&text=' + encodeURIComponent(text))
+      var digits = phone.replace(/\D/g, '');
+      if(digits.length <= 11) digits = '55' + digits;
+      fetch(N8N_NOTIF_URL + '?number=' + encodeURIComponent(digits) + '&text=' + encodeURIComponent(text))
         .catch(function(){});
     }
 

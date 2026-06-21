@@ -3,9 +3,9 @@
   "nodes": [
     {
       "parameters": {
-        "httpMethod": "POST",
+        "httpMethod": "GET",
         "path": "notificar-encomenda",
-        "responseMode": "responseNode",
+        "responseMode": "lastNode",
         "options": {}
       },
       "id": "a1b2c3d4-0001-0001-0001-000000000001",
@@ -14,25 +14,6 @@
       "typeVersion": 2,
       "position": [240, 300],
       "webhookId": "notificar-encomenda"
-    },
-    {
-      "parameters": {
-        "respondWith": "json",
-        "responseBody": "={ \"ok\": true }",
-        "options": {
-          "responseHeaders": {
-            "entries": [
-              { "name": "Access-Control-Allow-Origin", "value": "*" },
-              { "name": "Access-Control-Allow-Headers", "value": "Content-Type" }
-            ]
-          }
-        }
-      },
-      "id": "a1b2c3d4-0001-0001-0001-000000000002",
-      "name": "Responder 200",
-      "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1,
-      "position": [480, 180]
     },
     {
       "parameters": {
@@ -52,11 +33,11 @@
           "parameters": [
             {
               "name": "number",
-              "value": "={{ $('Webhook').item.json.body.number }}"
+              "value": "={{ $json.query.number }}"
             },
             {
               "name": "text",
-              "value": "={{ $('Webhook').item.json.body.text }}"
+              "value": "={{ $json.query.text }}"
             }
           ]
         },
@@ -72,14 +53,13 @@
       "name": "Enviar WhatsApp",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [480, 420]
+      "position": [480, 300]
     }
   ],
   "connections": {
     "Webhook": {
       "main": [
         [
-          { "node": "Responder 200",  "type": "main", "index": 0 },
           { "node": "Enviar WhatsApp", "type": "main", "index": 0 }
         ]
       ]
