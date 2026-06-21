@@ -3299,10 +3299,17 @@
         var data = document.getElementById('res-input-data') ? document.getElementById('res-input-data').value : '';
         var horario = document.getElementById('res-input-horario') ? document.getElementById('res-input-horario').value.trim() : '';
         if(!area || !data){ showToast('Preencha todos os campos', 'error'); return; }
+        btnSave.disabled = true; btnSave.textContent = 'Salvando...';
         supaApi('POST', '/reservas', { morador_id: foundMoradorRes.id, area: area, data: data, horario: horario, status: 'pendente' })
           .then(function(){
             form.hidden = true; foundMoradorRes = null;
             loadFromSupabase(); showToast('Reserva registrada!');
+          })
+          .catch(function(e){
+            showToast('Erro ao salvar: ' + (e.message || 'verifique se a tabela reservas foi criada no Supabase'), 'error');
+          })
+          .finally(function(){
+            btnSave.disabled = false; btnSave.textContent = 'Salvar reserva';
           });
       });
     }
