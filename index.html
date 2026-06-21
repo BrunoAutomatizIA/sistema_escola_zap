@@ -1323,6 +1323,9 @@
         <div class="topbar-subtitle" id="topbar-subtitle">Residencial Jardim das Flores · sábado, 13 de junho</div>
       </div>
       <div class="topbar-actions">
+        <button class="icon-btn" id="btn-bot-settings" aria-label="Configurações do bot" title="Configurações do bot">
+          <svg class="icon" aria-hidden="true"><use href="#icon-settings"/></svg>
+        </button>
         <button class="icon-btn" id="theme-toggle" aria-label="Alternar tema"><svg class="icon" id="theme-icon" aria-hidden="true"><use href="#icon-moon"/></svg></button>
         <button class="icon-btn has-dot" aria-label="Notificações"><svg class="icon" aria-hidden="true"><use href="#icon-bell"/></svg></button>
         <button class="icon-btn" aria-label="Atualizar"><svg class="icon" aria-hidden="true"><use href="#icon-refresh"/></svg></button>
@@ -1931,6 +1934,32 @@
     <footer class="app-footer">
       Feito por <strong>Automatiz.IA</strong> · 2026
     </footer>
+
+    <!-- MODAL CONFIGURAÇÕES DO BOT -->
+    <div id="bot-settings-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;align-items:center;justify-content:center;padding:1rem;">
+      <div class="occ-form-card" style="max-width:420px;width:100%;margin:0;">
+        <div class="section-title" style="margin-bottom:1.25rem;">
+          <svg class="icon" aria-hidden="true" style="vertical-align:middle;margin-right:6px;"><use href="#icon-settings"/></svg>
+          Configurações do Bot
+        </div>
+
+        <div style="margin-bottom:1.25rem;">
+          <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-tertiary);margin-bottom:0.5rem;">Instância Evolution API</div>
+          <div style="font-size:13px;color:var(--text-secondary);background:var(--bg-surface-2);border:1px solid var(--border-default);border-radius:var(--radius-sm);padding:8px 12px;font-family:var(--font-mono);">Bot_Condominio</div>
+        </div>
+
+        <label class="form-field form-field-full" style="margin-bottom:1.25rem;">
+          <span class="form-label">Nome do bot no WhatsApp</span>
+          <input type="text" id="bot-settings-name" placeholder="Ex: Bot Condomínio Zap" style="width:100%;">
+          <span style="font-size:11px;color:var(--text-tertiary);margin-top:4px;display:block;">O nome pode levar alguns minutos para aparecer no WhatsApp.</span>
+        </label>
+
+        <div class="form-actions">
+          <button class="btn-secondary" id="btn-cancel-bot-settings">Cancelar</button>
+          <button class="btn-primary" id="btn-save-bot-settings">Salvar nome</button>
+        </div>
+      </div>
+    </div>
 
   </main>
 
@@ -3079,6 +3108,55 @@
     MoradorApp.loadFromSupabase();
     loadDashboardMetrics();
   }, 60000);
+
+  /* ============================================
+     CONFIGURAÇÕES DO BOT
+     ============================================ */
+  (function(){
+    var EVOL_BASE = 'https://evolution.automacaopme.com.br';
+    var EVOL_KEY  = 'F5E45E6A06AC-4857-807A-923D226DE8E1';
+    var INSTANCE  = 'Bot_Condominio';
+
+    var overlay   = document.getElementById('bot-settings-overlay');
+    var btnOpen   = document.getElementById('btn-bot-settings');
+    var btnCancel = document.getElementById('btn-cancel-bot-settings');
+    var btnSave   = document.getElementById('btn-save-bot-settings');
+    var nameInput = document.getElementById('bot-settings-name');
+
+    function open(){
+      overlay.style.display = 'flex';
+      if(nameInput) nameInput.focus();
+    }
+    function close(){ overlay.style.display = 'none'; }
+
+    if(btnOpen)   btnOpen.addEventListener('click', open);
+    if(btnCancel) btnCancel.addEventListener('click', close);
+    if(overlay)   overlay.addEventListener('click', function(e){ if(e.target === overlay) close(); });
+
+    if(btnSave) btnSave.addEventListener('click', function(){
+      var name = nameInput ? nameInput.value.trim() : '';
+      if(!name){ showToast('Informe o nome do bot', 'error'); nameInput && nameInput.focus(); return; }
+      btnSave.disabled = true;
+      btnSave.textContent = 'Salvando...';
+      fetch(EVOL_BASE + '/instance/updateProfileName/' + INSTANCE, {
+        method: 'PUT',
+        headers: { 'apikey': EVOL_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name })
+      }).then(function(r){ return r.json(); }).then(function(res){
+        if(res && (res.updated || res.name || res.profileName)){
+          showToast('Nome do bot atualizado! Pode levar alguns minutos para aparecer no WhatsApp.');
+          close();
+        } else {
+          showToast('Resposta inesperada da API: ' + JSON.stringify(res), 'error');
+        }
+      }).catch(function(e){
+        showToast('Erro ao atualizar: ' + (e.message || 'verifique a conexão'), 'error');
+      }).finally(function(){
+        btnSave.disabled = false;
+        btnSave.textContent = 'Salvar nome';
+      });
+    });
+  })();
 
 </script>
 </body>
