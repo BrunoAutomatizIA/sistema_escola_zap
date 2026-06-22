@@ -380,6 +380,20 @@ tbody tr:hover { background:var(--bg-hover); }
 .kanban-card-sub { font-size:12px; color:var(--text-muted); margin-bottom:8px; }
 .kanban-card-footer { display:flex; align-items:center; justify-content:space-between; }
 
+/* Aviso swim lanes */
+.aviso-lane { margin-bottom:28px; border-radius:var(--radius-lg); overflow:hidden; border:1px solid var(--border-soft); }
+.aviso-lane-header {
+  display:flex; align-items:center; gap:10px;
+  padding:12px 16px;
+  background:var(--bg-surface2);
+  border-bottom:2px solid var(--brand-primary);
+  font-size:14px; font-weight:800; color:var(--text-main);
+}
+.aviso-lane-header.lane-turma { border-bottom-color:var(--brand-secondary); }
+.aviso-lane-body { padding:12px; background:var(--bg-surface); }
+.aviso-lane-body .kanban { gap:12px; }
+.aviso-lane-body .kanban-col { flex:1 1 0; min-width:0; }
+
 /* Empty state */
 .empty-state {
   text-align:center; padding:48px 20px;
@@ -960,19 +974,14 @@ tbody tr:hover { background:var(--bg-hover); }
       <div class="page" id="page-avisos">
         <div class="section-header" style="margin-bottom:20px">
           <div>
-            <div class="section-title">📢 Avisos Individuais</div>
-            <div class="section-sub">Enviar avisos para responsáveis ou turmas</div>
+            <div class="section-title">📢 Avisos</div>
+            <div class="section-sub">Por responsável (Individual) e por turma</div>
           </div>
           <button class="btn btn-primary" onclick="openNovoAviso()">
             <svg class="icon icon-sm"><use href="#icon-plus"/></svg> Novo Aviso
           </button>
         </div>
-        <div class="filter-tabs">
-          <span class="filter-tab active" onclick="AvisoApp.filter(this,'pendente')">Pendentes</span>
-          <span class="filter-tab" onclick="AvisoApp.filter(this,'lido')">Lidos</span>
-          <span class="filter-tab" onclick="AvisoApp.filter(this,'')">Todos</span>
-        </div>
-        <div id="avisos-list">
+        <div id="avisos-kanban">
           <div class="empty-state"><div class="empty-state-icon">📢</div><div class="empty-state-text">Carregando avisos...</div></div>
         </div>
       </div>
@@ -1827,8 +1836,9 @@ const SolApp = {
 
 // ===== AVISOS APP =====
 const AvisoApp = {
-  data: [], statusFilter: 'pendente',
+  data: [],
   allResp: [],
+  _resp(a) { return Array.isArray(a.responsaveis) ? a.responsaveis[0] : a.responsaveis; },
   async load() {
     const [data, resps] = await Promise.all([
       supaApi('GET', '/avisos?select=*,responsaveis(nome,aluno,turma)&order=created_at.desc'),
@@ -1838,33 +1848,82 @@ const AvisoApp = {
     this.allResp = resps || [];
     this.render();
   },
-  filter(el, status) {
-    document.querySelectorAll('#page-avisos .filter-tab').forEach(t => t.classList.remove('active'));
-    el?.classList.add('active');
-    this.statusFilter = status;
-    this.render();
-  },
   render() {
-    const el = document.getElementById('avisos-list');
-    const list = this.statusFilter ? this.data.filter(a => a.status === this.statusFilter) : this.data;
-    if (!list.length) {
+    const el = document.getElementById('avisos-kanban');
+    if (!this.data.length) {
       el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📢</div><div class="empty-state-text">Nenhum aviso encontrado</div></div>';
       return;
     }
-    el.innerHTML = `<div class="grid-auto">${list.map(a => {
-      const resp = a.responsaveis;
-      return `<div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:10px">
-          <div>
-            <div style="font-weight:800;margin-bottom:2px">${a.titulo}</div>
-            <div style="font-size:12px;color:var(--text-muted)">👤 ${resp?.nome||'?'} · ${resp?.turma||'?'}</div>
-          </div>
-          <span class="badge ${a.status==='lido'?'badge-green':'badge-orange'}">${a.status==='lido'?'✅ Lido':'📬 Pendente'}</span>
+    // Agrupar por turma; sem turma → raia "Individual"
+    const lanes = {};
+    this.data.forEach(a => {
+      const resp = this._resp(a);
+      const lane = resp?.turma || 'Individual';
+      if (!lanes[lane]) lanes[lane] = { pendente: [], lido: [] };
+      const bucket = a.status === 'lido' ? 'lido' : 'pendente';
+      lanes[lane][bucket].push(a);
+    });
+    // Individual primeiro, depois turmas em ordem alfabética
+    const keys = Object.keys(lanes).sort((a, b) => {
+      if (a === 'Individual') return -1;
+      if (b === 'Individual') return 1;
+      return a.localeCompare(b, 'pt');
+    });
+    el.innerHTML = keys.map(lane => {
+      const isInd = lane === 'Individual';
+      const total = lanes[lane].pendente.length + lanes[lane].lido.length;
+      return `<div class="aviso-lane">
+        <div class="aviso-lane-header ${isInd ? '' : 'lane-turma'}">
+          ${isInd ? '👤 Individual' : '🏫 ' + lane}
+          <span class="badge badge-gray" style="font-size:11px">${total}</span>
         </div>
-        <div style="font-size:13px;color:var(--text-sub);margin-bottom:10px">${a.mensagem}</div>
-        <div style="font-size:11px;color:var(--text-muted)">${fmtRelative(a.created_at)}</div>
+        <div class="aviso-lane-body">
+          <div class="kanban">
+            <div class="kanban-col">
+              <div class="kanban-col-header">
+                <span class="kanban-col-title">📬 Pendente</span>
+                <span class="kanban-col-count">${lanes[lane].pendente.length}</span>
+              </div>
+              <div class="kanban-cards">
+                ${lanes[lane].pendente.map(a => this.card(a)).join('') ||
+                  '<div style="text-align:center;padding:16px;color:var(--text-muted);font-size:12px">Nenhum</div>'}
+              </div>
+            </div>
+            <div class="kanban-col">
+              <div class="kanban-col-header">
+                <span class="kanban-col-title">✅ Lido</span>
+                <span class="kanban-col-count">${lanes[lane].lido.length}</span>
+              </div>
+              <div class="kanban-cards">
+                ${lanes[lane].lido.map(a => this.card(a)).join('') ||
+                  '<div style="text-align:center;padding:16px;color:var(--text-muted);font-size:12px">Nenhum</div>'}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>`;
-    }).join('')}</div>`;
+    }).join('');
+  },
+  card(a) {
+    const resp = this._resp(a);
+    const isLido = a.status === 'lido';
+    return `<div class="kanban-card">
+      <div class="kanban-card-title">${a.titulo}</div>
+      <div class="kanban-card-sub">👤 ${resp?.nome||'?'} &nbsp;·&nbsp; 👶 ${resp?.aluno||'?'}</div>
+      <div style="font-size:12px;color:var(--text-sub);margin-bottom:8px;line-height:1.5">${a.mensagem||''}</div>
+      <div class="kanban-card-footer">
+        <span style="font-size:11px;color:var(--text-muted)">${fmtRelative(a.created_at)}</span>
+        ${isLido
+          ? '<span class="badge badge-green" style="font-size:11px">✅ Lido</span>'
+          : `<button class="btn btn-primary btn-xs" onclick="AvisoApp.markRead(${a.id})">✅ Marcar lido</button>`}
+      </div>
+    </div>`;
+  },
+  async markRead(id) {
+    try {
+      await supaApi('PATCH', `/avisos?id=eq.${id}`, { status: 'lido' });
+      this.load();
+    } catch(e) { showToast('Erro: ' + e.message, 'error'); }
   },
   toggleDest() {
     const tipo = document.getElementById('aviso-dest-tipo').value;

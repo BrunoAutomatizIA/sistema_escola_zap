@@ -169,8 +169,12 @@ SPA pura: nenhum framework, nenhum build. Abre direto no browser. Navegação cl
 - 4 colunas: Pendente → Análise → Andamento → Resolvido
 - Mesmo padrão de `advance()` via PATCH
 
-**Avisos (`AvisoApp`):**
-- Lista de avisos enviados aos responsáveis
+**Avisos (`AvisoApp`) — Kanban com swim lanes:**
+- Layout: **raias horizontais** (swim lanes) × **2 colunas** (Pendente | Lido)
+- Raia **"Individual"** (👤) aparece sempre primeiro; raias por turma (🏫) em ordem alfabética
+- Agrupamento automático pelo campo `responsaveis.turma`; sem turma → raia Individual
+- Card tem botão "✅ Marcar lido" → PATCH `status='lido'` + re-render
+- `_resp(a)` normaliza join PostgREST (objeto ou array de um elemento)
 - Form de novo aviso: título, mensagem, destinatário (individual, turma ou todos)
 - `send()` faz POST em `avisos` + `sendWhatsApp()` para cada alvo
 
