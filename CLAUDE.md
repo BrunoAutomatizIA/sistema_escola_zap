@@ -44,11 +44,11 @@ comunicados_escola— id, turma, titulo, mensagem, status, enviado_em, destinata
 
 **Status de solicitação:** `pendente` → `analise` → `andamento` → `resolvido`
 
-**Status de aviso:** `pendente` → `lido`
-
-**Status de reserva:** `pendente` → `confirmada` | `cancelada`
+**Status de aviso:** `pendente` → `lido` (PATCH via `markRead()`)
 
 **Status de comunicado:** `rascunho` → `enviado`
+
+> A tabela `reservas_escola` existe no banco mas a **página Reservas foi removida** do dashboard. Os dados podem ser gerenciados direto no Supabase enquanto não houver uma nova página.
 
 > Após rodar `schema.sql`, executar obrigatoriamente no SQL Editor:
 > ```sql
@@ -187,16 +187,10 @@ SPA pura: nenhum framework, nenhum build. Abre direto no browser. Navegação cl
 
 **Autorizações (`AuthApp`):**
 - Lista pessoas autorizadas a retirar alunos, com busca por aluno, responsável ou nome do autorizador
-- `respMap` carregado em `load()` (GET `/responsaveis`) para join client-side como fallback quando PostgREST não reconhece a FK criada via SQL
-- `_resp(a)` tenta join PostgREST primeiro; se nulo, cai para `respMap[a.responsavel_id]`
+- `load()` faz dois GETs em paralelo: `autorizacoes` (com join PostgREST) + `responsaveis` (para `respMap`)
+- `_resp(a)` tenta o join PostgREST primeiro; se nulo, cai para `respMap[a.responsavel_id]` (join client-side)
 - Exclusão com confirmação (DELETE)
-- **Pendente:** não tem modal de nova autorização — adicionar é necessário
-
-**Reservas (`ReservaApp`):**
-- Lista de reservas de espaços (salão, quadra, etc.)
-- Botões Confirmar/Cancelar em cards pendentes
-- Ao confirmar/cancelar: PATCH status + `sendWhatsApp()` ao responsável
-- Form de nova reserva: busca responsável + local + data + horário
+- **Pendente:** não tem modal de nova autorização via dashboard
 
 ### Configurações do Bot (modal)
 - Ícone ⚙️ na topbar
@@ -301,7 +295,7 @@ Todas as páginas recarregam dados ao serem navegadas. Auto-refresh a cada 60s.
 | `AgendaApp` | `agenda` | POST/DELETE |
 | `OccApp` | `ocorrencias_escola` | PATCH status via `advance()` |
 | `SolApp` | `solicitacoes` | PATCH status via `advance()` |
-| `AvisoApp` | `avisos` | POST + WhatsApp |
+| `AvisoApp` | `avisos` + `responsaveis` | POST + WhatsApp (send); PATCH status='lido' (markRead) |
 | `ComunicadoApp` | `comunicados_escola` | POST (rascunho) + PATCH + WhatsApp em massa |
 | `AuthApp` | `autorizacoes` + `responsaveis` | DELETE + join client-side via `respMap` |
 
@@ -324,3 +318,14 @@ Todas as páginas recarregam dados ao serem navegadas. Auto-refresh a cada 60s.
   ```
 - **Fluxos do bot** — apenas o cadastro está documentado nos nós vistos. Os fluxos de cardápio, agenda, ocorrências, solicitações, avisos e reservas precisam ser validados após a atualização do Supabase.
 - **Segurança** — mover as chaves de API (Supabase anon key e Evolution API key) para variáveis de ambiente do n8n antes de entregar para o cliente em produção.
+- **AuthApp sem form de nova autorização** — a página só lista e exclui. Criar modal de cadastro com busca de responsável + campos nome/documento/parentesco.
+
+---
+
+## Documentos de referência
+
+| Arquivo | Conteúdo |
+|---|---|
+| `CLAUDE.md` | Arquitetura, schema, padrões de código — para o Claude Code |
+| `handoff.md` | Estado atual, setup do zero, pendências priorizadas — para entrega ao cliente |
+| `schema.sql` | DDL completo + GRANTs — rodar no Supabase SQL Editor |
