@@ -1009,11 +1009,14 @@ tbody tr:hover { background:var(--bg-hover); }
             <div class="section-title">🔑 Autorizações de Busca</div>
             <div class="section-sub">Quem está autorizado a buscar cada aluno</div>
           </div>
+          <button class="btn btn-primary" onclick="openNovaAuth()">
+            <svg class="icon icon-sm"><use href="#icon-plus"/></svg> Nova Autorização
+          </button>
         </div>
         <div class="card" style="margin-bottom:16px">
           <div class="search-wrap">
             <svg class="icon icon-sm"><use href="#icon-search"/></svg>
-            <input type="text" class="form-control search-input" id="authSearch" placeholder="Buscar por aluno ou responsável..." oninput="AuthApp.filter()"/>
+            <input type="text" class="form-control search-input" id="authSearch" placeholder="Buscar por aluno, responsável ou autorizado..." oninput="AuthApp.filter()"/>
           </div>
         </div>
         <div id="auth-list">
@@ -1234,6 +1237,52 @@ tbody tr:hover { background:var(--bg-hover); }
       <button class="btn btn-secondary" id="btnEnviarCom" onclick="ComunicadoApp.sendAll()">
         <svg class="icon icon-sm"><use href="#icon-send"/></svg> Enviar a Todos
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- NOVA AUTORIZAÇÃO -->
+<div class="modal-overlay" id="modal-auth">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">🔑 Nova Autorização de Busca</span>
+      <button class="modal-close" onclick="closeModal('modal-auth')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Responsável / Aluno *</label>
+        <input type="text" class="form-control" id="auth-resp-busca" placeholder="Buscar por nome do responsável ou aluno..." oninput="AuthApp.buscarResp()" autocomplete="off"/>
+        <div id="auth-resp-results" style="margin-top:4px"></div>
+        <input type="hidden" id="auth-resp-id"/>
+        <div id="auth-resp-preview" style="display:none;margin-top:8px;padding:8px 12px;border-radius:var(--radius-sm);background:var(--bg-surface2);border:1px solid var(--border-soft);font-size:13px"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nome do autorizado *</label>
+        <input type="text" class="form-control" id="auth-nome" placeholder="Ex: Avó Maria, Tio João..."/>
+      </div>
+      <div class="grid-2" style="gap:12px">
+        <div class="form-group">
+          <label class="form-label">Documento (RG/CPF)</label>
+          <input type="text" class="form-control" id="auth-doc" placeholder="Ex: 12.345.678-9"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Parentesco</label>
+          <select class="form-control" id="auth-parent">
+            <option value="">Selecione...</option>
+            <option>Avô/Avó</option>
+            <option>Tio/Tia</option>
+            <option>Irmão/Irmã</option>
+            <option>Pai/Mãe</option>
+            <option>Padrasto/Madrasta</option>
+            <option>Amigo(a) da família</option>
+            <option>Outro</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-auth')">Cancelar</button>
+      <button class="btn btn-primary" onclick="AuthApp.save()">Salvar Autorização</button>
     </div>
   </div>
 </div>
@@ -2165,13 +2214,66 @@ const AuthApp = {
       </table>
     </div>`;
   },
+  buscarResp() {
+    const q = document.getElementById('auth-resp-busca').value.toLowerCase();
+    const res = document.getElementById('auth-resp-results');
+    document.getElementById('auth-resp-id').value = '';
+    document.getElementById('auth-resp-preview').style.display = 'none';
+    if (!q) { res.innerHTML = ''; return; }
+    const found = Object.values(this.respMap).filter(r =>
+      r.nome?.toLowerCase().includes(q) || r.aluno?.toLowerCase().includes(q)
+    ).slice(0, 6);
+    res.innerHTML = found.length
+      ? found.map(r => `
+          <div onclick="AuthApp.selectResp(${r.id},'${r.nome.replace(/'/g,"\\'")}','${(r.aluno||'').replace(/'/g,"\\'")}','${(r.turma||'').replace(/'/g,"\\'")}');"
+               style="padding:8px 12px;border-radius:var(--radius-sm);background:var(--bg-surface2);margin-bottom:4px;cursor:pointer;font-size:13px;font-weight:600;border:1px solid var(--border-soft)"
+               onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background='var(--bg-surface2)'">
+            ${r.nome} <span style="color:var(--text-muted);font-weight:400">· ${r.aluno||'?'} · <span class="turma-pill" style="font-size:10px">${r.turma||'?'}</span></span>
+          </div>`).join('')
+      : '<div style="font-size:12px;color:var(--text-muted);padding:8px">Nenhum responsável encontrado</div>';
+  },
+  selectResp(id, nome, aluno, turma) {
+    document.getElementById('auth-resp-id').value = id;
+    document.getElementById('auth-resp-busca').value = nome;
+    document.getElementById('auth-resp-results').innerHTML = '';
+    const prev = document.getElementById('auth-resp-preview');
+    prev.innerHTML = `👤 <strong>${nome}</strong> &nbsp;·&nbsp; 👶 ${aluno} &nbsp;·&nbsp; <span class="turma-pill">${turma}</span>`;
+    prev.style.display = '';
+  },
+  async save() {
+    const rid = document.getElementById('auth-resp-id').value;
+    const nome = document.getElementById('auth-nome').value.trim();
+    if (!rid) { showToast('Selecione um responsável', 'error'); return; }
+    if (!nome) { showToast('Informe o nome do autorizado', 'error'); return; }
+    try {
+      await supaApi('POST', '/autorizacoes', {
+        responsavel_id: parseInt(rid),
+        nome_autorizador: nome,
+        documento: document.getElementById('auth-doc').value.trim() || null,
+        parentesco: document.getElementById('auth-parent').value || null
+      });
+      showToast('Autorização cadastrada!');
+      closeModal('modal-auth');
+      this.load();
+    } catch(e) { showToast('Erro ao salvar: ' + e.message, 'error'); }
+  },
   async delete(id) {
     if (!confirm('Remover esta autorização?')) return;
-    await supaApi('DELETE', `/autorizacoes?id=eq.${id}`);
-    showToast('Autorização removida.');
-    this.load();
+    try {
+      await supaApi('DELETE', `/autorizacoes?id=eq.${id}`);
+      showToast('Autorização removida.');
+      this.load();
+    } catch(e) { showToast('Erro ao remover: ' + e.message, 'error'); }
   }
 };
+
+function openNovaAuth() {
+  ['auth-resp-busca','auth-resp-id','auth-nome','auth-doc'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('auth-parent').value = '';
+  document.getElementById('auth-resp-results').innerHTML = '';
+  document.getElementById('auth-resp-preview').style.display = 'none';
+  openModal('modal-auth');
+}
 
 
 // ===== BOT CONFIG =====
