@@ -19,7 +19,7 @@ CREATE POLICY "anon all" ON responsaveis USING (true) WITH CHECK (true);
 -- 2. CARDÁPIO SEMANAL
 CREATE TABLE IF NOT EXISTS cardapio (
   id            bigint generated always as identity primary key,
-  semana_inicio date NOT NULL,
+  semana_inicio date NOT NULL,/*  */
   segunda       text,
   terca         text,
   quarta        text,
