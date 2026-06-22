@@ -120,7 +120,7 @@ Permite que o dashboard envie WhatsApp sem bloqueio de CORS.
 
 **Endpoint:** `POST https://n8n.automacaopme.com.br/webhook/notificar-escola` com body `{ number, text }`
 
-O `sendWhatsApp(number, text)` no dashboard chama este endpoint. Usado por AvisoApp, ComunicadoApp e ReservaApp ao confirmar/cancelar.
+O `sendWhatsApp(number, text)` no dashboard chama este endpoint. Usado por AvisoApp e ComunicadoApp.
 
 ---
 
@@ -141,7 +141,6 @@ SPA pura: nenhum framework, nenhum build. Abre direto no browser. Navegação cl
 | **Avisos** | `AvisoApp` | `avisos` + `responsaveis` |
 | **Comunicados** | `ComunicadoApp` | `comunicados_escola` + `responsaveis` |
 | **Autorizações** | `AuthApp` | `autorizacoes` + `responsaveis` |
-| **Reservas** | `ReservaApp` | `reservas_escola` + `responsaveis` |
 
 ### Funcionalidades por módulo
 
