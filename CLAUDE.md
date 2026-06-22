@@ -186,8 +186,11 @@ SPA pura: nenhum framework, nenhum build. Abre direto no browser. Navegação cl
 - `sendDraftNow(id)` envia rascunho já salvo
 
 **Autorizações (`AuthApp`):**
-- Lista pessoas autorizadas a retirar alunos
-- Form: busca responsável + nome do autorizador, documento, parentesco
+- Lista pessoas autorizadas a retirar alunos, com busca por aluno, responsável ou nome do autorizador
+- `respMap` carregado em `load()` (GET `/responsaveis`) para join client-side como fallback quando PostgREST não reconhece a FK criada via SQL
+- `_resp(a)` tenta join PostgREST primeiro; se nulo, cai para `respMap[a.responsavel_id]`
+- Exclusão com confirmação (DELETE)
+- **Pendente:** não tem modal de nova autorização — adicionar é necessário
 
 **Reservas (`ReservaApp`):**
 - Lista de reservas de espaços (salão, quadra, etc.)
@@ -300,8 +303,7 @@ Todas as páginas recarregam dados ao serem navegadas. Auto-refresh a cada 60s.
 | `SolApp` | `solicitacoes` | PATCH status via `advance()` |
 | `AvisoApp` | `avisos` | POST + WhatsApp |
 | `ComunicadoApp` | `comunicados_escola` | POST (rascunho) + PATCH + WhatsApp em massa |
-| `AuthApp` | `autorizacoes` | POST/DELETE |
-| `ReservaApp` | `reservas_escola` | POST/PATCH + WhatsApp ao confirmar/cancelar |
+| `AuthApp` | `autorizacoes` + `responsaveis` | DELETE + join client-side via `respMap` |
 
 ---
 

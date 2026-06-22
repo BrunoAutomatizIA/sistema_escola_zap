@@ -2105,10 +2105,19 @@ function openNovoComunicado() {
 // ===== AUTORIZAÇÕES APP =====
 const AuthApp = {
   data: [],
-  _resp(a) { return Array.isArray(a.responsaveis) ? a.responsaveis[0] : a.responsaveis; },
+  respMap: {},
+  _resp(a) {
+    // tenta join PostgREST; fallback para mapa client-side (FK nem sempre reconhecida via SQL)
+    const joined = Array.isArray(a.responsaveis) ? a.responsaveis[0] : a.responsaveis;
+    return joined || this.respMap[a.responsavel_id] || null;
+  },
   async load() {
-    const data = await supaApi('GET', '/autorizacoes?select=*,responsaveis(nome,aluno,turma)&order=created_at.desc');
+    const [data, resps] = await Promise.all([
+      supaApi('GET', '/autorizacoes?select=*,responsaveis(nome,aluno,turma)&order=created_at.desc'),
+      supaApi('GET', '/responsaveis?select=id,nome,aluno,turma&order=nome.asc')
+    ]);
     this.data = data || [];
+    this.respMap = Object.fromEntries((resps || []).map(r => [r.id, r]));
     this.render();
   },
   filter() {
