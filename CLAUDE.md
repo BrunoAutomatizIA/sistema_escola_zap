@@ -1,12 +1,13 @@
-# Condomínio Digital — Bot de Portaria para WhatsApp
+# Escola Digital — Bot WhatsApp para Colégio Raio de Luz
 
-Produto da **Automatiz.ia** que automatiza a portaria de condomínios via WhatsApp. Composto por três artefatos:
+Produto da **Automatiz.ia** que automatiza a comunicação escola-família via WhatsApp. Composto por três artefatos:
 
 | Arquivo | O que é |
 |---|---|
-| `bot_condominio.json` | Workflow n8n principal (bot WhatsApp) |
-| `notificacao_webhook.json` | Workflow n8n auxiliar — webhook de notificação de encomendas |
+| `bot_escola.json` | Workflow n8n principal (bot WhatsApp) |
+| `notificacao_webhook.json` | Workflow n8n auxiliar — webhook de notificações |
 | `index.html` | Dashboard admin SPA (HTML/CSS/JS puro, sem build) |
+| `schema.sql` | Script DDL completo para o Supabase |
 
 ---
 
@@ -15,39 +16,54 @@ Produto da **Automatiz.ia** que automatiza a portaria de condomínios via WhatsA
 | Serviço | Uso | Credencial no projeto |
 |---|---|---|
 | **n8n** | Plataforma de automação que roda os workflows | host: `n8n.automacaopme.com.br` |
-| **Evolution API** | Gateway WhatsApp | `apikey: F5E45E6A06AC-4857-807A-923D226DE8E1` (host: `evolution.automacaopme.com.br`, instance: `Bot_Condominio`) |
-| **Supabase** | Banco PostgreSQL via REST | anon key hardcoded em ambos os arquivos (project: `rcghqqwbwxbhrxjwutqu`) |
+| **Evolution API** | Gateway WhatsApp | `apikey: F5E45E6A06AC-4857-807A-923D226DE8E1` (host: `evolution.automacaopme.com.br`, instance: `Bot_Escola`) |
+| **Supabase** | Banco PostgreSQL via REST | projeto `AutomatizIA` — `ywsobgbpwhykkfolvoml` (anon key hardcoded em `index.html`) |
 
-> As credenciais estão hardcoded nos arquivos. Ao escalar ou entregar para outros clientes, extraí-las para variáveis de ambiente no n8n ou para um arquivo de configuração separado.
+> As credenciais estão hardcoded nos arquivos. Em produção com múltiplos clientes, extraí-las para variáveis de ambiente do n8n.
 
----
-
-## Schema do Banco (Supabase)
-
-```
-moradores    — id, nome, telefone (PK de negócio), apartamento, bloco
-sessoes      — telefone (PK), etapa, dados (JSONB), updated_at
-encomendas   — id, morador_id (FK→moradores), descricao, data_recebimento, status, retirada_em
-visitantes   — id, nome, morador_id, documento, entrada
-atendimentos — id, telefone, titulo, mensagem, local_ocorrencia, urgencia, status, created_at
-requisicoes  — id, telefone, morador_id, tipo, local_servico, descricao, urgencia, status, created_at
-reservas     — id, morador_id (FK→moradores), area, data (date), horario, status, created_at
-comunicados  — id, titulo, mensagem, status, enviado_em, destinatarios, created_at
-```
-
-**Status de encomenda:** `aguardando` → `retirado`
-
-**Status de atendimento/ocorrência:** `aberta` → `analise` → `andamento` → `resolvida` — movido pelo dashboard (Kanban).
-
-**Status de requisição de serviço:** `pendente` → `analise` → `andamento` → `resolvido` — movido pelo dashboard (Kanban).
+> **ATENÇÃO:** `bot_escola.json` ainda aponta para o projeto Supabase antigo (`rcghqqwbwxbhrxjwutqu`). Todos os nós HTTP do bot precisam ter a URL e chave atualizadas para `ywsobgbpwhykkfolvoml`. O dashboard (`index.html`) já usa o projeto correto.
 
 ---
 
-## Workflow n8n — Arquitetura do Bot
+## Schema do Banco (Supabase — projeto `ywsobgbpwhykkfolvoml`)
+
+```
+responsaveis      — id, nome, telefone, aluno, turma, created_at
+sessoes_escola    — telefone (PK), etapa, dados (JSONB), updated_at
+cardapio          — id, semana_inicio (date), segunda/terca/quarta/quinta/sexta, created_at
+agenda            — id, titulo, data (date), turma, descricao, created_at
+ocorrencias_escola— id, responsavel_id (FK→responsaveis), aluno, titulo, descricao, urgencia, status, created_at
+solicitacoes      — id, responsavel_id (FK→responsaveis), tipo, descricao, urgencia, status, created_at
+avisos            — id, responsavel_id (FK→responsaveis), titulo, mensagem, status, created_at
+autorizacoes      — id, responsavel_id (FK→responsaveis), nome_autorizador, documento, parentesco, created_at
+reservas_escola   — id, responsavel_id (FK→responsaveis), local, data (date), horario, status, created_at
+comunicados_escola— id, turma, titulo, mensagem, status, enviado_em, destinatarios, created_at
+```
+
+**Status de ocorrência:** `aberta` → `analise` → `andamento` → `resolvida`
+
+**Status de solicitação:** `pendente` → `analise` → `andamento` → `resolvido`
+
+**Status de aviso:** `pendente` → `lido`
+
+**Status de reserva:** `pendente` → `confirmada` | `cancelada`
+
+**Status de comunicado:** `rascunho` → `enviado`
+
+> Após rodar `schema.sql`, executar obrigatoriamente no SQL Editor:
+> ```sql
+> GRANT ALL ON ALL TABLES IN SCHEMA public TO anon;
+> GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon;
+> ```
+> Sem isso o role `anon` (usado pela anon key) não tem permissão de INSERT/UPDATE/DELETE em tabelas criadas via SQL direto.
+
+---
+
+## Workflow n8n — Arquitetura do Bot (`bot_escola.json`)
 
 ### Entrada e resposta imediata
 ```
-Webhook (POST /condominio)
+Webhook (POST /escola-bot)
   ├─► Respond 200   ← responde HTTP imediatamente (padrão async)
   └─► Parsear Mensagem
 ```
@@ -60,121 +76,51 @@ Extrai: `from` (telefone limpo), `texto`, `buttonId`, `instance`.
 
 ### Lookup e consolidação
 ```
-Parsear Mensagem → GET Morador → GET Sessao → Consolidar → Morador existe? (IF)
+Parsear Mensagem → GET Responsavel → GET Sessao → Consolidar → Responsavel existe? (IF)
 ```
 
-`Consolidar` mescla dados do morador e da sessão em um único objeto passado adiante.
-
-### Fluxo de cadastro (morador não encontrado)
+### Fluxo de cadastro (responsável não encontrado)
 ```
-Morador existe? [false] → Lógica Cadastro → DELETE Sessao → Cadastro OK? (IF)
-  ├─► [ainda em andamento] INSERT Sessao + Enviar Cadastro
-  └─► [ok=true] INSERT Morador + Enviar Cadastro
+Responsavel existe? [false] → Lógica Cadastro → DELETE Sessao → Cadastro OK? (IF)
+  ├─► [em andamento] INSERT Sessao + Enviar mensagem
+  └─► [ok=true] INSERT Responsavel + Enviar confirmação
 ```
 
 **Etapas de sessão do cadastro:**
 ```
-null → aguardando_nome → aguardando_apto → aguardando_bloco → (ok=true, sem sessão)
+null → aguardando_nome → aguardando_aluno → aguardando_turma → (ok=true)
 ```
 
-### Roteamento principal (morador cadastrado)
+### Roteamento principal (responsável cadastrado)
 ```
-Morador existe? [true] → Roteador → Switch Rota
-  ├── encomendas   → texto="1" ou buttonId="btn_encomendas"
-  ├── visitantes   → texto="2", "btn_visitantes" ou etapa.startsWith("visitante_")
-  ├── servicos     → texto="3", "btn_servicos" ou etapa.startsWith("servico_")
-  ├── reservas     → texto="4", "btn_reservas" ou etapa.startsWith("reserva_")
-  ├── ocorrencias  → texto="5", "btn_ocorrencias" ou etapa.startsWith("ocorrencia_")
-  ├── retirada     → texto começa com "RETIREI" (ex: "RETIREI 2")
+Responsavel existe? [true] → Roteador → Switch Rota
+  ├── cardapio     → texto="1" ou etapa.startsWith("cardapio_")
+  ├── agenda       → texto="2" ou etapa.startsWith("agenda_")
+  ├── ocorrencias  → texto="3" ou etapa.startsWith("ocorrencia_")
+  ├── solicitacoes → texto="4" ou etapa.startsWith("solicitacao_")
+  ├── avisos       → texto="5" ou etapa.startsWith("aviso_")
+  ├── reservas     → texto="6" ou etapa.startsWith("reserva_")
   ├── cancelar     → texto é "CANCELAR" (maiúsculo)
   └── menu         → qualquer outra coisa
 ```
 
-**Menu enviado ao morador:**
+**Padrão de sessão multi-step (todos os fluxos):**
 ```
-1️⃣  📦 Minhas Encomendas
-2️⃣  🚗 Autorizar Visitantes
-3️⃣  🔧 Solicitar Serviços
-4️⃣  📅 Fazer Reserva
-5️⃣  ⚠️ Registrar Ocorrências
-```
-
-### Fluxo de encomendas
-```
-GET Encomendas (status=aguardando, order=id.asc) → Formatar Encomendas → Enviar Encomendas
-```
-Lista todas as encomendas aguardando e instrui o morador a usar `RETIREI N`.
-
-### Fluxo de retirada
-```
-Parsear RETIREI → Formato válido? (IF)
-  ├─► [inválido] Erro Formato
-  └─► [válido] GET Enc Retirada (offset=N-1) → Check Enc → Enc encontrada? (IF)
-        ├─► [sim] PATCH Retirada (status=retirado, retirada_em=now) → Confirmar Retirada
-        └─► [não] Enc Nao Encontrada
-```
-
-### Fluxo de visitantes (multi-step)
-**Etapas de sessão:**
-```
-visitante_nome → visitante_documento → visitante_data → visitante_motivo → (ok=true)
-```
-Ao concluir: INSERT em `visitantes` (nome, morador_id, documento, entrada=now).
-
-**Padrão de sessão em todos os fluxos multi-step:**
-```
-DELETE Sessao → Fluxo OK? (IF)
-  ├─► [ainda em andamento] INSERT Sessao (próxima etapa) → Enviar resposta
+DELETE Sessao → Lógica → Fluxo OK? (IF)
+  ├─► [em andamento] INSERT Sessao (próxima etapa) → Enviar resposta
   └─► [ok=true] INSERT dado final → Enviar resposta final
 ```
-> A sessão usa DELETE+INSERT, não UPSERT. Isso garante sempre um único registro por telefone.
-
-### Fluxo de solicitação de serviço (multi-step)
-**Etapas de sessão:**
-```
-servico_tipo → servico_local → servico_descricao → servico_urgencia → (ok=true)
-```
-Ao concluir: INSERT em `requisicoes` (status='pendente'). Protocolo gerado: `SV-` + 6 últimos dígitos de `Date.now()`.
-
-Campos salvos: `tipo`, `local_servico`, `descricao`, `urgencia`, `morador_id`, `telefone`.
-
-### Fluxo de ocorrências (multi-step)
-**Etapas de sessão:**
-```
-ocorrencia_tipo → ocorrencia_local → ocorrencia_descricao → ocorrencia_urgencia → (ok=true)
-```
-Ao concluir: INSERT em `atendimentos` com campos separados: `titulo` (tipo + local), `mensagem` (descrição), `local_ocorrencia`, `urgencia`, status='aberta'. Protocolo gerado: `OC-` + 6 últimos dígitos de `Date.now()`.
-
-Urgências aceitas: `baixa`, `média`/`media`, `alta`. Qualquer outro valor vira `Não informada`.
-
-### Fluxo de reservas de áreas comuns (multi-step)
-**Etapas de sessão:**
-```
-reserva_area → reserva_data → reserva_horario → (ok=true)
-```
-Áreas disponíveis: `1` → Salão de Festas, `2` → Churrasqueira, `3` → Quadra Esportiva.
-
-Data aceita no formato DD/MM/AAAA (validação por regex). Ao concluir: INSERT em `reservas` com `morador_id`, `area`, `data` (ISO YYYY-MM-DD), `horario`, `status='pendente'`. O administrador confirma ou recusa pelo dashboard.
-
-### Fluxo de cancelamento
-```
-Cancelar Fluxo → DELETE Sessao Cancelar → Enviar Cancelamento
-```
-Limpa a sessão e orienta o morador a digitar `menu`.
+> A sessão usa DELETE+INSERT, não UPSERT. Garante registro único por telefone.
 
 ---
 
 ## Webhook de Notificação (`notificacao_webhook.json`)
 
-Workflow n8n auxiliar importado junto com o bot principal. Permite que o dashboard envie WhatsApp sem bloqueio de CORS (browser não pode chamar Evolution API diretamente com PUT/POST+JSON).
+Permite que o dashboard envie WhatsApp sem bloqueio de CORS.
 
-**Endpoint:** `GET https://n8n.automacaopme.com.br/webhook/notificar-encomenda?number=55...&text=...`
+**Endpoint:** `POST https://n8n.automacaopme.com.br/webhook/notificar-escola` com body `{ number, text }`
 
-**Fluxo:** Webhook1 (GET) → Enviar WhatsApp (POST Evolution API `Bot_Condominio`)
-
-- Response Mode: "When Last Node Finishes" (sem nó Responder 200)
-- Expressões no nó Enviar WhatsApp: `{{ $json.query.number }}` e `{{ $json.query.text }}`
-- Usado pelo `PackageApp.advance()` ao mover encomenda para "Notificado"
+O `sendWhatsApp(number, text)` no dashboard chama este endpoint. Usado por AvisoApp, ComunicadoApp e ReservaApp ao confirmar/cancelar.
 
 ---
 
@@ -183,179 +129,193 @@ Workflow n8n auxiliar importado junto com o bot principal. Permite que o dashboa
 SPA pura: nenhum framework, nenhum build. Abre direto no browser. Navegação client-side via atributos `data-page`.
 
 ### Páginas
-| Página | Conteúdo |
-|---|---|
-| **Dashboard** | Status do bot, métricas (ocorrências, visitantes, encomendas, moradores), fila de aprovações, ocorrências em aberto (top 3), reservas dinâmicas, comunicados dinâmicos, atividade recente |
-| **Requisições** | Kanban conectado à tabela `requisicoes` |
-| **Ocorrências** | Kanban 4 colunas: Aberta → Em análise → Em andamento → Resolvida — conectado à tabela `atendimentos` |
-| **Encomendas** | Kanban 3 colunas: Recebida → Notificado → Retirada. Avançar para "Notificado" dispara WhatsApp via webhook n8n |
-| **Visitantes** | Lista com filtros (todos/hoje/sem saída) + form de registro manual |
-| **Moradores** | Busca + lista agrupada por bloco (ordem numérica de apartamento) + form de cadastro + edição inline + exclusão |
-| **Reservas** | Lista filtrada por status (todas/pendentes/confirmadas/canceladas) + form de nova reserva + confirmar/recusar por card |
 
-### Funcionalidades do dashboard por módulo
+| Página | App JS | Tabela Supabase |
+|---|---|---|
+| **Dashboard** | — | lê de todas as tabelas para métricas |
+| **Responsáveis** | `RespApp` | `responsaveis` |
+| **Cardápio** | `CardapioApp` | `cardapio` |
+| **Agenda** | `AgendaApp` | `agenda` |
+| **Ocorrências** | `OccApp` | `ocorrencias_escola` |
+| **Solicitações** | `SolApp` | `solicitacoes` |
+| **Avisos** | `AvisoApp` | `avisos` + `responsaveis` |
+| **Comunicados** | `ComunicadoApp` | `comunicados_escola` + `responsaveis` |
+| **Autorizações** | `AuthApp` | `autorizacoes` + `responsaveis` |
+| **Reservas** | `ReservaApp` | `reservas_escola` + `responsaveis` |
 
-**Encomendas (`PackageApp`):**
-- Card mostra: descrição, nome do morador em negrito, Ap. X · Bl. Y
-- Botão ✕ exclui a encomenda do Supabase
-- Avançar para "Notificado" → envia WhatsApp via `sendWhatsApp()` (GET ao webhook n8n)
-- Form de nova encomenda: busca morador por apto+bloco com preview em tempo real; salva somente se morador for encontrado (`createWithMorador`)
-- `fmtRelative()` mostra hora real HH:MM (ex: "hoje 14:19") em vez de apenas "há Xh"
+### Funcionalidades por módulo
 
-**Moradores (`MoradorApp`):**
-- Lista agrupada por bloco com cabeçalho "Bloco A (N)" e ordenação numérica de apartamento
-- Botão "✏️ Editar" abre modal com campos pré-preenchidos; salva via PATCH no Supabase
-- Botão "🗑 Excluir" com confirmação; DELETE no Supabase
-- Telefone obrigatório no cadastro
-- Bloco obrigatório com opção N/A (checkbox desabilita campo)
+**Responsáveis (`RespApp`):**
+- Lista agrupada por turma, ordenada por nome
+- Busca por nome, aluno ou turma + filtro por turma
+- Modal de cadastro/edição (POST/PATCH); exclusão com confirmação (DELETE)
+- Campos: nome, telefone (obrigatório), aluno, turma
 
-**Reservas (`ReservaApp`):**
-- Layout 2 colunas no desktop: calendário mensal fixo à esquerda, lista à direita
-- **Calendário:** chips coloridos por área (🔵 Salão · 🟠 Churrasqueira · 🟢 Quadra); chips opacos = pendente, sólidos = confirmada; canceladas ocultadas; clicar em dia filtra a lista para aquela data; tag "📅 DD/MM ×" aparece para limpar o filtro
-- **Navegação:** botões ‹/› percorrem meses; variáveis `calYear`/`calMonth`/`calDateFilter` controlam o estado
-- Lista filtrada por status (todas/pendentes/confirmadas/canceladas) + filtro de data do calendário combinados
-- Botões Confirmar / Recusar em cards pendentes; PATCH `status` + re-renderiza calendário e widget do dashboard
-- Form de nova reserva (admin): busca morador por apto+bloco com preview; campos área, data (type=date), horário
-- **Validação de conflito em tempo real:** ao mudar área ou data, verifica reservas existentes — aviso amarelo se há pendente, vermelho + bloqueio do botão se há confirmada na mesma área+data
-- Widget "Próximas reservas" no dashboard: 5 próximas reservas não canceladas, ordenadas por data
-- `fmtDataBr()` converte ISO YYYY-MM-DD para DD/MM/AAAA na exibição
+**Cardápio (`CardapioApp`):**
+- Lista cardápios semanais ordenados por `semana_inicio` DESC
+- Form publica novo cardápio com campos por dia (segunda–sexta)
+- Botão de exclusão por card
+
+**Agenda (`AgendaApp`):**
+- Cards de eventos separados por "Próximos" e "Passados"
+- Filtro por turma (tabs)
+- Form de novo evento: título, data, turma (opcional), descrição
+
+**Ocorrências (`OccApp`) — Kanban:**
+- 4 colunas: Aberta → Em análise → Em andamento → Resolvida
+- Botão "Avançar" em cada card (`advance()` PATCH status)
+
+**Solicitações (`SolApp`) — Kanban:**
+- 4 colunas: Pendente → Análise → Andamento → Resolvido
+- Mesmo padrão de `advance()` via PATCH
+
+**Avisos (`AvisoApp`):**
+- Lista de avisos enviados aos responsáveis
+- Form de novo aviso: título, mensagem, destinatário (individual, turma ou todos)
+- `send()` faz POST em `avisos` + `sendWhatsApp()` para cada alvo
 
 **Comunicados (`ComunicadoApp`):**
-- Widget no dashboard mostra últimos 10 comunicados com badge Enviado / Rascunho
-- Modal "+ Novo": título + mensagem; dois botões: "Salvar rascunho" e "Enviar a todos"
-- "Enviar a todos": cria registro no banco, busca todos os moradores com telefone, envia WhatsApp a cada um via webhook n8n, atualiza `status='enviado'`, `enviado_em` e `destinatarios`
-- Envio é sequencial com barra de progresso (ex: "Enviando... 47/128")
+- Lista com badge Enviado/Rascunho
+- Modal "+ Novo": título, mensagem, turma (todos se vazio)
+- "Salvar rascunho" → POST com status='rascunho'
+- "Enviar a todos/turma" → POST + busca responsáveis + loop `sendWhatsApp()` + PATCH status='enviado'
+- Barra de progresso sequencial ("Enviando... 47/128")
+- `sendDraftNow(id)` envia rascunho já salvo
 
-**Configurações do Bot (modal):**
-- Ícone ⚙️ na topbar abre modal de configurações
-- Campo para alterar o nome do bot no WhatsApp via `POST /chat/updateProfileName/Bot_Condominio` com body `{ "name": "..." }` (Evolution API v2.3.7)
+**Autorizações (`AuthApp`):**
+- Lista pessoas autorizadas a retirar alunos
+- Form: busca responsável + nome do autorizador, documento, parentesco
 
-### Tema
-- **Dark:** `--bg-page: #0B1623` (navy Automatiz.ia)
-- **Light:** `--bg-page: #F7F3EC` (off-white quente)
-- Persistido em `localStorage['portaria-theme']`. Padrão: `light`.
+**Reservas (`ReservaApp`):**
+- Lista de reservas de espaços (salão, quadra, etc.)
+- Botões Confirmar/Cancelar em cards pendentes
+- Ao confirmar/cancelar: PATCH status + `sendWhatsApp()` ao responsável
+- Form de nova reserva: busca responsável + local + data + horário
 
-### Cores de marca
-```css
---brand-primary:      #3D8BFF  /* azul */
---brand-primary-dark: #0E2D7A
---brand-accent:       #F5A623  /* laranja */
-```
-
-### Fontes
-- **Outfit** (400/500/600/700/800) — UI principal
-- **Space Mono** (400/700) — labels monospace, métricas
-
-### Ícones
-SVG sprite inline no topo do `<body>`. Novos ícones devem ser adicionados ao sprite como `<symbol id="icon-NOME">`. Uso: `<svg class="icon"><use href="#icon-NOME"/></svg>`.
-
-### Helper Supabase
-```js
-supaApi(method, path, body)  // retorna Promise
-// Exemplos:
-supaApi('GET', '/moradores?select=*')
-supaApi('POST', '/moradores', { nome, telefone, apartamento, bloco })
-supaApi('PATCH', '/encomendas?id=eq.5', { status: 'retirado' })
-supaApi('DELETE', '/sessoes?telefone=eq.5511999999999')
-```
-
-### Toast
-```js
-showToast('Mensagem de sucesso')
-showToast('Algo deu errado', 'error')
-```
-
-### Responsivo
-- **Mobile (<768px):** bottom nav, colunas em 1 ou 2, Kanban em lista agrupada
-- **Desktop (≥768px):** sidebar lateral, grid 4 colunas, Kanban em matriz
+### Configurações do Bot (modal)
+- Ícone ⚙️ na topbar
+- Campo para alterar nome do bot via `POST /chat/updateProfileName/Bot_Escola` (Evolution API v2)
 
 ---
 
-## Como editar o workflow do bot
+## Tema e Design
 
-1. Abra o n8n e importe `bot_condominio.json` (ou edite diretamente se já importado).
-2. Ao adicionar um novo módulo (ex: votação em assembleia), siga o padrão:
-   - Prefixo de sessão único (ex: `votacao_`)
-   - Adicionar nova rota no **Roteador** (Code node) e uma nova saída no **Switch Rota**
-   - DELETE sessão → Lógica → IF ok? → INSERT sessão (se continua) ou INSERT dado final (se concluiu) → Enviar mensagem
-3. Exporte como JSON e substitua `bot_condominio.json`.
+### Cores (Colégio Raio de Luz)
+```css
+--brand-primary:       #1E72BE   /* azul principal */
+--brand-primary-dark:  #155A97
+--brand-secondary:     #7DC242   /* verde */
+--brand-secondary-dark:#5F9930
+--brand-accent:        #FBB040   /* âmbar */
+--brand-accent-dark:   #D9960A
+```
+
+### Light / Dark
+| Token | Light | Dark |
+|---|---|---|
+| `--bg-page` | `#F0F6FF` | `#091828` |
+| `--bg-surface` | `#FFFFFF` | `#0F2235` |
+| `--sidebar-bg` | `#0D2140` | `#060E1A` |
+| `--text-main` | `#0D2140` | `#E0EEFF` |
+
+Persistido em `localStorage['escola-theme']`. Padrão: `light`.
+
+### Fontes
+- **Outfit** (400/500/600/700/800) — UI principal
+- **Space Mono** (400/700) — métricas e labels monospace
+
+### Ícones
+SVG sprite inline no topo do `<body>`. Novos ícones: adicionar `<symbol id="icon-NOME">` ao sprite. Uso: `<svg class="icon"><use href="#icon-NOME"/></svg>`.
+
+### Responsivo
+| Breakpoint | Comportamento |
+|---|---|
+| `≥768px` | Sidebar lateral, grid 4 colunas, Kanban em matriz |
+| `<1100px` | Métricas 2 colunas, grids reduzem |
+| `<768px` | Sidebar ocultada (abre pelo hambúrguer), bottom-nav visível, Kanban em lista |
+| `<480px` | Tudo em coluna única, modais sobem do rodapé |
+
+---
+
+## Helpers JavaScript
+
+### supaApi
+```js
+supaApi(method, path, body)  // retorna Promise
+// GET: retorna null em caso de erro (não lança)
+// POST/PATCH/DELETE: lança Error com mensagem do servidor em caso de erro
+supaApi('GET', '/responsaveis?select=*&order=nome.asc')
+supaApi('POST', '/agenda', { titulo, data, turma, descricao })
+supaApi('PATCH', '/ocorrencias_escola?id=eq.5', { status: 'analise' })
+supaApi('DELETE', '/sessoes_escola?telefone=eq.5511999999999')
+```
+
+### sendWhatsApp
+```js
+sendWhatsApp(number, text)  // POST ao webhook n8n; falhas silenciosas (console.warn)
+```
+
+### showToast
+```js
+showToast('Mensagem de sucesso')
+showToast('Algo deu errado', 'error')
+showToast('Informação', 'info')
+```
+
+---
 
 ## Como editar o dashboard
 
-`index.html` é auto-contido. Edite diretamente — não há processo de build, transpilação ou dependências locais. Ao adicionar uma nova página:
+`index.html` é auto-contido. Edite diretamente — sem build. Ao adicionar nova página:
 1. Criar `<div class="page" id="page-NOME">` dentro de `<main class="main">`
 2. Adicionar item no `.sidebar` com `data-page="NOME"`
 3. Adicionar item no `.bottom-nav` com `data-page="NOME"`
-4. O sistema de navegação detecta automaticamente pelo atributo `data-page`.
+4. Criar o App JS seguindo o padrão `{ data:[], load(), render() }`
+5. Registrar no `loadPage()` e no auto-refresh (intervalo de 60s)
+
+## Como editar o bot
+
+1. Importe `bot_escola.json` no n8n (ou edite diretamente se já importado).
+2. Ao adicionar módulo novo, siga o padrão:
+   - Prefixo de sessão único (ex: `boletim_`)
+   - Nova rota no nó **Roteador** + nova saída no **Switch Rota**
+   - DELETE sessão → Lógica → IF ok? → INSERT sessão (continua) ou INSERT dado final (concluiu)
+3. Exporte como JSON e substitua `bot_escola.json`.
 
 ---
 
 ## Persistência do dashboard
 
-Todas as páginas recarregam dados do Supabase ao serem navegadas. Auto-refresh a cada 60s cobre todas as páginas.
+Todas as páginas recarregam dados ao serem navegadas. Auto-refresh a cada 60s.
 
-| App JS | Tabela Supabase | Padrão de escrita |
+| App JS | Tabela | Padrão de escrita |
 |---|---|---|
-| `OccApp` | `atendimentos` | PATCH status via `advance()` |
-| `ReqApp` | `requisicoes` | PATCH status via `advance()` |
-| `PackageApp` | `encomendas` | PATCH status + DELETE + POST via `createWithMorador()` |
-| `VisitorApp` | `visitantes` | POST + lista |
-| `MoradorApp` | `moradores` | POST + PATCH (edição) + DELETE + busca |
-| `ReservaApp` | `reservas` | POST + PATCH status (confirmar/cancelar) |
-| `ComunicadoApp` | `comunicados` | POST (rascunho ou envio) + PATCH status após envio em massa via WhatsApp |
+| `RespApp` | `responsaveis` | POST/PATCH/DELETE |
+| `CardapioApp` | `cardapio` | POST/DELETE |
+| `AgendaApp` | `agenda` | POST/DELETE |
+| `OccApp` | `ocorrencias_escola` | PATCH status via `advance()` |
+| `SolApp` | `solicitacoes` | PATCH status via `advance()` |
+| `AvisoApp` | `avisos` | POST + WhatsApp |
+| `ComunicadoApp` | `comunicados_escola` | POST (rascunho) + PATCH + WhatsApp em massa |
+| `AuthApp` | `autorizacoes` | POST/DELETE |
+| `ReservaApp` | `reservas_escola` | POST/PATCH + WhatsApp ao confirmar/cancelar |
 
 ---
 
-## Módulos pendentes / TODOs
+## Pendências / TODOs
 
-- **SQL no Supabase** — rodar o script abaixo se ainda não aplicado:
+- **bot_escola.json — Supabase desatualizado** ⚠️ — todos os nós HTTP do bot ainda apontam para o projeto antigo (`rcghqqwbwxbhrxjwutqu`). Atualizar URLs e chaves para `ywsobgbpwhykkfolvoml`.
+- **sessoes_escola** — tabela de sessão do bot não está em `schema.sql`. Criar:
   ```sql
-  ALTER TABLE atendimentos
-    ADD COLUMN IF NOT EXISTS titulo text,
-    ADD COLUMN IF NOT EXISTS local_ocorrencia text,
-    ADD COLUMN IF NOT EXISTS urgencia text DEFAULT 'media',
-    ADD COLUMN IF NOT EXISTS created_at timestamptz DEFAULT now();
-
-  CREATE TABLE IF NOT EXISTS requisicoes (
-    id bigint generated always as identity primary key,
-    telefone text,
-    morador_id bigint REFERENCES moradores(id),
-    tipo text,
-    local_servico text,
-    descricao text,
-    urgencia text DEFAULT 'media',
-    status text DEFAULT 'pendente',
-    created_at timestamptz DEFAULT now()
+  CREATE TABLE IF NOT EXISTS sessoes_escola (
+    telefone text PRIMARY KEY,
+    etapa    text,
+    dados    jsonb,
+    updated_at timestamptz DEFAULT now()
   );
-  ALTER TABLE requisicoes ENABLE ROW LEVEL SECURITY;
-  CREATE POLICY "anon all" ON requisicoes USING (true) WITH CHECK (true);
-
-  CREATE TABLE IF NOT EXISTS reservas (
-    id bigint generated always as identity primary key,
-    morador_id bigint REFERENCES moradores(id),
-    area text NOT NULL,
-    data date NOT NULL,
-    horario text,
-    status text DEFAULT 'pendente',
-    created_at timestamptz DEFAULT now()
-  );
-  ALTER TABLE reservas ENABLE ROW LEVEL SECURITY;
-  CREATE POLICY "anon all" ON reservas USING (true) WITH CHECK (true);
-
-  CREATE TABLE IF NOT EXISTS comunicados (
-    id bigint generated always as identity primary key,
-    titulo text NOT NULL,
-    mensagem text NOT NULL,
-    status text DEFAULT 'rascunho',
-    enviado_em timestamptz,
-    destinatarios int DEFAULT 0,
-    created_at timestamptz DEFAULT now()
-  );
-  ALTER TABLE comunicados ENABLE ROW LEVEL SECURITY;
-  CREATE POLICY "anon all" ON comunicados USING (true) WITH CHECK (true);
+  ALTER TABLE sessoes_escola ENABLE ROW LEVEL SECURITY;
+  CREATE POLICY "anon all" ON sessoes_escola USING (true) WITH CHECK (true);
+  GRANT ALL ON sessoes_escola TO anon;
   ```
-- **Reservas de áreas comuns** ✅ — bot com fluxo multi-step (`reserva_area` → `reserva_data` → `reserva_horario`); menu posição 4 ("Fazer Reserva"); dashboard com calendário mensal, validação de conflito em tempo real, kanban de aprovação e widget no painel; tabela `reservas` criada no Supabase. A fila de aprovações do painel principal ainda está mockada.
-- **Comunicados** ✅ — modal para criar/enviar comunicados, `ComunicadoApp` conectado à tabela `comunicados`, envio em massa via webhook n8n WhatsApp; tabela `comunicados` criada no Supabase.
-- **Painel de aprovações** — botões de aprovar/rejeitar existem no HTML mas sem JS conectado.
-- **Nós legados** — `Resp Visitantes` e `Resp Ocorrencias` (usando API key `720C1736...`) são stubs antigos que foram substituídos pelos fluxos multi-step. Podem ser removidos do workflow.
-- **Segurança** — mover as chaves de API (Supabase anon key e Evolution API key) para variáveis de ambiente do n8n antes de usar em produção com múltiplos clientes.
+- **Fluxos do bot** — apenas o cadastro está documentado nos nós vistos. Os fluxos de cardápio, agenda, ocorrências, solicitações, avisos e reservas precisam ser validados após a atualização do Supabase.
+- **Segurança** — mover as chaves de API (Supabase anon key e Evolution API key) para variáveis de ambiente do n8n antes de entregar para o cliente em produção.
