@@ -1302,19 +1302,23 @@ const WEBHOOK_BASE  = 'https://n8n.automacaopme.com.br/webhook/notificar-escola'
 
 // ===== SUPABASE HELPER =====
 async function supaApi(method, path, body) {
-  const opts = {
-    method,
-    headers: {
-      'apikey': SUPABASE_KEY,
-      'Authorization': 'Bearer ' + SUPABASE_KEY,
-      'Content-Type': 'application/json',
-      'Prefer': method !== 'GET' ? 'return=representation' : ''
-    }
+  const headers = {
+    'apikey': SUPABASE_KEY,
+    'Authorization': 'Bearer ' + SUPABASE_KEY,
+    'Content-Type': 'application/json',
   };
+  if (method !== 'GET') headers['Prefer'] = 'return=representation';
+  const opts = { method, headers };
   if (body) opts.body = JSON.stringify(body);
   const res = await fetch(SUPABASE_URL + path, opts);
-  if (!res.ok) { console.error(method, path, res.status); return null; }
-  try { return await res.json(); } catch { return null; }
+  if (!res.ok) {
+    const msg = await res.text().catch(() => '');
+    console.error('[supaApi]', method, path, res.status, msg);
+    if (method === 'GET') return null;
+    throw new Error(msg || `Erro ${res.status}`);
+  }
+  if (res.status === 204) return true;
+  try { return await res.json(); } catch { return true; }
 }
 
 // ===== WHATSAPP HELPER =====
@@ -1589,15 +1593,17 @@ const RespApp = {
       turma: document.getElementById('resp-turma').value
     };
     if (!body.nome || !body.telefone || !body.aluno) { showToast('Preencha todos os campos obrigatórios', 'error'); return; }
-    if (id) {
-      await supaApi('PATCH', `/responsaveis?id=eq.${id}`, body);
-      showToast('Responsável atualizado!');
-    } else {
-      await supaApi('POST', '/responsaveis', body);
-      showToast('Responsável cadastrado!');
-    }
-    closeModal('modal-responsavel');
-    this.load();
+    try {
+      if (id) {
+        await supaApi('PATCH', `/responsaveis?id=eq.${id}`, body);
+        showToast('Responsável atualizado!');
+      } else {
+        await supaApi('POST', '/responsaveis', body);
+        showToast('Responsável cadastrado!');
+      }
+      closeModal('modal-responsavel');
+      this.load();
+    } catch(e) { showToast('Erro ao salvar: ' + e.message, 'error'); }
   },
   edit(id) {
     const r = this.data.find(x => x.id === id);
@@ -1612,9 +1618,11 @@ const RespApp = {
   },
   async delete(id, nome) {
     if (!confirm(`Excluir o responsável "${nome}"? Esta ação não pode ser desfeita.`)) return;
-    await supaApi('DELETE', `/responsaveis?id=eq.${id}`);
-    showToast('Responsável excluído.');
-    this.load();
+    try {
+      await supaApi('DELETE', `/responsaveis?id=eq.${id}`);
+      showToast('Responsável excluído.');
+      this.load();
+    } catch(e) { showToast('Erro ao excluir: ' + e.message, 'error'); }
   }
 };
 
@@ -1668,16 +1676,20 @@ const CardapioApp = {
       sexta:   document.getElementById('card-sexta').value.trim()
     };
     if (!body.semana_inicio) { showToast('Selecione a data da semana', 'error'); return; }
-    await supaApi('POST', '/cardapio', body);
-    showToast('Cardápio publicado! Os responsáveis já podem consultar.');
-    closeModal('modal-cardapio');
-    this.load();
+    try {
+      await supaApi('POST', '/cardapio', body);
+      showToast('Cardápio publicado! Os responsáveis já podem consultar.');
+      closeModal('modal-cardapio');
+      this.load();
+    } catch(e) { showToast('Erro ao publicar: ' + e.message, 'error'); }
   },
   async delete(id) {
     if (!confirm('Remover este cardápio?')) return;
-    await supaApi('DELETE', `/cardapio?id=eq.${id}`);
-    showToast('Cardápio removido.');
-    this.load();
+    try {
+      await supaApi('DELETE', `/cardapio?id=eq.${id}`);
+      showToast('Cardápio removido.');
+      this.load();
+    } catch(e) { showToast('Erro ao remover: ' + e.message, 'error'); }
   }
 };
 
@@ -1739,16 +1751,20 @@ const AgendaApp = {
       descricao:document.getElementById('ev-desc').value.trim() || null
     };
     if (!body.titulo || !body.data) { showToast('Preencha título e data', 'error'); return; }
-    await supaApi('POST', '/agenda', body);
-    showToast('Evento criado!');
-    closeModal('modal-evento');
-    this.load();
+    try {
+      await supaApi('POST', '/agenda', body);
+      showToast('Evento criado!');
+      closeModal('modal-evento');
+      this.load();
+    } catch(e) { showToast('Erro ao criar evento: ' + e.message, 'error'); }
   },
   async delete(id) {
     if (!confirm('Excluir este evento?')) return;
-    await supaApi('DELETE', `/agenda?id=eq.${id}`);
-    showToast('Evento excluído.');
-    this.load();
+    try {
+      await supaApi('DELETE', `/agenda?id=eq.${id}`);
+      showToast('Evento excluído.');
+      this.load();
+    } catch(e) { showToast('Erro ao excluir: ' + e.message, 'error'); }
   }
 };
 
@@ -1797,9 +1813,11 @@ const OccApp = {
     </div>`;
   },
   async advance(id, newStatus) {
-    await supaApi('PATCH', `/ocorrencias_escola?id=eq.${id}`, { status: newStatus });
-    showToast('Status atualizado!');
-    this.load();
+    try {
+      await supaApi('PATCH', `/ocorrencias_escola?id=eq.${id}`, { status: newStatus });
+      showToast('Status atualizado!');
+      this.load();
+    } catch(e) { showToast('Erro ao atualizar: ' + e.message, 'error'); }
   }
 };
 
@@ -1838,9 +1856,11 @@ const SolApp = {
     </div>`;
   },
   async advance(id, status) {
-    await supaApi('PATCH', `/solicitacoes?id=eq.${id}`, { status });
-    showToast('Status atualizado!');
-    this.load();
+    try {
+      await supaApi('PATCH', `/solicitacoes?id=eq.${id}`, { status });
+      showToast('Status atualizado!');
+      this.load();
+    } catch(e) { showToast('Erro ao atualizar: ' + e.message, 'error'); }
   }
 };
 
@@ -1924,15 +1944,17 @@ const AvisoApp = {
 
     if (!targets.length) { showToast('Nenhum responsável encontrado', 'error'); return; }
 
-    for (const r of targets) {
-      await supaApi('POST', '/avisos', { responsavel_id: r.id, titulo, mensagem: msg, status: 'pendente' });
-      if (r.telefone) {
-        await sendWhatsApp(r.telefone, `📢 *${titulo}*\n\n${msg}\n\n_Colégio Raio de Luz 🌟_`);
+    try {
+      for (const r of targets) {
+        await supaApi('POST', '/avisos', { responsavel_id: r.id, titulo, mensagem: msg, status: 'pendente' });
+        if (r.telefone) {
+          await sendWhatsApp(r.telefone, `📢 *${titulo}*\n\n${msg}\n\n_Colégio Raio de Luz 🌟_`);
+        }
       }
-    }
-    showToast(`Aviso enviado para ${targets.length} responsável(is)!`);
-    closeModal('modal-aviso');
-    this.load();
+      showToast(`Aviso enviado para ${targets.length} responsável(is)!`);
+      closeModal('modal-aviso');
+      this.load();
+    } catch(e) { showToast('Erro ao enviar aviso: ' + e.message, 'error'); }
   }
 };
 
@@ -1981,10 +2003,12 @@ const ComunicadoApp = {
     const msg = document.getElementById('com-msg').value.trim();
     const turma = document.getElementById('com-turma').value;
     if (!titulo || !msg) { showToast('Preencha título e mensagem', 'error'); return; }
-    await supaApi('POST', '/comunicados_escola', { titulo, mensagem: msg, status: 'rascunho', turma: turma||null });
-    showToast('Rascunho salvo!');
-    closeModal('modal-comunicado');
-    this.load();
+    try {
+      await supaApi('POST', '/comunicados_escola', { titulo, mensagem: msg, status: 'rascunho', turma: turma||null });
+      showToast('Rascunho salvo!');
+      closeModal('modal-comunicado');
+      this.load();
+    } catch(e) { showToast('Erro ao salvar: ' + e.message, 'error'); }
   },
   async sendAll() {
     const titulo = document.getElementById('com-titulo').value.trim();
@@ -1998,7 +2022,10 @@ const ComunicadoApp = {
 
     if (!resps.length) { showToast('Nenhum responsável para enviar', 'error'); return; }
 
-    const rec = await supaApi('POST', '/comunicados_escola', { titulo, mensagem: msg, status: 'rascunho', turma: turma||null });
+    let rec;
+    try {
+      rec = await supaApi('POST', '/comunicados_escola', { titulo, mensagem: msg, status: 'rascunho', turma: turma||null });
+    } catch(e) { showToast('Erro ao criar comunicado: ' + e.message, 'error'); return; }
     const comId = Array.isArray(rec) ? rec[0]?.id : rec?.id;
 
     const wrap = document.getElementById('com-progress-wrap');
@@ -2019,7 +2046,9 @@ const ComunicadoApp = {
     }
 
     if (comId) {
-      await supaApi('PATCH', `/comunicados_escola?id=eq.${comId}`, { status:'enviado', enviado_em: new Date().toISOString(), destinatarios: sent });
+      try {
+        await supaApi('PATCH', `/comunicados_escola?id=eq.${comId}`, { status:'enviado', enviado_em: new Date().toISOString(), destinatarios: sent });
+      } catch(e) { console.error('Erro ao atualizar status do comunicado:', e); }
     }
 
     wrap.style.display = 'none';
@@ -2038,7 +2067,9 @@ const ComunicadoApp = {
     for (const r of resps) {
       if (r.telefone) { await sendWhatsApp(r.telefone, `📣 *${c.titulo}*\n\n${c.mensagem}\n\n_Colégio Raio de Luz 🌟_`); sent++; }
     }
-    await supaApi('PATCH', `/comunicados_escola?id=eq.${id}`, { status:'enviado', enviado_em: new Date().toISOString(), destinatarios: sent });
+    try {
+      await supaApi('PATCH', `/comunicados_escola?id=eq.${id}`, { status:'enviado', enviado_em: new Date().toISOString(), destinatarios: sent });
+    } catch(e) { console.error('Erro ao atualizar status:', e); }
     showToast(`Comunicado enviado para ${sent} responsáveis!`);
     this.load();
   }
@@ -2148,26 +2179,29 @@ const ReservaApp = {
     </div>`;
   },
   async confirm(id) {
-    await supaApi('PATCH', `/reservas_escola?id=eq.${id}`, { status: 'confirmada' });
-    // Notificar responsavel
-    const r = this.data.find(x => x.id === id);
-    if (r?.responsaveis?.telefone) {
-      await sendWhatsApp(r.responsaveis.telefone,
-        `\u2705 *Reserva Confirmada!*\n\n\ud83d\uddd3\ufe0f Espa\u00e7o: ${r.local}\n\ud83d\udcc5 Data: ${fmtDataBr(r.data)}\n\u23f0 Hor\u00e1rio: ${r.horario}\n\n_Col\u00e9gio Raio de Luz \ud83c\udf1f_`);
-    }
-    showToast('Reserva confirmada! Responsável notificado via WhatsApp.');
-    this.load();
+    try {
+      await supaApi('PATCH', `/reservas_escola?id=eq.${id}`, { status: 'confirmada' });
+      const r = this.data.find(x => x.id === id);
+      if (r?.responsaveis?.telefone) {
+        await sendWhatsApp(r.responsaveis.telefone,
+          `✅ *Reserva Confirmada!*\n\n🗓️ Espaço: ${r.local}\n📅 Data: ${fmtDataBr(r.data)}\n⏰ Horário: ${r.horario}\n\n_Colégio Raio de Luz 🌟_`);
+      }
+      showToast('Reserva confirmada! Responsável notificado via WhatsApp.');
+      this.load();
+    } catch(e) { showToast('Erro ao confirmar: ' + e.message, 'error'); }
   },
   async cancel(id) {
     if (!confirm('Cancelar esta reserva?')) return;
-    await supaApi('PATCH', `/reservas_escola?id=eq.${id}`, { status: 'cancelada' });
-    const r = this.data.find(x => x.id === id);
-    if (r?.responsaveis?.telefone) {
-      await sendWhatsApp(r.responsaveis.telefone,
-        `\u274c *Reserva Cancelada*\n\n\ud83d\uddd3\ufe0f Espa\u00e7o: ${r.local}\n\ud83d\udcc5 Data: ${fmtDataBr(r.data)}\n\n_Entre em contato com a escola para mais informa\u00e7\u00f5es. \ud83c\udfeb_`);
-    }
-    showToast('Reserva cancelada. Responsável notificado.');
-    this.load();
+    try {
+      await supaApi('PATCH', `/reservas_escola?id=eq.${id}`, { status: 'cancelada' });
+      const r = this.data.find(x => x.id === id);
+      if (r?.responsaveis?.telefone) {
+        await sendWhatsApp(r.responsaveis.telefone,
+          `❌ *Reserva Cancelada*\n\n🗓️ Espaço: ${r.local}\n📅 Data: ${fmtDataBr(r.data)}\n\n_Entre em contato com a escola para mais informações. 🏫_`);
+      }
+      showToast('Reserva cancelada. Responsável notificado.');
+      this.load();
+    } catch(e) { showToast('Erro ao cancelar: ' + e.message, 'error'); }
   }
 };
 

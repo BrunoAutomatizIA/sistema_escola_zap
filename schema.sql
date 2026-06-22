@@ -119,3 +119,7 @@ CREATE TABLE IF NOT EXISTS comunicados_escola (
 );
 ALTER TABLE comunicados_escola ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "anon all" ON comunicados_escola USING (true) WITH CHECK (true);
+
+-- IMPORTANTE: permissões para o role anon (necessário para tabelas criadas via SQL)
+GRANT ALL ON ALL TABLES IN SCHEMA public TO anon;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon;
