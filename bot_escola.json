@@ -1996,17 +1996,6 @@
         ]
       ]
     },
-    "LÃƒÂ³gica Cadastro": {
-      "main": [
-        [
-          {
-            "node": "DELETE Sessao Cadastro",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "DELETE Sessao Cadastro": {
       "main": [
         [
@@ -2180,17 +2169,6 @@
         ]
       ]
     },
-    "LÃƒÂ³gica Autorizacao": {
-      "main": [
-        [
-          {
-            "node": "DELETE Sessao Aut",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "DELETE Sessao Aut": {
       "main": [
         [
@@ -2242,17 +2220,6 @@
         ]
       ]
     },
-    "LÃƒÂ³gica Ocorrencia": {
-      "main": [
-        [
-          {
-            "node": "DELETE Sessao Occ",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "DELETE Sessao Occ": {
       "main": [
         [
@@ -2298,17 +2265,6 @@
         [
           {
             "node": "Enviar Ocorrencia",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "LÃƒÂ³gica Solicitacao": {
-      "main": [
-        [
-          {
-            "node": "DELETE Sessao Sol",
             "type": "main",
             "index": 0
           }
@@ -2466,6 +2422,50 @@
         [
           {
             "node": "Enviar Reserva",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lógica Cadastro": {
+      "main": [
+        [
+          {
+            "node": "DELETE Sessao Cadastro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lógica Autorizacao": {
+      "main": [
+        [
+          {
+            "node": "DELETE Sessao Aut",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lógica Ocorrencia": {
+      "main": [
+        [
+          {
+            "node": "DELETE Sessao Occ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lógica Solicitacao": {
+      "main": [
+        [
+          {
+            "node": "DELETE Sessao Sol",
             "type": "main",
             "index": 0
           }
