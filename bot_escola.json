@@ -275,6 +275,7 @@
           "parameters": [
             { "name": "number", "value": "={{ $json.from }}" },
             { "name": "text", "value": "={{ 'Ã°Å¸ÂÂ« *EscolaZap*\\n\\nOlÃƒÂ¡, *' + $json.responsavelNome + '*! Ã°Å¸â€˜â€¹\\nÃ°Å¸â€˜Â¶ ' + $json.responsavelAluno + ' Ã¢â‚¬â€ Turma ' + $json.responsavelTurma + '\\n\\nComo posso ajudar?\\n\\n1Ã¯Â¸ÂÃ¢Æ’Â£  Ã°Å¸â€œâ€¦ Agenda & Eventos\\n2Ã¯Â¸ÂÃ¢Æ’Â£  Ã°Å¸ÂÂ½Ã¯Â¸Â CardÃƒÂ¡pio da Semana\\n3Ã¯Â¸ÂÃ¢Æ’Â£  Ã¢Å“â€¦ Autorizar Busca\\n4Ã¯Â¸ÂÃ¢Æ’Â£  Ã°Å¸â€”â€œÃ¯Â¸Â Fazer Reserva\\n5Ã¯Â¸ÂÃ¢Æ’Â£  Ã¢Å¡Â Ã¯Â¸Â Registrar OcorrÃƒÂªncia\\n6Ã¯Â¸ÂÃ¢Æ’Â£  Ã°Å¸â€œâ€¹ SolicitaÃƒÂ§ÃƒÂµes\\n7Ã¯Â¸ÂÃ¢Æ’Â£  Ã°Å¸â€œÂ¢ Meus Avisos\\n\\n_Digite o nÃƒÂºmero da opÃƒÂ§ÃƒÂ£o desejada_' }}"
+          }
           ]
         },
         "options": {}
