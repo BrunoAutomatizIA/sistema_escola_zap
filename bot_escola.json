@@ -39,12 +39,12 @@
     },
     {
       "parameters": {
-        "url": "=https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/responsaveis?telefone=eq.{{ $json.from }}&select=id,nome,aluno,turma",
+        "url": "=https://ywsobgbpwhykkfolvoml.supabase.co/rest/v1/responsaveis?telefone=eq.{{ $json.from }}&select=id,nome,aluno,turma",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
-            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
+            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
+            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
             { "name": "Content-Type", "value": "application/json" }
           ]
         },
@@ -58,12 +58,12 @@
     },
     {
       "parameters": {
-        "url": "=https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/sessoes_escola?telefone=eq.{{ $('Parsear Mensagem').item.json.from }}&select=etapa,dados",
+        "url": "=https://ywsobgbpwhykkfolvoml.supabase.co/rest/v1/sessoes_escola?telefone=eq.{{ $('Parsear Mensagem').item.json.from }}&select=etapa,dados",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
-            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
+            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
+            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
             { "name": "Content-Type", "value": "application/json" }
           ]
         },
@@ -102,10 +102,10 @@
     },
     {
       "parameters": {
-        "jsCode": "const d = $json;\nconst etapa = d.sessaoEtapa, texto = d.texto ?? '', dados = d.sessaoDados ?? {};\nlet nd = { ...dados }, prox = null, resp = '', ok = false;\n\nif (!etapa) {\n  resp = 'Olá! 👋 Bem-vindo ao *EscolaZap*! 🏫\\n\\nNão encontrei seu cadastro no sistema.\\n\\nVamos fazer seu registro rapidinho! 😊\\n\\nQual é o seu *nome completo*?';\n  prox = 'aguardando_nome'; nd = {};\n} else if (etapa === 'aguardando_nome') {\n  if (texto.length < 3) { resp = '⚠️ Nome muito curto. Digite seu nome completo.'; prox = 'aguardando_nome'; }\n  else { nd.nome = texto; resp = `Ótimo, *${texto}*! 👶\\n\\nQual é o *nome do seu filho(a)*?`; prox = 'aguardando_aluno'; }\n} else if (etapa === 'aguardando_aluno') {\n  if (texto.length < 2) { resp = '⚠️ Informe o nome do seu filho(a).'; prox = 'aguardando_aluno'; }\n  else { nd.aluno = texto; resp = `Perfeito! 📚\\n\\nQual é a *turma* do(a) ${texto}?\\n\\n🔹 Berçário\\n🔹 Maternal I\\n🔹 Maternal II\\n🔹 Jardim I\\n🔹 Jardim II\\n🔹 Pré\\n\\n_Digite o nome da turma_`; prox = 'aguardando_turma'; }\n} else if (etapa === 'aguardando_turma') {\n  nd.turma = texto; ok = true;\n  resp = `✅ *Cadastro realizado!*\\n\\n👤 ${nd.nome}\\n👶 Filho(a): ${nd.aluno}\\n🏫 Turma: ${nd.turma}\\n\\nBem-vindo(a) ao EscolaZap! 🎉\\n\\nEnvie qualquer mensagem para ver o menu.`;\n}\n\nreturn [{ json: { from: d.from, instance: d.instance, resp, prox, nd: JSON.stringify(nd), ok, nome: nd.nome ?? '', aluno: nd.aluno ?? '', turma: nd.turma ?? '' } }];"
+        "jsCode": "const d = $json;\nconst etapa = d.sessaoEtapa, texto = d.texto ?? '', dados = d.sessaoDados ?? {};\nlet nd = { ...dados }, prox = null, resp = '', ok = false;\n\nif (!etapa) {\n  resp = 'OlÃƒÂ¡! Ã°Å¸â€˜â€¹ Bem-vindo ao *EscolaZap*! Ã°Å¸ÂÂ«\\n\\nNÃƒÂ£o encontrei seu cadastro no sistema.\\n\\nVamos fazer seu registro rapidinho! Ã°Å¸ËœÅ \\n\\nQual ÃƒÂ© o seu *nome completo*?';\n  prox = 'aguardando_nome'; nd = {};\n} else if (etapa === 'aguardando_nome') {\n  if (texto.length < 3) { resp = 'Ã¢Å¡Â Ã¯Â¸Â Nome muito curto. Digite seu nome completo.'; prox = 'aguardando_nome'; }\n  else { nd.nome = texto; resp = `Ãƒâ€œtimo, *${texto}*! Ã°Å¸â€˜Â¶\\n\\nQual ÃƒÂ© o *nome do seu filho(a)*?`; prox = 'aguardando_aluno'; }\n} else if (etapa === 'aguardando_aluno') {\n  if (texto.length < 2) { resp = 'Ã¢Å¡Â Ã¯Â¸Â Informe o nome do seu filho(a).'; prox = 'aguardando_aluno'; }\n  else { nd.aluno = texto; resp = `Perfeito! Ã°Å¸â€œÅ¡\\n\\nQual ÃƒÂ© a *turma* do(a) ${texto}?\\n\\nÃ°Å¸â€Â¹ BerÃƒÂ§ÃƒÂ¡rio\\nÃ°Å¸â€Â¹ Maternal I\\nÃ°Å¸â€Â¹ Maternal II\\nÃ°Å¸â€Â¹ Jardim I\\nÃ°Å¸â€Â¹ Jardim II\\nÃ°Å¸â€Â¹ PrÃƒÂ©\\n\\n_Digite o nome da turma_`; prox = 'aguardando_turma'; }\n} else if (etapa === 'aguardando_turma') {\n  nd.turma = texto; ok = true;\n  resp = `Ã¢Å“â€¦ *Cadastro realizado!*\\n\\nÃ°Å¸â€˜Â¤ ${nd.nome}\\nÃ°Å¸â€˜Â¶ Filho(a): ${nd.aluno}\\nÃ°Å¸ÂÂ« Turma: ${nd.turma}\\n\\nBem-vindo(a) ao EscolaZap! Ã°Å¸Å½â€°\\n\\nEnvie qualquer mensagem para ver o menu.`;\n}\n\nreturn [{ json: { from: d.from, instance: d.instance, resp, prox, nd: JSON.stringify(nd), ok, nome: nd.nome ?? '', aluno: nd.aluno ?? '', turma: nd.turma ?? '' } }];"
       },
       "id": "es-0001-0001-0001-0001-000000000008",
-      "name": "Lógica Cadastro",
+      "name": "LÃƒÂ³gica Cadastro",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [1264, 576]
@@ -113,12 +113,12 @@
     {
       "parameters": {
         "method": "DELETE",
-        "url": "=https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/sessoes_escola?telefone=eq.{{ $json.from }}",
+        "url": "=https://ywsobgbpwhykkfolvoml.supabase.co/rest/v1/sessoes_escola?telefone=eq.{{ $json.from }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
-            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
+            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
+            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
             { "name": "Prefer", "value": "return=minimal" }
           ]
         },
@@ -134,7 +134,7 @@
       "parameters": {
         "conditions": {
           "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 1 },
-          "conditions": [{ "id": "c2", "leftValue": "={{ $('Lógica Cadastro').item.json.ok }}", "rightValue": false, "operator": { "type": "boolean", "operation": "equals" } }],
+          "conditions": [{ "id": "c2", "leftValue": "={{ $('LÃƒÂ³gica Cadastro').item.json.ok }}", "rightValue": false, "operator": { "type": "boolean", "operation": "equals" } }],
           "combinator": "and"
         },
         "options": {}
@@ -148,12 +148,12 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/sessoes_escola",
+        "url": "https://ywsobgbpwhykkfolvoml.supabase.co/rest/v1/sessoes_escola",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
-            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
+            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
+            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
             { "name": "Content-Type", "value": "application/json" },
             { "name": "Prefer", "value": "return=minimal" }
           ]
@@ -161,7 +161,7 @@
         "sendBody": true,
         "contentType": "raw",
         "rawContentType": "application/json",
-        "body": "={{ JSON.stringify({ telefone: $('Lógica Cadastro').item.json.from, etapa: $('Lógica Cadastro').item.json.prox, dados: JSON.parse($('Lógica Cadastro').item.json.nd), updated_at: new Date().toISOString() }) }}",
+        "body": "={{ JSON.stringify({ telefone: $('LÃƒÂ³gica Cadastro').item.json.from, etapa: $('LÃƒÂ³gica Cadastro').item.json.prox, dados: JSON.parse($('LÃƒÂ³gica Cadastro').item.json.nd), updated_at: new Date().toISOString() }) }}",
         "options": { "response": { "response": { "neverError": true } } }
       },
       "id": "es-0001-0001-0001-0001-000000000011",
@@ -173,12 +173,12 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/responsaveis",
+        "url": "https://ywsobgbpwhykkfolvoml.supabase.co/rest/v1/responsaveis",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
-            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
+            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
+            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
             { "name": "Content-Type", "value": "application/json" },
             { "name": "Prefer", "value": "return=minimal" }
           ]
@@ -186,10 +186,10 @@
         "sendBody": true,
         "bodyParameters": {
           "parameters": [
-            { "name": "nome", "value": "={{ $('Lógica Cadastro').item.json.nome }}" },
-            { "name": "telefone", "value": "={{ $('Lógica Cadastro').item.json.from }}" },
-            { "name": "aluno", "value": "={{ $('Lógica Cadastro').item.json.aluno }}" },
-            { "name": "turma", "value": "={{ $('Lógica Cadastro').item.json.turma }}" }
+            { "name": "nome", "value": "={{ $('LÃƒÂ³gica Cadastro').item.json.nome }}" },
+            { "name": "telefone", "value": "={{ $('LÃƒÂ³gica Cadastro').item.json.from }}" },
+            { "name": "aluno", "value": "={{ $('LÃƒÂ³gica Cadastro').item.json.aluno }}" },
+            { "name": "turma", "value": "={{ $('LÃƒÂ³gica Cadastro').item.json.turma }}" }
           ]
         },
         "options": { "response": { "response": { "neverError": true } } }
@@ -203,19 +203,19 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://evolution.automacaopme.com.br/message/sendText/{{ $('Lógica Cadastro').item.json.instance }}",
+        "url": "=https://evolution.automacaopme.com.br/message/sendText/{{ $('LÃƒÂ³gica Cadastro').item.json.instance }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "F5E45E6A06AC-4857-807A-923D226DE8E1" },
+            { "name": "apikey", "value": "187303942A46-4052-8D89-5A4CA2523ABD" },
             { "name": "Content-Type", "value": "application/json" }
           ]
         },
         "sendBody": true,
         "bodyParameters": {
           "parameters": [
-            { "name": "number", "value": "={{ $('Lógica Cadastro').item.json.from }}" },
-            { "name": "text", "value": "={{ $('Lógica Cadastro').item.json.resp }}" }
+            { "name": "number", "value": "={{ $('LÃƒÂ³gica Cadastro').item.json.from }}" },
+            { "name": "text", "value": "={{ $('LÃƒÂ³gica Cadastro').item.json.resp }}" }
           ]
         },
         "options": {}
@@ -266,7 +266,7 @@
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "F5E45E6A06AC-4857-807A-923D226DE8E1" },
+            { "name": "apikey", "value": "187303942A46-4052-8D89-5A4CA2523ABD" },
             { "name": "Content-Type", "value": "application/json" }
           ]
         },
@@ -274,7 +274,7 @@
         "bodyParameters": {
           "parameters": [
             { "name": "number", "value": "={{ $json.from }}" },
-            { "name": "text", "value": "={{ '🏫 *EscolaZap*\\n\\nOlá, *' + $json.responsavelNome + '*! 👋\\n👶 ' + $json.responsavelAluno + ' — Turma ' + $json.responsavelTurma + '\\n\\nComo posso ajudar?\\n\\n1️⃣  📅 Agenda & Eventos\\n2️⃣  🍽️ Cardápio da Semana\\n3️⃣  ✅ Autorizar Busca\\n4️⃣  🗓️ Fazer Reserva\\n5️⃣  ⚠️ Registrar Ocorrência\\n6️⃣  📋 Solicitações\\n7️⃣  📢 Meus Avisos\\n\\n_Digite o número da opção desejada_' }}"
+            { "name": "text", "value": "={{ 'Ã°Å¸ÂÂ« *EscolaZap*\\n\\nOlÃƒÂ¡, *' + $json.responsavelNome + '*! Ã°Å¸â€˜â€¹\\nÃ°Å¸â€˜Â¶ ' + $json.responsavelAluno + ' Ã¢â‚¬â€ Turma ' + $json.responsavelTurma + '\\n\\nComo posso ajudar?\\n\\n1Ã¯Â¸ÂÃ¢Æ’Â£  Ã°Å¸â€œâ€¦ Agenda & Eventos\\n2Ã¯Â¸ÂÃ¢Æ’Â£  Ã°Å¸ÂÂ½Ã¯Â¸Â CardÃƒÂ¡pio da Semana\\n3Ã¯Â¸ÂÃ¢Æ’Â£  Ã¢Å“â€¦ Autorizar Busca\\n4Ã¯Â¸ÂÃ¢Æ’Â£  Ã°Å¸â€”â€œÃ¯Â¸Â Fazer Reserva\\n5Ã¯Â¸ÂÃ¢Æ’Â£  Ã¢Å¡Â Ã¯Â¸Â Registrar OcorrÃƒÂªncia\\n6Ã¯Â¸ÂÃ¢Æ’Â£  Ã°Å¸â€œâ€¹ SolicitaÃƒÂ§ÃƒÂµes\\n7Ã¯Â¸ÂÃ¢Æ’Â£  Ã°Å¸â€œÂ¢ Meus Avisos\\n\\n_Digite o nÃƒÂºmero da opÃƒÂ§ÃƒÂ£o desejada_' }}"
           ]
         },
         "options": {}
@@ -287,12 +287,12 @@
     },
     {
       "parameters": {
-        "url": "=https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/agenda?data=gte.{{ new Date().toISOString().split('T')[0] }}&select=data,titulo,descricao,turma&order=data.asc&limit=5",
+        "url": "=https://ywsobgbpwhykkfolvoml.supabase.co/rest/v1/agenda?data=gte.{{ new Date().toISOString().split('T')[0] }}&select=data,titulo,descricao,turma&order=data.asc&limit=5",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
-            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
+            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
+            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
             { "name": "Content-Type", "value": "application/json" }
           ]
         },
@@ -306,7 +306,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const raw = $input.first().json.data ?? $input.first().json;\nlet lista = [];\ntry { lista = typeof raw === 'string' ? JSON.parse(raw) : (Array.isArray(raw) ? raw : []); } catch(e) { lista = []; }\nconst ctx = $('Roteador').item.json;\nconst from = ctx.from, instance = ctx.instance, turma = ctx.responsavelTurma;\n\n// Filtrar eventos da turma do aluno + eventos gerais (turma null)\nconst filtrados = lista.filter(e => !e.turma || e.turma === turma);\n\nif (filtrados.length === 0) {\n  return [{ json: { from, instance, msg: '📅 *Agenda Escolar*\\n\\nNenhum evento programado nos próximos dias. 😊\\n\\nFique de olho! Assim que houver algo, avisamos por aqui.' } }];\n}\nlet t = `📅 *Próximos Eventos*\\n\\n`;\nfiltrados.forEach(e => {\n  const dt = e.data ? new Date(e.data + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' }) : '?';\n  const turmaLabel = e.turma ? ` _(${e.turma})_` : ' _(Todos)_';\n  t += `📌 *${e.titulo}*${turmaLabel}\\n   📅 ${dt}\\n`;\n  if (e.descricao) t += `   ${e.descricao}\\n`;\n  t += '\\n';\n});\nt += '_Para mais informações, fale com a coordenação._ 🏫';\nreturn [{ json: { from, instance, msg: t } }];"
+        "jsCode": "const raw = $input.first().json.data ?? $input.first().json;\nlet lista = [];\ntry { lista = typeof raw === 'string' ? JSON.parse(raw) : (Array.isArray(raw) ? raw : []); } catch(e) { lista = []; }\nconst ctx = $('Roteador').item.json;\nconst from = ctx.from, instance = ctx.instance, turma = ctx.responsavelTurma;\n\n// Filtrar eventos da turma do aluno + eventos gerais (turma null)\nconst filtrados = lista.filter(e => !e.turma || e.turma === turma);\n\nif (filtrados.length === 0) {\n  return [{ json: { from, instance, msg: 'Ã°Å¸â€œâ€¦ *Agenda Escolar*\\n\\nNenhum evento programado nos prÃƒÂ³ximos dias. Ã°Å¸ËœÅ \\n\\nFique de olho! Assim que houver algo, avisamos por aqui.' } }];\n}\nlet t = `Ã°Å¸â€œâ€¦ *PrÃƒÂ³ximos Eventos*\\n\\n`;\nfiltrados.forEach(e => {\n  const dt = e.data ? new Date(e.data + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' }) : '?';\n  const turmaLabel = e.turma ? ` _(${e.turma})_` : ' _(Todos)_';\n  t += `Ã°Å¸â€œÅ’ *${e.titulo}*${turmaLabel}\\n   Ã°Å¸â€œâ€¦ ${dt}\\n`;\n  if (e.descricao) t += `   ${e.descricao}\\n`;\n  t += '\\n';\n});\nt += '_Para mais informaÃƒÂ§ÃƒÂµes, fale com a coordenaÃƒÂ§ÃƒÂ£o._ Ã°Å¸ÂÂ«';\nreturn [{ json: { from, instance, msg: t } }];"
       },
       "id": "es-0001-0001-0001-0001-000000000018",
       "name": "Formatar Agenda",
@@ -321,7 +321,7 @@
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "F5E45E6A06AC-4857-807A-923D226DE8E1" },
+            { "name": "apikey", "value": "187303942A46-4052-8D89-5A4CA2523ABD" },
             { "name": "Content-Type", "value": "application/json" }
           ]
         },
@@ -342,12 +342,12 @@
     },
     {
       "parameters": {
-        "url": "=https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/cardapio?semana_inicio=lte.{{ new Date().toISOString().split('T')[0] }}&select=*&order=semana_inicio.desc&limit=1",
+        "url": "=https://ywsobgbpwhykkfolvoml.supabase.co/rest/v1/cardapio?semana_inicio=lte.{{ new Date().toISOString().split('T')[0] }}&select=*&order=semana_inicio.desc&limit=1",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
-            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
+            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
+            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
             { "name": "Content-Type", "value": "application/json" }
           ]
         },
@@ -361,7 +361,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const raw = $input.first().json.data ?? $input.first().json;\nlet lista = [];\ntry { lista = typeof raw === 'string' ? JSON.parse(raw) : (Array.isArray(raw) ? raw : []); } catch(e) { lista = []; }\nconst ctx = $('Roteador').item.json;\nconst from = ctx.from, instance = ctx.instance;\n\nif (lista.length === 0) {\n  return [{ json: { from, instance, msg: '🍽️ *Cardápio Semanal*\\n\\nO cardápio desta semana ainda não foi publicado.\\n\\nConsulte a coordenação para mais informações. 😊' } }];\n}\nconst c = lista[0];\nconst semana = new Date(c.semana_inicio + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });\nlet msg = `🍽️ *Cardápio da Semana*\\n_Semana de ${semana}_\\n\\n`;\nif (c.segunda) msg += `🔵 *Segunda:* ${c.segunda}\\n`;\nif (c.terca)   msg += `🟢 *Terça:*   ${c.terca}\\n`;\nif (c.quarta)  msg += `🟡 *Quarta:*  ${c.quarta}\\n`;\nif (c.quinta)  msg += `🟠 *Quinta:*  ${c.quinta}\\n`;\nif (c.sexta)   msg += `🔴 *Sexta:*   ${c.sexta}\\n`;\nmsg += '\\n_Bom apetite! 😋🥗_';\nreturn [{ json: { from, instance, msg } }];"
+        "jsCode": "const raw = $input.first().json.data ?? $input.first().json;\nlet lista = [];\ntry { lista = typeof raw === 'string' ? JSON.parse(raw) : (Array.isArray(raw) ? raw : []); } catch(e) { lista = []; }\nconst ctx = $('Roteador').item.json;\nconst from = ctx.from, instance = ctx.instance;\n\nif (lista.length === 0) {\n  return [{ json: { from, instance, msg: 'Ã°Å¸ÂÂ½Ã¯Â¸Â *CardÃƒÂ¡pio Semanal*\\n\\nO cardÃƒÂ¡pio desta semana ainda nÃƒÂ£o foi publicado.\\n\\nConsulte a coordenaÃƒÂ§ÃƒÂ£o para mais informaÃƒÂ§ÃƒÂµes. Ã°Å¸ËœÅ ' } }];\n}\nconst c = lista[0];\nconst semana = new Date(c.semana_inicio + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });\nlet msg = `Ã°Å¸ÂÂ½Ã¯Â¸Â *CardÃƒÂ¡pio da Semana*\\n_Semana de ${semana}_\\n\\n`;\nif (c.segunda) msg += `Ã°Å¸â€Âµ *Segunda:* ${c.segunda}\\n`;\nif (c.terca)   msg += `Ã°Å¸Å¸Â¢ *TerÃƒÂ§a:*   ${c.terca}\\n`;\nif (c.quarta)  msg += `Ã°Å¸Å¸Â¡ *Quarta:*  ${c.quarta}\\n`;\nif (c.quinta)  msg += `Ã°Å¸Å¸Â  *Quinta:*  ${c.quinta}\\n`;\nif (c.sexta)   msg += `Ã°Å¸â€Â´ *Sexta:*   ${c.sexta}\\n`;\nmsg += '\\n_Bom apetite! Ã°Å¸Ëœâ€¹Ã°Å¸Â¥â€”_';\nreturn [{ json: { from, instance, msg } }];"
       },
       "id": "es-0001-0001-0001-0001-000000000021",
       "name": "Formatar Cardapio",
@@ -376,7 +376,7 @@
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "F5E45E6A06AC-4857-807A-923D226DE8E1" },
+            { "name": "apikey", "value": "187303942A46-4052-8D89-5A4CA2523ABD" },
             { "name": "Content-Type", "value": "application/json" }
           ]
         },
@@ -397,10 +397,10 @@
     },
     {
       "parameters": {
-        "jsCode": "const d = $json;\nconst etapa = d.sessaoEtapa, texto = d.texto ?? '', dados = d.sessaoDados ?? {};\nlet nd = { ...dados }, prox = null, resp = '', ok = false;\n\nif (!etapa || etapa === 'autorizacao_nome') {\n  if (!etapa) {\n    resp = '✅ *Autorizar Busca do Aluno*\\n\\n_Quem você deseja autorizar a buscar ' + d.responsavelAluno + '?_\\n\\nDigite o *nome completo* do autorizador:';\n    prox = 'autorizacao_nome';\n  } else {\n    if (texto.length < 3) { resp = '⚠️ Nome muito curto. Digite o nome completo.'; prox = 'autorizacao_nome'; }\n    else { nd.nome = texto; resp = `📄 *Documento do autorizador*\\n\\nQual o número do RG ou CPF de *${texto}*?`; prox = 'autorizacao_documento'; }\n  }\n} else if (etapa === 'autorizacao_documento') {\n  if (texto.length < 3) { resp = '⚠️ Documento inválido. Tente novamente.'; prox = 'autorizacao_documento'; }\n  else { nd.documento = texto; resp = `👨‍👩‍👧 *Parentesco*\\n\\nQual o parentesco de *${nd.nome}* com ${d.responsavelAluno}?\\n\\n_(Ex: Avó, Tio, Vizinho, Babá)_`; prox = 'autorizacao_parentesco'; }\n} else if (etapa === 'autorizacao_parentesco') {\n  nd.parentesco = texto; ok = true;\n  resp = `✅ *Autorização registrada!*\\n\\n👤 ${nd.nome}\\n📄 Doc: ${nd.documento}\\n👨‍👩‍👧 ${nd.parentesco}\\n\\nEsta pessoa está autorizada a buscar *${d.responsavelAluno}*. ✅\\n\\nA coordenação foi notificada.`;\n}\n\nreturn [{ json: { from: d.from, instance: d.instance, responsavelId: d.responsavelId, aluno: d.responsavelAluno, resp, prox, nd: JSON.stringify(nd), ok } }];"
+        "jsCode": "const d = $json;\nconst etapa = d.sessaoEtapa, texto = d.texto ?? '', dados = d.sessaoDados ?? {};\nlet nd = { ...dados }, prox = null, resp = '', ok = false;\n\nif (!etapa || etapa === 'autorizacao_nome') {\n  if (!etapa) {\n    resp = 'Ã¢Å“â€¦ *Autorizar Busca do Aluno*\\n\\n_Quem vocÃƒÂª deseja autorizar a buscar ' + d.responsavelAluno + '?_\\n\\nDigite o *nome completo* do autorizador:';\n    prox = 'autorizacao_nome';\n  } else {\n    if (texto.length < 3) { resp = 'Ã¢Å¡Â Ã¯Â¸Â Nome muito curto. Digite o nome completo.'; prox = 'autorizacao_nome'; }\n    else { nd.nome = texto; resp = `Ã°Å¸â€œâ€ž *Documento do autorizador*\\n\\nQual o nÃƒÂºmero do RG ou CPF de *${texto}*?`; prox = 'autorizacao_documento'; }\n  }\n} else if (etapa === 'autorizacao_documento') {\n  if (texto.length < 3) { resp = 'Ã¢Å¡Â Ã¯Â¸Â Documento invÃƒÂ¡lido. Tente novamente.'; prox = 'autorizacao_documento'; }\n  else { nd.documento = texto; resp = `Ã°Å¸â€˜Â¨Ã¢â‚¬ÂÃ°Å¸â€˜Â©Ã¢â‚¬ÂÃ°Å¸â€˜Â§ *Parentesco*\\n\\nQual o parentesco de *${nd.nome}* com ${d.responsavelAluno}?\\n\\n_(Ex: AvÃƒÂ³, Tio, Vizinho, BabÃƒÂ¡)_`; prox = 'autorizacao_parentesco'; }\n} else if (etapa === 'autorizacao_parentesco') {\n  nd.parentesco = texto; ok = true;\n  resp = `Ã¢Å“â€¦ *AutorizaÃƒÂ§ÃƒÂ£o registrada!*\\n\\nÃ°Å¸â€˜Â¤ ${nd.nome}\\nÃ°Å¸â€œâ€ž Doc: ${nd.documento}\\nÃ°Å¸â€˜Â¨Ã¢â‚¬ÂÃ°Å¸â€˜Â©Ã¢â‚¬ÂÃ°Å¸â€˜Â§ ${nd.parentesco}\\n\\nEsta pessoa estÃƒÂ¡ autorizada a buscar *${d.responsavelAluno}*. Ã¢Å“â€¦\\n\\nA coordenaÃƒÂ§ÃƒÂ£o foi notificada.`;\n}\n\nreturn [{ json: { from: d.from, instance: d.instance, responsavelId: d.responsavelId, aluno: d.responsavelAluno, resp, prox, nd: JSON.stringify(nd), ok } }];"
       },
       "id": "es-0001-0001-0001-0001-000000000023",
-      "name": "Lógica Autorizacao",
+      "name": "LÃƒÂ³gica Autorizacao",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [1680, 528]
@@ -408,12 +408,12 @@
     {
       "parameters": {
         "method": "DELETE",
-        "url": "=https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/sessoes_escola?telefone=eq.{{ $json.from }}",
+        "url": "=https://ywsobgbpwhykkfolvoml.supabase.co/rest/v1/sessoes_escola?telefone=eq.{{ $json.from }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
-            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
+            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
+            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
             { "name": "Prefer", "value": "return=minimal" }
           ]
         },
@@ -429,7 +429,7 @@
       "parameters": {
         "conditions": {
           "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 1 },
-          "conditions": [{ "id": "caut", "leftValue": "={{ $('Lógica Autorizacao').item.json.ok }}", "rightValue": false, "operator": { "type": "boolean", "operation": "equals" } }],
+          "conditions": [{ "id": "caut", "leftValue": "={{ $('LÃƒÂ³gica Autorizacao').item.json.ok }}", "rightValue": false, "operator": { "type": "boolean", "operation": "equals" } }],
           "combinator": "and"
         },
         "options": {}
@@ -443,12 +443,12 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/sessoes_escola",
+        "url": "https://ywsobgbpwhykkfolvoml.supabase.co/rest/v1/sessoes_escola",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
-            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
+            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
+            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
             { "name": "Content-Type", "value": "application/json" },
             { "name": "Prefer", "value": "return=minimal" }
           ]
@@ -456,7 +456,7 @@
         "sendBody": true,
         "contentType": "raw",
         "rawContentType": "application/json",
-        "body": "={{ JSON.stringify({ telefone: $('Lógica Autorizacao').item.json.from, etapa: $('Lógica Autorizacao').item.json.prox, dados: JSON.parse($('Lógica Autorizacao').item.json.nd), updated_at: new Date().toISOString() }) }}",
+        "body": "={{ JSON.stringify({ telefone: $('LÃƒÂ³gica Autorizacao').item.json.from, etapa: $('LÃƒÂ³gica Autorizacao').item.json.prox, dados: JSON.parse($('LÃƒÂ³gica Autorizacao').item.json.nd), updated_at: new Date().toISOString() }) }}",
         "options": { "response": { "response": { "neverError": true } } }
       },
       "id": "es-0001-0001-0001-0001-000000000026",
@@ -468,12 +468,12 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/autorizacoes",
+        "url": "https://ywsobgbpwhykkfolvoml.supabase.co/rest/v1/autorizacoes",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
-            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
+            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
+            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
             { "name": "Content-Type", "value": "application/json" },
             { "name": "Prefer", "value": "return=minimal" }
           ]
@@ -481,7 +481,7 @@
         "sendBody": true,
         "contentType": "raw",
         "rawContentType": "application/json",
-        "body": "={{ JSON.stringify({ responsavel_id: $('Lógica Autorizacao').item.json.responsavelId, nome_autorizador: JSON.parse($('Lógica Autorizacao').item.json.nd).nome, documento: JSON.parse($('Lógica Autorizacao').item.json.nd).documento, parentesco: JSON.parse($('Lógica Autorizacao').item.json.nd).parentesco }) }}",
+        "body": "={{ JSON.stringify({ responsavel_id: $('LÃƒÂ³gica Autorizacao').item.json.responsavelId, nome_autorizador: JSON.parse($('LÃƒÂ³gica Autorizacao').item.json.nd).nome, documento: JSON.parse($('LÃƒÂ³gica Autorizacao').item.json.nd).documento, parentesco: JSON.parse($('LÃƒÂ³gica Autorizacao').item.json.nd).parentesco }) }}",
         "options": { "response": { "response": { "neverError": true } } }
       },
       "id": "es-0001-0001-0001-0001-000000000027",
@@ -493,19 +493,19 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://evolution.automacaopme.com.br/message/sendText/{{ $('Lógica Autorizacao').item.json.instance }}",
+        "url": "=https://evolution.automacaopme.com.br/message/sendText/{{ $('LÃƒÂ³gica Autorizacao').item.json.instance }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "F5E45E6A06AC-4857-807A-923D226DE8E1" },
+            { "name": "apikey", "value": "187303942A46-4052-8D89-5A4CA2523ABD" },
             { "name": "Content-Type", "value": "application/json" }
           ]
         },
         "sendBody": true,
         "bodyParameters": {
           "parameters": [
-            { "name": "number", "value": "={{ $('Lógica Autorizacao').item.json.from }}" },
-            { "name": "text", "value": "={{ $('Lógica Autorizacao').item.json.resp }}" }
+            { "name": "number", "value": "={{ $('LÃƒÂ³gica Autorizacao').item.json.from }}" },
+            { "name": "text", "value": "={{ $('LÃƒÂ³gica Autorizacao').item.json.resp }}" }
           ]
         },
         "options": {}
@@ -518,10 +518,10 @@
     },
     {
       "parameters": {
-        "jsCode": "const d = $json;\nconst etapa = d.sessaoEtapa, texto = d.texto ?? '', dados = d.sessaoDados ?? {};\nlet nd = { ...dados }, prox = null, resp = '', ok = false;\n\nif (!etapa || etapa === 'ocorrencia_titulo') {\n  if (!etapa) {\n    resp = '⚠️ *Registrar Ocorrência*\\n\\nQual o *assunto* da ocorrência?\\n\\n_(Ex: Queda no recreio, Conflito com colega, Problema de saúde)_';\n    prox = 'ocorrencia_titulo';\n  } else {\n    if (texto.length < 3) { resp = '⚠️ Descrição muito curta. Tente novamente.'; prox = 'ocorrencia_titulo'; }\n    else { nd.titulo = texto; resp = `📝 *Descreva o ocorrido*\\n\\nConte com mais detalhes o que aconteceu:`; prox = 'ocorrencia_descricao'; }\n  }\n} else if (etapa === 'ocorrencia_descricao') {\n  if (texto.length < 5) { resp = '⚠️ Descrição muito curta. Informe mais detalhes.'; prox = 'ocorrencia_descricao'; }\n  else { nd.descricao = texto; resp = `🚨 *Urgência*\\n\\nQual a urgência desta ocorrência?\\n\\n🟢 baixa\\n🟡 media\\n🔴 alta`; prox = 'ocorrencia_urgencia'; }\n} else if (etapa === 'ocorrencia_urgencia') {\n  const urg = texto.toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '');\n  nd.urgencia = ['baixa','media','alta'].includes(urg) ? urg : 'media';\n  ok = true;\n  const proto = 'OC-' + String(Date.now()).slice(-6);\n  nd.protocolo = proto;\n  resp = `✅ *Ocorrência registrada!*\\n\\n📋 Assunto: ${nd.titulo}\\n🚨 Urgência: ${nd.urgencia}\\n🔖 Protocolo: *${proto}*\\n\\nA coordenação irá analisar e entrará em contato. 🏫`;\n}\n\nreturn [{ json: { from: d.from, instance: d.instance, responsavelId: d.responsavelId, aluno: d.responsavelAluno, resp, prox, nd: JSON.stringify(nd), ok } }];"
+        "jsCode": "const d = $json;\nconst etapa = d.sessaoEtapa, texto = d.texto ?? '', dados = d.sessaoDados ?? {};\nlet nd = { ...dados }, prox = null, resp = '', ok = false;\n\nif (!etapa || etapa === 'ocorrencia_titulo') {\n  if (!etapa) {\n    resp = 'Ã¢Å¡Â Ã¯Â¸Â *Registrar OcorrÃƒÂªncia*\\n\\nQual o *assunto* da ocorrÃƒÂªncia?\\n\\n_(Ex: Queda no recreio, Conflito com colega, Problema de saÃƒÂºde)_';\n    prox = 'ocorrencia_titulo';\n  } else {\n    if (texto.length < 3) { resp = 'Ã¢Å¡Â Ã¯Â¸Â DescriÃƒÂ§ÃƒÂ£o muito curta. Tente novamente.'; prox = 'ocorrencia_titulo'; }\n    else { nd.titulo = texto; resp = `Ã°Å¸â€œÂ *Descreva o ocorrido*\\n\\nConte com mais detalhes o que aconteceu:`; prox = 'ocorrencia_descricao'; }\n  }\n} else if (etapa === 'ocorrencia_descricao') {\n  if (texto.length < 5) { resp = 'Ã¢Å¡Â Ã¯Â¸Â DescriÃƒÂ§ÃƒÂ£o muito curta. Informe mais detalhes.'; prox = 'ocorrencia_descricao'; }\n  else { nd.descricao = texto; resp = `Ã°Å¸Å¡Â¨ *UrgÃƒÂªncia*\\n\\nQual a urgÃƒÂªncia desta ocorrÃƒÂªncia?\\n\\nÃ°Å¸Å¸Â¢ baixa\\nÃ°Å¸Å¸Â¡ media\\nÃ°Å¸â€Â´ alta`; prox = 'ocorrencia_urgencia'; }\n} else if (etapa === 'ocorrencia_urgencia') {\n  const urg = texto.toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '');\n  nd.urgencia = ['baixa','media','alta'].includes(urg) ? urg : 'media';\n  ok = true;\n  const proto = 'OC-' + String(Date.now()).slice(-6);\n  nd.protocolo = proto;\n  resp = `Ã¢Å“â€¦ *OcorrÃƒÂªncia registrada!*\\n\\nÃ°Å¸â€œâ€¹ Assunto: ${nd.titulo}\\nÃ°Å¸Å¡Â¨ UrgÃƒÂªncia: ${nd.urgencia}\\nÃ°Å¸â€â€“ Protocolo: *${proto}*\\n\\nA coordenaÃƒÂ§ÃƒÂ£o irÃƒÂ¡ analisar e entrarÃƒÂ¡ em contato. Ã°Å¸ÂÂ«`;\n}\n\nreturn [{ json: { from: d.from, instance: d.instance, responsavelId: d.responsavelId, aluno: d.responsavelAluno, resp, prox, nd: JSON.stringify(nd), ok } }];"
       },
       "id": "es-0001-0001-0001-0001-000000000029",
-      "name": "Lógica Ocorrencia",
+      "name": "LÃƒÂ³gica Ocorrencia",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [1680, 800]
@@ -529,12 +529,12 @@
     {
       "parameters": {
         "method": "DELETE",
-        "url": "=https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/sessoes_escola?telefone=eq.{{ $json.from }}",
+        "url": "=https://ywsobgbpwhykkfolvoml.supabase.co/rest/v1/sessoes_escola?telefone=eq.{{ $json.from }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
-            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
+            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
+            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
             { "name": "Prefer", "value": "return=minimal" }
           ]
         },
@@ -550,7 +550,7 @@
       "parameters": {
         "conditions": {
           "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 1 },
-          "conditions": [{ "id": "cocc", "leftValue": "={{ $('Lógica Ocorrencia').item.json.ok }}", "rightValue": false, "operator": { "type": "boolean", "operation": "equals" } }],
+          "conditions": [{ "id": "cocc", "leftValue": "={{ $('LÃƒÂ³gica Ocorrencia').item.json.ok }}", "rightValue": false, "operator": { "type": "boolean", "operation": "equals" } }],
           "combinator": "and"
         },
         "options": {}
@@ -564,12 +564,12 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/sessoes_escola",
+        "url": "https://ywsobgbpwhykkfolvoml.supabase.co/rest/v1/sessoes_escola",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
-            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
+            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
+            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
             { "name": "Content-Type", "value": "application/json" },
             { "name": "Prefer", "value": "return=minimal" }
           ]
@@ -577,7 +577,7 @@
         "sendBody": true,
         "contentType": "raw",
         "rawContentType": "application/json",
-        "body": "={{ JSON.stringify({ telefone: $('Lógica Ocorrencia').item.json.from, etapa: $('Lógica Ocorrencia').item.json.prox, dados: JSON.parse($('Lógica Ocorrencia').item.json.nd), updated_at: new Date().toISOString() }) }}",
+        "body": "={{ JSON.stringify({ telefone: $('LÃƒÂ³gica Ocorrencia').item.json.from, etapa: $('LÃƒÂ³gica Ocorrencia').item.json.prox, dados: JSON.parse($('LÃƒÂ³gica Ocorrencia').item.json.nd), updated_at: new Date().toISOString() }) }}",
         "options": { "response": { "response": { "neverError": true } } }
       },
       "id": "es-0001-0001-0001-0001-000000000032",
@@ -589,12 +589,12 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/ocorrencias_escola",
+        "url": "https://ywsobgbpwhykkfolvoml.supabase.co/rest/v1/ocorrencias_escola",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
-            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
+            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
+            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
             { "name": "Content-Type", "value": "application/json" },
             { "name": "Prefer", "value": "return=minimal" }
           ]
@@ -602,7 +602,7 @@
         "sendBody": true,
         "contentType": "raw",
         "rawContentType": "application/json",
-        "body": "={{ JSON.stringify({ responsavel_id: $('Lógica Ocorrencia').item.json.responsavelId, aluno: $('Lógica Ocorrencia').item.json.aluno, titulo: JSON.parse($('Lógica Ocorrencia').item.json.nd).titulo, descricao: JSON.parse($('Lógica Ocorrencia').item.json.nd).descricao, urgencia: JSON.parse($('Lógica Ocorrencia').item.json.nd).urgencia, status: 'aberta' }) }}",
+        "body": "={{ JSON.stringify({ responsavel_id: $('LÃƒÂ³gica Ocorrencia').item.json.responsavelId, aluno: $('LÃƒÂ³gica Ocorrencia').item.json.aluno, titulo: JSON.parse($('LÃƒÂ³gica Ocorrencia').item.json.nd).titulo, descricao: JSON.parse($('LÃƒÂ³gica Ocorrencia').item.json.nd).descricao, urgencia: JSON.parse($('LÃƒÂ³gica Ocorrencia').item.json.nd).urgencia, status: 'aberta' }) }}",
         "options": { "response": { "response": { "neverError": true } } }
       },
       "id": "es-0001-0001-0001-0001-000000000033",
@@ -614,19 +614,19 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://evolution.automacaopme.com.br/message/sendText/{{ $('Lógica Ocorrencia').item.json.instance }}",
+        "url": "=https://evolution.automacaopme.com.br/message/sendText/{{ $('LÃƒÂ³gica Ocorrencia').item.json.instance }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "F5E45E6A06AC-4857-807A-923D226DE8E1" },
+            { "name": "apikey", "value": "187303942A46-4052-8D89-5A4CA2523ABD" },
             { "name": "Content-Type", "value": "application/json" }
           ]
         },
         "sendBody": true,
         "bodyParameters": {
           "parameters": [
-            { "name": "number", "value": "={{ $('Lógica Ocorrencia').item.json.from }}" },
-            { "name": "text", "value": "={{ $('Lógica Ocorrencia').item.json.resp }}" }
+            { "name": "number", "value": "={{ $('LÃƒÂ³gica Ocorrencia').item.json.from }}" },
+            { "name": "text", "value": "={{ $('LÃƒÂ³gica Ocorrencia').item.json.resp }}" }
           ]
         },
         "options": {}
@@ -639,10 +639,10 @@
     },
     {
       "parameters": {
-        "jsCode": "const d = $json;\nconst etapa = d.sessaoEtapa, texto = d.texto ?? '', dados = d.sessaoDados ?? {};\nlet nd = { ...dados }, prox = null, resp = '', ok = false;\n\nif (!etapa || etapa === 'solicitacao_tipo') {\n  if (!etapa) {\n    resp = '📋 *Solicitações Administrativas*\\n\\nQual o tipo de solicitação?\\n\\n🔹 Declaração de matrícula\\n🔹 Histórico escolar\\n🔹 Transferência\\n🔹 Segundo via de contrato\\n🔹 Outros\\n\\n_Digite o tipo ou descreva brevemente:_';\n    prox = 'solicitacao_tipo';\n  } else {\n    if (texto.length < 3) { resp = '⚠️ Descreva o tipo de solicitação.'; prox = 'solicitacao_tipo'; }\n    else { nd.tipo = texto; resp = `📝 *Detalhes da Solicitação*\\n\\nDescreva com mais detalhes o que precisa:`; prox = 'solicitacao_descricao'; }\n  }\n} else if (etapa === 'solicitacao_descricao') {\n  if (texto.length < 5) { resp = '⚠️ Descreva melhor sua solicitação.'; prox = 'solicitacao_descricao'; }\n  else {\n    nd.descricao = texto; ok = true;\n    const proto = 'SL-' + String(Date.now()).slice(-6);\n    nd.protocolo = proto;\n    resp = `✅ *Solicitação registrada!*\\n\\n📋 Tipo: ${nd.tipo}\\n🔖 Protocolo: *${proto}*\\n\\nA secretaria analisará sua solicitação em até 2 dias úteis. 📅\\n\\n_Dúvidas? Ligue para a secretaria._`;\n  }\n}\n\nreturn [{ json: { from: d.from, instance: d.instance, responsavelId: d.responsavelId, resp, prox, nd: JSON.stringify(nd), ok } }];"
+        "jsCode": "const d = $json;\nconst etapa = d.sessaoEtapa, texto = d.texto ?? '', dados = d.sessaoDados ?? {};\nlet nd = { ...dados }, prox = null, resp = '', ok = false;\n\nif (!etapa || etapa === 'solicitacao_tipo') {\n  if (!etapa) {\n    resp = 'Ã°Å¸â€œâ€¹ *SolicitaÃƒÂ§ÃƒÂµes Administrativas*\\n\\nQual o tipo de solicitaÃƒÂ§ÃƒÂ£o?\\n\\nÃ°Å¸â€Â¹ DeclaraÃƒÂ§ÃƒÂ£o de matrÃƒÂ­cula\\nÃ°Å¸â€Â¹ HistÃƒÂ³rico escolar\\nÃ°Å¸â€Â¹ TransferÃƒÂªncia\\nÃ°Å¸â€Â¹ Segundo via de contrato\\nÃ°Å¸â€Â¹ Outros\\n\\n_Digite o tipo ou descreva brevemente:_';\n    prox = 'solicitacao_tipo';\n  } else {\n    if (texto.length < 3) { resp = 'Ã¢Å¡Â Ã¯Â¸Â Descreva o tipo de solicitaÃƒÂ§ÃƒÂ£o.'; prox = 'solicitacao_tipo'; }\n    else { nd.tipo = texto; resp = `Ã°Å¸â€œÂ *Detalhes da SolicitaÃƒÂ§ÃƒÂ£o*\\n\\nDescreva com mais detalhes o que precisa:`; prox = 'solicitacao_descricao'; }\n  }\n} else if (etapa === 'solicitacao_descricao') {\n  if (texto.length < 5) { resp = 'Ã¢Å¡Â Ã¯Â¸Â Descreva melhor sua solicitaÃƒÂ§ÃƒÂ£o.'; prox = 'solicitacao_descricao'; }\n  else {\n    nd.descricao = texto; ok = true;\n    const proto = 'SL-' + String(Date.now()).slice(-6);\n    nd.protocolo = proto;\n    resp = `Ã¢Å“â€¦ *SolicitaÃƒÂ§ÃƒÂ£o registrada!*\\n\\nÃ°Å¸â€œâ€¹ Tipo: ${nd.tipo}\\nÃ°Å¸â€â€“ Protocolo: *${proto}*\\n\\nA secretaria analisarÃƒÂ¡ sua solicitaÃƒÂ§ÃƒÂ£o em atÃƒÂ© 2 dias ÃƒÂºteis. Ã°Å¸â€œâ€¦\\n\\n_DÃƒÂºvidas? Ligue para a secretaria._`;\n  }\n}\n\nreturn [{ json: { from: d.from, instance: d.instance, responsavelId: d.responsavelId, resp, prox, nd: JSON.stringify(nd), ok } }];"
       },
       "id": "es-0001-0001-0001-0001-000000000035",
-      "name": "Lógica Solicitacao",
+      "name": "LÃƒÂ³gica Solicitacao",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [1680, 1072]
@@ -650,12 +650,12 @@
     {
       "parameters": {
         "method": "DELETE",
-        "url": "=https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/sessoes_escola?telefone=eq.{{ $json.from }}",
+        "url": "=https://ywsobgbpwhykkfolvoml.supabase.co/rest/v1/sessoes_escola?telefone=eq.{{ $json.from }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
-            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
+            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
+            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
             { "name": "Prefer", "value": "return=minimal" }
           ]
         },
@@ -671,7 +671,7 @@
       "parameters": {
         "conditions": {
           "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 1 },
-          "conditions": [{ "id": "csol", "leftValue": "={{ $('Lógica Solicitacao').item.json.ok }}", "rightValue": false, "operator": { "type": "boolean", "operation": "equals" } }],
+          "conditions": [{ "id": "csol", "leftValue": "={{ $('LÃƒÂ³gica Solicitacao').item.json.ok }}", "rightValue": false, "operator": { "type": "boolean", "operation": "equals" } }],
           "combinator": "and"
         },
         "options": {}
@@ -685,12 +685,12 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/sessoes_escola",
+        "url": "https://ywsobgbpwhykkfolvoml.supabase.co/rest/v1/sessoes_escola",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
-            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
+            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
+            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
             { "name": "Content-Type", "value": "application/json" },
             { "name": "Prefer", "value": "return=minimal" }
           ]
@@ -698,7 +698,7 @@
         "sendBody": true,
         "contentType": "raw",
         "rawContentType": "application/json",
-        "body": "={{ JSON.stringify({ telefone: $('Lógica Solicitacao').item.json.from, etapa: $('Lógica Solicitacao').item.json.prox, dados: JSON.parse($('Lógica Solicitacao').item.json.nd), updated_at: new Date().toISOString() }) }}",
+        "body": "={{ JSON.stringify({ telefone: $('LÃƒÂ³gica Solicitacao').item.json.from, etapa: $('LÃƒÂ³gica Solicitacao').item.json.prox, dados: JSON.parse($('LÃƒÂ³gica Solicitacao').item.json.nd), updated_at: new Date().toISOString() }) }}",
         "options": { "response": { "response": { "neverError": true } } }
       },
       "id": "es-0001-0001-0001-0001-000000000038",
@@ -710,12 +710,12 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/solicitacoes",
+        "url": "https://ywsobgbpwhykkfolvoml.supabase.co/rest/v1/solicitacoes",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
-            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
+            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
+            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
             { "name": "Content-Type", "value": "application/json" },
             { "name": "Prefer", "value": "return=minimal" }
           ]
@@ -723,7 +723,7 @@
         "sendBody": true,
         "contentType": "raw",
         "rawContentType": "application/json",
-        "body": "={{ JSON.stringify({ responsavel_id: $('Lógica Solicitacao').item.json.responsavelId, tipo: JSON.parse($('Lógica Solicitacao').item.json.nd).tipo, descricao: JSON.parse($('Lógica Solicitacao').item.json.nd).descricao, status: 'pendente' }) }}",
+        "body": "={{ JSON.stringify({ responsavel_id: $('LÃƒÂ³gica Solicitacao').item.json.responsavelId, tipo: JSON.parse($('LÃƒÂ³gica Solicitacao').item.json.nd).tipo, descricao: JSON.parse($('LÃƒÂ³gica Solicitacao').item.json.nd).descricao, status: 'pendente' }) }}",
         "options": { "response": { "response": { "neverError": true } } }
       },
       "id": "es-0001-0001-0001-0001-000000000039",
@@ -735,19 +735,19 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://evolution.automacaopme.com.br/message/sendText/{{ $('Lógica Solicitacao').item.json.instance }}",
+        "url": "=https://evolution.automacaopme.com.br/message/sendText/{{ $('LÃƒÂ³gica Solicitacao').item.json.instance }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "F5E45E6A06AC-4857-807A-923D226DE8E1" },
+            { "name": "apikey", "value": "187303942A46-4052-8D89-5A4CA2523ABD" },
             { "name": "Content-Type", "value": "application/json" }
           ]
         },
         "sendBody": true,
         "bodyParameters": {
           "parameters": [
-            { "name": "number", "value": "={{ $('Lógica Solicitacao').item.json.from }}" },
-            { "name": "text", "value": "={{ $('Lógica Solicitacao').item.json.resp }}" }
+            { "name": "number", "value": "={{ $('LÃƒÂ³gica Solicitacao').item.json.from }}" },
+            { "name": "text", "value": "={{ $('LÃƒÂ³gica Solicitacao').item.json.resp }}" }
           ]
         },
         "options": {}
@@ -760,12 +760,12 @@
     },
     {
       "parameters": {
-        "url": "=https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/avisos?responsavel_id=eq.{{ $json.responsavelId }}&status=eq.pendente&select=id,titulo,mensagem,created_at&order=created_at.desc&limit=10",
+        "url": "=https://ywsobgbpwhykkfolvoml.supabase.co/rest/v1/avisos?responsavel_id=eq.{{ $json.responsavelId }}&status=eq.pendente&select=id,titulo,mensagem,created_at&order=created_at.desc&limit=10",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
-            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
+            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
+            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
             { "name": "Content-Type", "value": "application/json" }
           ]
         },
@@ -779,7 +779,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const raw = $input.first().json.data ?? $input.first().json;\nlet lista = [];\ntry { lista = typeof raw === 'string' ? JSON.parse(raw) : (Array.isArray(raw) ? raw : []); } catch(e) { lista = []; }\nconst ctx = $('Roteador').item.json;\nconst from = ctx.from, instance = ctx.instance, nome = ctx.responsavelNome;\n\nif (lista.length === 0) {\n  return [{ json: { from, instance, msg: '📢 *Meus Avisos*\\n\\nVocê não tem avisos pendentes no momento. ✅\\n\\n_Assim que a escola enviar algo, você receberá aqui!_' } }];\n}\nlet t = `📢 *Seus Avisos* (${lista.length})\\n\\n`;\nlista.forEach((a, i) => {\n  const dt = a.created_at ? new Date(a.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '?';\n  t += `📌 *${a.titulo}*\\n   ${a.mensagem}\\n   _${dt}_\\n\\n`;\n});\nt += '_Para mais informações, entre em contato com a escola. 🏫_';\nreturn [{ json: { from, instance, msg: t, ids: lista.map(a => a.id) } }];"
+        "jsCode": "const raw = $input.first().json.data ?? $input.first().json;\nlet lista = [];\ntry { lista = typeof raw === 'string' ? JSON.parse(raw) : (Array.isArray(raw) ? raw : []); } catch(e) { lista = []; }\nconst ctx = $('Roteador').item.json;\nconst from = ctx.from, instance = ctx.instance, nome = ctx.responsavelNome;\n\nif (lista.length === 0) {\n  return [{ json: { from, instance, msg: 'Ã°Å¸â€œÂ¢ *Meus Avisos*\\n\\nVocÃƒÂª nÃƒÂ£o tem avisos pendentes no momento. Ã¢Å“â€¦\\n\\n_Assim que a escola enviar algo, vocÃƒÂª receberÃƒÂ¡ aqui!_' } }];\n}\nlet t = `Ã°Å¸â€œÂ¢ *Seus Avisos* (${lista.length})\\n\\n`;\nlista.forEach((a, i) => {\n  const dt = a.created_at ? new Date(a.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '?';\n  t += `Ã°Å¸â€œÅ’ *${a.titulo}*\\n   ${a.mensagem}\\n   _${dt}_\\n\\n`;\n});\nt += '_Para mais informaÃƒÂ§ÃƒÂµes, entre em contato com a escola. Ã°Å¸ÂÂ«_';\nreturn [{ json: { from, instance, msg: t, ids: lista.map(a => a.id) } }];"
       },
       "id": "es-0001-0001-0001-0001-000000000042",
       "name": "Formatar Avisos",
@@ -794,7 +794,7 @@
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "F5E45E6A06AC-4857-807A-923D226DE8E1" },
+            { "name": "apikey", "value": "187303942A46-4052-8D89-5A4CA2523ABD" },
             { "name": "Content-Type", "value": "application/json" }
           ]
         },
@@ -826,12 +826,12 @@
     {
       "parameters": {
         "method": "DELETE",
-        "url": "=https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/sessoes_escola?telefone=eq.{{ $json.from }}",
+        "url": "=https://ywsobgbpwhykkfolvoml.supabase.co/rest/v1/sessoes_escola?telefone=eq.{{ $json.from }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
-            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
+            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
+            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
             { "name": "Prefer", "value": "return=minimal" }
           ]
         },
@@ -850,7 +850,7 @@
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "F5E45E6A06AC-4857-807A-923D226DE8E1" },
+            { "name": "apikey", "value": "187303942A46-4052-8D89-5A4CA2523ABD" },
             { "name": "Content-Type", "value": "application/json" }
           ]
         },
@@ -858,7 +858,7 @@
         "bodyParameters": {
           "parameters": [
             { "name": "number", "value": "={{ $('Cancelar Fluxo').item.json.from }}" },
-            { "name": "text", "value": "❌ *Operação cancelada.*\n\nDigite *menu* ou qualquer mensagem para voltar ao início. 🏫" }
+            { "name": "text", "value": "Ã¢ÂÅ’ *OperaÃƒÂ§ÃƒÂ£o cancelada.*\n\nDigite *menu* ou qualquer mensagem para voltar ao inÃƒÂ­cio. Ã°Å¸ÂÂ«" }
           ]
         },
         "options": {}
@@ -871,10 +871,10 @@
     },
     {
       "parameters": {
-        "jsCode": "const d = $json;\nconst etapa = d.sessaoEtapa, texto = d.texto ?? '', dados = d.sessaoDados ?? {};\nlet nd = { ...dados }, prox = null, resp = '', ok = false;\n\nif (!etapa || etapa === 'reserva_local') {\n  if (!etapa) {\n    resp = '📅 *Fazer Reserva*\\n\\nQual espaço você deseja reservar?\\n\\n🔹 Sala de Reunião\\n🔹 Auditório\\n🔹 Sala de Atividades\\n🔹 Quadra Esportiva\\n\\n_Digite o nome do espaço:_';\n    prox = 'reserva_local';\n  } else {\n    if (texto.length < 3) { resp = '⚠️ Informe o nome do espaço desejado.'; prox = 'reserva_local'; }\n    else { nd.local = texto; resp = `📆 *Data da Reserva*\\n\\nQual a data desejada para reservar *${texto}*?\\n\\n_Informe no formato DD/MM/AAAA:_`; prox = 'reserva_data'; }\n  }\n} else if (etapa === 'reserva_data') {\n  const match = texto.match(/^(\\d{2})\/(\\d{2})\/(\\d{4})$/);\n  if (!match) { resp = '⚠️ Data inválida. Use o formato DD/MM/AAAA.'; prox = 'reserva_data'; }\n  else {\n    const [, dd, mm, yyyy] = match;\n    const iso = `${yyyy}-${mm}-${dd}`;\n    nd.data = iso; nd.dataFmt = texto;\n    resp = `⏰ *Horário*\\n\\nQual o horário para a reserva de *${nd.local}* no dia *${texto}*?\\n\\n_(Ex: 09:00, 14:30)_`;\n    prox = 'reserva_horario';\n  }\n} else if (etapa === 'reserva_horario') {\n  nd.horario = texto; ok = true;\n  const proto = 'RV-' + String(Date.now()).slice(-6);\n  nd.protocolo = proto;\n  resp = `✅ *Reserva registrada!*\\n\\n📆 Espaço: ${nd.local}\\n📅 Data: ${nd.dataFmt}\\n⏰ Horário: ${nd.horario}\\n🔖 Protocolo: *${proto}*\\n\\nA coordenação irá confirmar sua reserva. 🏫\\n\\n_Status: Pendente de aprovação_`;\n}\n\nreturn [{ json: { from: d.from, instance: d.instance, responsavelId: d.responsavelId, resp, prox, nd: JSON.stringify(nd), ok } }];"
+        "jsCode": "const d = $json;\nconst etapa = d.sessaoEtapa, texto = d.texto ?? '', dados = d.sessaoDados ?? {};\nlet nd = { ...dados }, prox = null, resp = '', ok = false;\n\nif (!etapa || etapa === 'reserva_local') {\n  if (!etapa) {\n    resp = 'Ã°Å¸â€œâ€¦ *Fazer Reserva*\\n\\nQual espaÃƒÂ§o vocÃƒÂª deseja reservar?\\n\\nÃ°Å¸â€Â¹ Sala de ReuniÃƒÂ£o\\nÃ°Å¸â€Â¹ AuditÃƒÂ³rio\\nÃ°Å¸â€Â¹ Sala de Atividades\\nÃ°Å¸â€Â¹ Quadra Esportiva\\n\\n_Digite o nome do espaÃƒÂ§o:_';\n    prox = 'reserva_local';\n  } else {\n    if (texto.length < 3) { resp = 'Ã¢Å¡Â Ã¯Â¸Â Informe o nome do espaÃƒÂ§o desejado.'; prox = 'reserva_local'; }\n    else { nd.local = texto; resp = `Ã°Å¸â€œâ€  *Data da Reserva*\\n\\nQual a data desejada para reservar *${texto}*?\\n\\n_Informe no formato DD/MM/AAAA:_`; prox = 'reserva_data'; }\n  }\n} else if (etapa === 'reserva_data') {\n  const match = texto.match(/^(\\d{2})\/(\\d{2})\/(\\d{4})$/);\n  if (!match) { resp = 'Ã¢Å¡Â Ã¯Â¸Â Data invÃƒÂ¡lida. Use o formato DD/MM/AAAA.'; prox = 'reserva_data'; }\n  else {\n    const [, dd, mm, yyyy] = match;\n    const iso = `${yyyy}-${mm}-${dd}`;\n    nd.data = iso; nd.dataFmt = texto;\n    resp = `Ã¢ÂÂ° *HorÃƒÂ¡rio*\\n\\nQual o horÃƒÂ¡rio para a reserva de *${nd.local}* no dia *${texto}*?\\n\\n_(Ex: 09:00, 14:30)_`;\n    prox = 'reserva_horario';\n  }\n} else if (etapa === 'reserva_horario') {\n  nd.horario = texto; ok = true;\n  const proto = 'RV-' + String(Date.now()).slice(-6);\n  nd.protocolo = proto;\n  resp = `Ã¢Å“â€¦ *Reserva registrada!*\\n\\nÃ°Å¸â€œâ€  EspaÃƒÂ§o: ${nd.local}\\nÃ°Å¸â€œâ€¦ Data: ${nd.dataFmt}\\nÃ¢ÂÂ° HorÃƒÂ¡rio: ${nd.horario}\\nÃ°Å¸â€â€“ Protocolo: *${proto}*\\n\\nA coordenaÃƒÂ§ÃƒÂ£o irÃƒÂ¡ confirmar sua reserva. Ã°Å¸ÂÂ«\\n\\n_Status: Pendente de aprovaÃƒÂ§ÃƒÂ£o_`;\n}\n\nreturn [{ json: { from: d.from, instance: d.instance, responsavelId: d.responsavelId, resp, prox, nd: JSON.stringify(nd), ok } }];"
       },
       "id": "es-0001-0001-0001-0001-000000000047",
-      "name": "Lógica Reserva",
+      "name": "LÃƒÂ³gica Reserva",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [1680, 1760]
@@ -882,12 +882,12 @@
     {
       "parameters": {
         "method": "DELETE",
-        "url": "=https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/sessoes_escola?telefone=eq.{{ $json.from }}",
+        "url": "=https://ywsobgbpwhykkfolvoml.supabase.co/rest/v1/sessoes_escola?telefone=eq.{{ $json.from }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
-            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
+            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
+            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
             { "name": "Prefer", "value": "return=minimal" }
           ]
         },
@@ -903,7 +903,7 @@
       "parameters": {
         "conditions": {
           "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 1 },
-          "conditions": [{ "id": "cres", "leftValue": "={{ $('Lógica Reserva').item.json.ok }}", "rightValue": false, "operator": { "type": "boolean", "operation": "equals" } }],
+          "conditions": [{ "id": "cres", "leftValue": "={{ $('LÃƒÂ³gica Reserva').item.json.ok }}", "rightValue": false, "operator": { "type": "boolean", "operation": "equals" } }],
           "combinator": "and"
         },
         "options": {}
@@ -917,12 +917,12 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/sessoes_escola",
+        "url": "https://ywsobgbpwhykkfolvoml.supabase.co/rest/v1/sessoes_escola",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
-            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
+            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
+            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
             { "name": "Content-Type", "value": "application/json" },
             { "name": "Prefer", "value": "return=minimal" }
           ]
@@ -930,7 +930,7 @@
         "sendBody": true,
         "contentType": "raw",
         "rawContentType": "application/json",
-        "body": "={{ JSON.stringify({ telefone: $('Lógica Reserva').item.json.from, etapa: $('Lógica Reserva').item.json.prox, dados: JSON.parse($('Lógica Reserva').item.json.nd), updated_at: new Date().toISOString() }) }}",
+        "body": "={{ JSON.stringify({ telefone: $('LÃƒÂ³gica Reserva').item.json.from, etapa: $('LÃƒÂ³gica Reserva').item.json.prox, dados: JSON.parse($('LÃƒÂ³gica Reserva').item.json.nd), updated_at: new Date().toISOString() }) }}",
         "options": { "response": { "response": { "neverError": true } } }
       },
       "id": "es-0001-0001-0001-0001-000000000050",
@@ -942,12 +942,12 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://rcghqqwbwxbhrxjwutqu.supabase.co/rest/v1/reservas_escola",
+        "url": "https://ywsobgbpwhykkfolvoml.supabase.co/rest/v1/reservas_escola",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
-            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJjZ2hxcXdid3hiaHJ4and1dHF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NzQ4MDUsImV4cCI6MjA5NDI1MDgwNX0.82ydARjHLvcXN5mp9u3JawDFT6l4oKdJov_ng6-lgMM" },
+            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
+            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8" },
             { "name": "Content-Type", "value": "application/json" },
             { "name": "Prefer", "value": "return=minimal" }
           ]
@@ -955,7 +955,7 @@
         "sendBody": true,
         "contentType": "raw",
         "rawContentType": "application/json",
-        "body": "={{ JSON.stringify({ responsavel_id: $('Lógica Reserva').item.json.responsavelId, local: JSON.parse($('Lógica Reserva').item.json.nd).local, data: JSON.parse($('Lógica Reserva').item.json.nd).data, horario: JSON.parse($('Lógica Reserva').item.json.nd).horario, status: 'pendente' }) }}",
+        "body": "={{ JSON.stringify({ responsavel_id: $('LÃƒÂ³gica Reserva').item.json.responsavelId, local: JSON.parse($('LÃƒÂ³gica Reserva').item.json.nd).local, data: JSON.parse($('LÃƒÂ³gica Reserva').item.json.nd).data, horario: JSON.parse($('LÃƒÂ³gica Reserva').item.json.nd).horario, status: 'pendente' }) }}",
         "options": { "response": { "response": { "neverError": true } } }
       },
       "id": "es-0001-0001-0001-0001-000000000051",
@@ -967,19 +967,19 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://evolution.automacaopme.com.br/message/sendText/{{ $('Lógica Reserva').item.json.instance }}",
+        "url": "=https://evolution.automacaopme.com.br/message/sendText/{{ $('LÃƒÂ³gica Reserva').item.json.instance }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "apikey", "value": "F5E45E6A06AC-4857-807A-923D226DE8E1" },
+            { "name": "apikey", "value": "187303942A46-4052-8D89-5A4CA2523ABD" },
             { "name": "Content-Type", "value": "application/json" }
           ]
         },
         "sendBody": true,
         "bodyParameters": {
           "parameters": [
-            { "name": "number", "value": "={{ $('Lógica Reserva').item.json.from }}" },
-            { "name": "text", "value": "={{ $('Lógica Reserva').item.json.resp }}" }
+            { "name": "number", "value": "={{ $('LÃƒÂ³gica Reserva').item.json.from }}" },
+            { "name": "text", "value": "={{ $('LÃƒÂ³gica Reserva').item.json.resp }}" }
           ]
         },
         "options": {}
@@ -1000,10 +1000,10 @@
     "Responsavel existe?": {
       "main": [
         [{ "node": "Roteador", "type": "main", "index": 0 }],
-        [{ "node": "Lógica Cadastro", "type": "main", "index": 0 }]
+        [{ "node": "LÃƒÂ³gica Cadastro", "type": "main", "index": 0 }]
       ]
     },
-    "Lógica Cadastro": { "main": [[{ "node": "DELETE Sessao Cadastro", "type": "main", "index": 0 }]] },
+    "LÃƒÂ³gica Cadastro": { "main": [[{ "node": "DELETE Sessao Cadastro", "type": "main", "index": 0 }]] },
     "DELETE Sessao Cadastro": { "main": [[{ "node": "Cadastro OK?", "type": "main", "index": 0 }]] },
     "Cadastro OK?": {
       "main": [
@@ -1018,10 +1018,10 @@
       "main": [
         [{ "node": "GET Agenda", "type": "main", "index": 0 }],
         [{ "node": "GET Cardapio", "type": "main", "index": 0 }],
-        [{ "node": "Lógica Autorizacao", "type": "main", "index": 0 }],
-        [{ "node": "Lógica Reserva", "type": "main", "index": 0 }],
-        [{ "node": "Lógica Ocorrencia", "type": "main", "index": 0 }],
-        [{ "node": "Lógica Solicitacao", "type": "main", "index": 0 }],
+        [{ "node": "LÃƒÂ³gica Autorizacao", "type": "main", "index": 0 }],
+        [{ "node": "LÃƒÂ³gica Reserva", "type": "main", "index": 0 }],
+        [{ "node": "LÃƒÂ³gica Ocorrencia", "type": "main", "index": 0 }],
+        [{ "node": "LÃƒÂ³gica Solicitacao", "type": "main", "index": 0 }],
         [{ "node": "GET Avisos", "type": "main", "index": 0 }],
         [{ "node": "Cancelar Fluxo", "type": "main", "index": 0 }],
         [{ "node": "Enviar Menu", "type": "main", "index": 0 }]
@@ -1031,7 +1031,7 @@
     "Formatar Agenda": { "main": [[{ "node": "Enviar Agenda", "type": "main", "index": 0 }]] },
     "GET Cardapio": { "main": [[{ "node": "Formatar Cardapio", "type": "main", "index": 0 }]] },
     "Formatar Cardapio": { "main": [[{ "node": "Enviar Cardapio", "type": "main", "index": 0 }]] },
-    "Lógica Autorizacao": { "main": [[{ "node": "DELETE Sessao Aut", "type": "main", "index": 0 }]] },
+    "LÃƒÂ³gica Autorizacao": { "main": [[{ "node": "DELETE Sessao Aut", "type": "main", "index": 0 }]] },
     "DELETE Sessao Aut": { "main": [[{ "node": "Aut OK?", "type": "main", "index": 0 }]] },
     "Aut OK?": {
       "main": [
@@ -1041,7 +1041,7 @@
     },
     "INSERT Sessao Aut": { "main": [[{ "node": "Enviar Autorizacao", "type": "main", "index": 0 }]] },
     "INSERT Autorizacao": { "main": [[{ "node": "Enviar Autorizacao", "type": "main", "index": 0 }]] },
-    "Lógica Ocorrencia": { "main": [[{ "node": "DELETE Sessao Occ", "type": "main", "index": 0 }]] },
+    "LÃƒÂ³gica Ocorrencia": { "main": [[{ "node": "DELETE Sessao Occ", "type": "main", "index": 0 }]] },
     "DELETE Sessao Occ": { "main": [[{ "node": "Occ OK?", "type": "main", "index": 0 }]] },
     "Occ OK?": {
       "main": [
@@ -1051,7 +1051,7 @@
     },
     "INSERT Sessao Occ": { "main": [[{ "node": "Enviar Ocorrencia", "type": "main", "index": 0 }]] },
     "INSERT Ocorrencia": { "main": [[{ "node": "Enviar Ocorrencia", "type": "main", "index": 0 }]] },
-    "Lógica Solicitacao": { "main": [[{ "node": "DELETE Sessao Sol", "type": "main", "index": 0 }]] },
+    "LÃƒÂ³gica Solicitacao": { "main": [[{ "node": "DELETE Sessao Sol", "type": "main", "index": 0 }]] },
     "DELETE Sessao Sol": { "main": [[{ "node": "Sol OK?", "type": "main", "index": 0 }]] },
     "Sol OK?": {
       "main": [
