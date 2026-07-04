@@ -22,6 +22,16 @@ Este projeto segue o modelo **SDD**: toda feature tem um spec antes de ter códi
 
 ---
 
+## Rotina de commit e publicação
+
+Toda alteração solicitada pelo usuário é implementada e, em seguida, **já commitada e enviada (`git push`) para o GitHub** (`origin/main`) — sem pedir confirmação adicional para esse push especificamente. O fluxo é commit direto em `main` (sem Pull Request).
+
+- Fazer stage apenas dos arquivos relacionados ao pedido (nunca `git add -A`/`git add .` às cegas), para não arrastar mudanças não relacionadas que estejam soltas no working tree.
+- Mensagens de commit seguem o padrão já usado no histórico (`tipo: descrição curta`, ex. `fix:`, `feat:`, `docs:`).
+- Continuam exigindo confirmação explícita do usuário (não entram nessa rotina automática): force-push, `reset --hard`, reescrita de histórico, ou qualquer operação destrutiva/irreversível.
+
+---
+
 | Arquivo | O que é |
 |---|---|
 | `bot_escola.json` | Workflow n8n principal (bot WhatsApp) |
