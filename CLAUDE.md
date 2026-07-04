@@ -36,7 +36,7 @@ Toda alteração solicitada pelo usuário é implementada e, em seguida, **já c
 |---|---|
 | `bot_escola.json` | Workflow n8n principal (bot WhatsApp) |
 | `notificacao_webhook.json` | Workflow n8n auxiliar — webhook de notificações |
-| `index_2.html` | Dashboard admin SPA (HTML/CSS/JS puro, sem build) |
+| `index.html` | Dashboard admin SPA (HTML/CSS/JS puro, sem build) |
 | `schema.sql` | Script DDL completo para o Supabase |
 
 ---
@@ -47,11 +47,11 @@ Toda alteração solicitada pelo usuário é implementada e, em seguida, **já c
 |---|---|---|
 | **n8n** | Plataforma de automação que roda os workflows | host: `n8n.automacaopme.com.br` |
 | **Evolution API** | Gateway WhatsApp | `apikey: F5E45E6A06AC-4857-807A-923D226DE8E1` (host: `evolution.automacaopme.com.br`, instance: `Bot_Escola`) |
-| **Supabase** | Banco PostgreSQL via REST | projeto `AutomatizIA` — `ywsobgbpwhykkfolvoml` (anon key hardcoded em `index_2.html`) |
+| **Supabase** | Banco PostgreSQL via REST | projeto `AutomatizIA` — `ywsobgbpwhykkfolvoml` (anon key hardcoded em `index.html`) |
 
 > As credenciais estão hardcoded nos arquivos. Em produção com múltiplos clientes, extraí-las para variáveis de ambiente do n8n.
 
-> **ATENÇÃO:** `bot_escola.json` ainda aponta para o projeto Supabase antigo (`rcghqqwbwxbhrxjwutqu`). Todos os nós HTTP do bot precisam ter a URL e chave atualizadas para `ywsobgbpwhykkfolvoml`. O dashboard (`index_2.html`) já usa o projeto correto.
+> **ATENÇÃO:** `bot_escola.json` ainda aponta para o projeto Supabase antigo (`rcghqqwbwxbhrxjwutqu`). Todos os nós HTTP do bot precisam ter a URL e chave atualizadas para `ywsobgbpwhykkfolvoml`. O dashboard (`index.html`) já usa o projeto correto.
 
 ---
 
@@ -154,7 +154,7 @@ O `sendWhatsApp(number, text)` no dashboard chama este endpoint. Usado por Aviso
 
 ---
 
-## Dashboard Admin (`index_2.html`)
+## Dashboard Admin (`index.html`)
 
 SPA pura: nenhum framework, nenhum build. Abre direto no browser. Navegação client-side via atributos `data-page`.
 
@@ -311,7 +311,7 @@ showToast('Informação', 'info')
 
 ## Como editar o dashboard
 
-`index_2.html` é auto-contido. Edite diretamente — sem build. Ao adicionar nova página:
+`index.html` é auto-contido. Edite diretamente — sem build. Ao adicionar nova página:
 1. Criar `<div class="page" id="page-NOME">` dentro de `<main class="main">`
 2. Adicionar item no `.sidebar` com `data-page="NOME"`
 3. Adicionar item no `.bottom-nav` com `data-page="NOME"`
