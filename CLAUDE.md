@@ -46,12 +46,12 @@ Toda alteração solicitada pelo usuário é implementada e, em seguida, **já c
 | Serviço | Uso | Credencial no projeto |
 |---|---|---|
 | **n8n** | Plataforma de automação que roda os workflows | host: `n8n.automacaopme.com.br` |
-| **Evolution API** | Gateway WhatsApp | `apikey: F5E45E6A06AC-4857-807A-923D226DE8E1` (host: `evolution.automacaopme.com.br`, instance: `Bot_Escola`) |
+| **Evolution API** | Gateway WhatsApp | `apikey: 187303942A46-4052-8D89-5A4CA2523ABD` (host: `evolution.automacaopme.com.br`, instance: `bot-bruno`) |
 | **Supabase** | Banco PostgreSQL via REST | projeto `AutomatizIA` — `ywsobgbpwhykkfolvoml` (anon key hardcoded em `index.html`) |
 
 > As credenciais estão hardcoded nos arquivos. Em produção com múltiplos clientes, extraí-las para variáveis de ambiente do n8n.
 
-> **ATENÇÃO:** `bot_escola.json` ainda aponta para o projeto Supabase antigo (`rcghqqwbwxbhrxjwutqu`). Todos os nós HTTP do bot precisam ter a URL e chave atualizadas para `ywsobgbpwhykkfolvoml`. O dashboard (`index.html`) já usa o projeto correto.
+> `bot_escola.json` e `index.html` já apontam para o projeto Supabase correto (`ywsobgbpwhykkfolvoml`).
 
 ---
 
@@ -116,25 +116,29 @@ Responsavel existe? [false] → Lógica Cadastro → DELETE Sessao → Cadastro 
   └─► [ok=true] INSERT Responsavel + Enviar confirmação
 ```
 
-**Etapas de sessão do cadastro:**
+**Etapas de sessão do cadastro (2 passos):**
 ```
-null → aguardando_nome → aguardando_aluno → aguardando_turma → (ok=true)
+null → aguardando_nome → aguardando_aluno_turma → (ok=true)
 ```
+> `aguardando_aluno_turma` aceita nome da criança + turma numa única mensagem (separador `,`, ` - ` ou `/`).
 
 ### Roteamento principal (responsável cadastrado)
 ```
 Responsavel existe? [true] → Roteador → Switch Rota
-  ├── cardapio     → texto="1" ou etapa.startsWith("cardapio_")
-  ├── agenda       → texto="2" ou etapa.startsWith("agenda_")
-  ├── ocorrencias  → texto="3" ou etapa.startsWith("ocorrencia_")
-  ├── solicitacoes → texto="4" ou etapa.startsWith("solicitacao_")
-  ├── avisos       → texto="5" ou etapa.startsWith("aviso_")
-  ├── reservas     → texto="6" ou etapa.startsWith("reserva_")
+  ├── agenda       → texto="1" ou buttonId="btn_agenda"
+  ├── cardapio     → texto="2" ou buttonId="btn_cardapio"
+  ├── autorizacao  → texto="3" ou buttonId="btn_autorizacao" ou etapa.startsWith("autorizacao_")
+  ├── reserva      → texto="4" ou buttonId="btn_reserva" ou etapa.startsWith("reserva_")
+  ├── ocorrencia   → texto="5" ou buttonId="btn_ocorrencia" ou etapa.startsWith("ocorrencia_")
+  ├── solicitacao  → texto="6" ou buttonId="btn_solicitacao" ou etapa.startsWith("solicitacao_")
+  ├── avisos       → texto="7" ou buttonId="btn_avisos"
   ├── cancelar     → texto é "CANCELAR" (maiúsculo)
   └── menu         → qualquer outra coisa
 ```
+> Cardápio, agenda e avisos são consultas sem sessão (GET → formatar → enviar). Autorização, reserva,
+> ocorrência e solicitação são multi-step e usam prefixo de `etapa` para continuar a sessão.
 
-**Padrão de sessão multi-step (todos os fluxos):**
+**Padrão de sessão multi-step (cadastro, autorização, reserva, ocorrência, solicitação):**
 ```
 DELETE Sessao → Lógica → Fluxo OK? (IF)
   ├─► [em andamento] INSERT Sessao (próxima etapa) → Enviar resposta
@@ -220,11 +224,11 @@ SPA pura: nenhum framework, nenhum build. Abre direto no browser. Navegação cl
 - `load()` faz dois GETs em paralelo: `autorizacoes` (com join PostgREST) + `responsaveis` (para `respMap`)
 - `_resp(a)` tenta o join PostgREST primeiro; se nulo, cai para `respMap[a.responsavel_id]` (join client-side)
 - Exclusão com confirmação (DELETE)
-- **Pendente:** não tem modal de nova autorização via dashboard
+- Modal "+ Nova Autorização" (`openNovaAuth()`): busca de responsável por nome/aluno (`buscarResp()`), seleção (`selectResp()`) preenche `auth-resp-id` oculto, depois POST com nome/documento/parentesco (`save()`)
 
 ### Configurações do Bot (modal)
 - Ícone de engrenagem (SVG) na topbar
-- Campo para alterar nome do bot via `POST /chat/updateProfileName/Bot_Escola` (Evolution API v2)
+- Campo para alterar nome do bot via `POST /chat/updateProfileName/bot-bruno` (Evolution API v2)
 
 ---
 
@@ -348,7 +352,6 @@ Todas as páginas recarregam dados ao serem navegadas. Auto-refresh a cada 60s.
 
 ## Pendências / TODOs
 
-- **bot_escola.json — Supabase desatualizado** ⚠️ — todos os nós HTTP do bot ainda apontam para o projeto antigo (`rcghqqwbwxbhrxjwutqu`). Atualizar URLs e chaves para `ywsobgbpwhykkfolvoml`.
 - **sessoes_escola** — tabela de sessão do bot não está em `schema.sql`. Criar:
   ```sql
   CREATE TABLE IF NOT EXISTS sessoes_escola (
@@ -361,9 +364,7 @@ Todas as páginas recarregam dados ao serem navegadas. Auto-refresh a cada 60s.
   CREATE POLICY "anon all" ON sessoes_escola USING (true) WITH CHECK (true);
   GRANT ALL ON sessoes_escola TO anon;
   ```
-- **Fluxos do bot** — apenas o cadastro está documentado nos nós vistos. Os fluxos de cardápio, agenda, ocorrências, solicitações, avisos e reservas precisam ser validados após a atualização do Supabase.
 - **Segurança** — mover as chaves de API (Supabase anon key e Evolution API key) para variáveis de ambiente do n8n antes de entregar para o cliente em produção.
-- **AuthApp sem form de nova autorização** — a página só lista e exclui. Criar modal de cadastro com busca de responsável + campos nome/documento/parentesco.
 
 ---
 
