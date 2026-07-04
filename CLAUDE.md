@@ -2,11 +2,32 @@
 
 Produto da **Automatiz.ia** que automatiza a comunicação escola-família via WhatsApp. Composto por três artefatos:
 
+---
+
+## Spec Driven Development
+
+Este projeto segue o modelo **SDD**: toda feature tem um spec antes de ter código.
+
+| Arquivo | Papel |
+|---|---|
+| `specs/_template.md` | Template com os 10 campos obrigatórios de todo spec |
+| `specs/bot-*.md` | Specs dos fluxos do bot WhatsApp |
+| `specs/dashboard-*.md` | Specs das páginas do dashboard admin |
+| `tasks.md` | Backlog de pendências com referência ao spec de cada task |
+
+**Fluxo de trabalho:**
+1. Antes de implementar qualquer feature: escrever ou atualizar o spec em `specs/`.
+2. Ao implementar: ler o spec correspondente e seguir as seções 5 (Regras), 7 (Critérios) e 10 (Agent behavior).
+3. Ao concluir: marcar os critérios da seção 7 como `[x]` e mover a task em `tasks.md` para "Concluído".
+
+---
+
 | Arquivo | O que é |
 |---|---|
 | `bot_escola.json` | Workflow n8n principal (bot WhatsApp) |
 | `notificacao_webhook.json` | Workflow n8n auxiliar — webhook de notificações |
 | `index.html` | Dashboard admin SPA (HTML/CSS/JS puro, sem build) |
+| `index_2.html` | Variante visual do dashboard (identidade estilo Apple Store) — ver seção própria abaixo |
 | `schema.sql` | Script DDL completo para o Supabase |
 
 ---
@@ -193,12 +214,42 @@ SPA pura: nenhum framework, nenhum build. Abre direto no browser. Navegação cl
 - **Pendente:** não tem modal de nova autorização via dashboard
 
 ### Configurações do Bot (modal)
-- Ícone ⚙️ na topbar
+- Ícone de engrenagem (SVG) na topbar
 - Campo para alterar nome do bot via `POST /chat/updateProfileName/Bot_Escola` (Evolution API v2)
 
 ---
 
+## Variante visual — `index_2.html`
+
+Cópia funcional de `index.html` (mesma estrutura HTML, mesmas Apps JS, mesmas tabelas Supabase) com uma
+**identidade visual alternativa**, inspirada em análise real de `apple.com/br/store` (paleta/tipografia via
+`getComputedStyle`, não em suposições sobre a marca Apple). Os dois arquivos coexistem — `index_2.html` é
+uma opção de estilo, não substitui `index.html` por padrão.
+
+**O que muda (só CSS + ícones, zero mudança de lógica/JS):**
+- Paleta monocromática + 2 acentos: fundo `#F5F5F7`, texto `#1D1D1F`, azul `#0066CC` (ações primárias/links),
+  laranja `#B64400` (único acento de destaque). Dark mode em preto puro (`#000`/`#1D1D1F`).
+- Tipografia: pilha nativa do sistema (`-apple-system, "SF Pro Display/Text", Helvetica Neue`) — sem SF Pro
+  embutida (fonte proprietária da Apple). Pesos limitados a 400/600 (sem bold pesado 700–900).
+- Componentes: cards com `border-radius:18px` + sombra `2px 4px 12px rgba(0,0,0,.08)`; botões em pílula
+  (`border-radius:980px`), replicando o padrão outline→preenchido-escuro no hover observado no site de origem.
+- **Correção de bug de ícones:** o sprite SVG (`#icon-*`) é desenhado no estilo Feather (ícones de linha), mas
+  o CSS de `index.html` só define `fill:currentColor` sem `stroke` — isso faz vários ícones renderizarem
+  invisíveis (ex.: `icon-plus`, `icon-menu`, que são só `<line>`) ou como blobs sólidos malformados
+  (ex.: `icon-calendar`, `icon-alert`). Em `index_2.html` a regra `.icon` foi corrigida para
+  `fill:none; stroke:currentColor; stroke-linecap:round; stroke-linejoin:round` (exceto `.icon-fill`, usada
+  só no logo do WhatsApp, que é um glifo sólido). **Esse bug ainda existe em `index.html`** — ver Pendências.
+- Emojis decorativos (👶⚠️📢🔴🟡🟢 etc.) trocados por ícones SVG monocromáticos ou texto simples; adicionados
+  os símbolos `icon-user`, `icon-inbox`, `icon-settings`, `icon-info`, `icon-archive` ao sprite.
+- Mensagens de WhatsApp enviadas pelo bot (templates com emoji tipo 🌟) **não foram alteradas** — é conteúdo
+  do bot para os pais, fora do escopo de identidade visual do dashboard.
+
+---
+
 ## Tema e Design
+
+> Esta seção documenta a identidade visual de `index.html` (marca Colégio Raio de Luz). A paleta/tipografia
+> de `index_2.html` é independente — ver seção "Variante visual — `index_2.html`" acima.
 
 ### Cores (Colégio Raio de Luz)
 ```css
@@ -319,6 +370,8 @@ Todas as páginas recarregam dados ao serem navegadas. Auto-refresh a cada 60s.
 - **Fluxos do bot** — apenas o cadastro está documentado nos nós vistos. Os fluxos de cardápio, agenda, ocorrências, solicitações, avisos e reservas precisam ser validados após a atualização do Supabase.
 - **Segurança** — mover as chaves de API (Supabase anon key e Evolution API key) para variáveis de ambiente do n8n antes de entregar para o cliente em produção.
 - **AuthApp sem form de nova autorização** — a página só lista e exclui. Criar modal de cadastro com busca de responsável + campos nome/documento/parentesco.
+- **`index.html` — ícones SVG renderizando quebrados** — a regra `.icon` só tem `fill:currentColor` sem `stroke`, mas o sprite é desenhado no estilo Feather (linhas). Resultado: ícones como `icon-plus` e `icon-menu` ficam invisíveis, outros viram blobs sólidos. Já corrigido em `index_2.html` (ver seção "Variante visual"); replicar o fix em `index.html` se ele seguir sendo o dashboard principal.
+- **Decidir entre `index.html` e `index_2.html`** — os dois arquivos coexistem com a mesma funcionalidade e identidades visuais diferentes. Definir com o cliente qual vira o dashboard oficial (ou se ambos ficam como opções) antes da entrega final.
 
 ---
 

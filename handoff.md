@@ -4,7 +4,7 @@
 **Cliente:** Colégio Raio de Luz  
 **Responsável Automatiz.ia:** Bruno Vargas Joaquim  
 **Repositório:** https://github.com/BrunoAutomatizIA/sistema_escola_zap  
-**Data:** 2026-06-22
+**Data:** 2026-06-22 (última atualização: 2026-07-04)
 
 ---
 
@@ -15,6 +15,7 @@
 | Arquivo | Descrição |
 |---|---|
 | `index.html` | Dashboard admin — SPA completa, abre direto no browser |
+| `index_2.html` | Mesma SPA, com identidade visual alternativa (estilo Apple Store) — em avaliação, ver abaixo |
 | `bot_escola.json` | Workflow n8n do bot WhatsApp |
 | `notificacao_webhook.json` | Workflow n8n auxiliar para envio de WhatsApp via dashboard |
 | `schema.sql` | Script DDL completo do banco Supabase |
@@ -32,6 +33,21 @@
 | Avisos | Kanban com swim lanes: raia Individual + raia por turma × colunas Pendente/Lido |
 | Comunicados | Envio em massa por turma ou para todos, com barra de progresso |
 | Autorizações | Cadastro de pessoas autorizadas a buscar o aluno |
+
+### Variante visual (`index_2.html`)
+
+A pedido do cliente, foi criada uma segunda versão do mesmo dashboard com visual mais sóbrio/profissional
+(o feedback foi que os ícones/emojis do `index.html` pareciam "infantis"). `index_2.html` tem **exatamente
+as mesmas páginas e funcionalidades** de `index.html` — só a aparência muda:
+
+- Paleta neutra (branco/cinza/preto) com azul e laranja como únicos acentos de cor
+- Tipografia do sistema (sem fontes do Google Fonts carregadas externamente)
+- Ícones SVG no lugar dos emojis, e corrigido um bug que fazia vários ícones do `index.html` renderizarem
+  quebrados/invisíveis (faltava `stroke` no CSS do sprite)
+- Botões em formato pílula, cards com cantos mais arredondados
+
+**Está publicado no GitHub, mas ainda não substitui `index.html`.** Os dois arquivos coexistem até o cliente
+escolher qual vira o dashboard oficial (ver Pendências).
 
 ---
 
@@ -128,6 +144,10 @@ Abrir `index.html` diretamente no browser — não requer servidor, build ou dep
 6. **Bot não tem fluxos de cardápio/agenda** — O `bot_escola.json` tem o roteador com rotas para cardápio, agenda etc., mas os fluxos internos não foram implementados (apenas cadastro está pronto). Implementar ao longo do projeto.
 
 7. **Segurança** — As chaves de API estão hardcoded no `index.html`. Para produção com múltiplos clientes, extrair para variáveis de ambiente do n8n e não distribuir o `index.html` publicamente.
+
+8. **Escolher entre `index.html` e `index_2.html`** — decidir com o cliente qual identidade visual vira o dashboard oficial antes da entrega final; o outro arquivo deve ser removido do repositório para não confundir manutenção futura.
+
+9. **Ícones quebrados em `index.html`** — o CSS dos ícones (`.icon`) não define `stroke`, então vários ícones do sprite SVG renderizam invisíveis ou distorcidos. Corrigido em `index_2.html`; replicar o fix em `index.html` caso ele seja o escolhido.
 
 ---
 
