@@ -1,0 +1,2344 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Escola Digital — Colégio Raio de Luz (Identidade Store)</title>
+<meta name="description" content="Painel administrativo Escola Digital — Colégio Raio de Luz: gerencie responsáveis, cardápio, agenda, ocorrências, avisos e comunicados via WhatsApp."/>
+<!-- Sem web fonts externas: usa a pilha de fontes nativas do sistema (SF Pro no macOS/iOS, equivalentes em outros SOs) -->
+
+<style>
+/* ===== DESIGN TOKENS ===== */
+/* Paleta e tipografia derivadas do design-brief-apple-store.md (apple.com/br/store, getComputedStyle real).
+   Exceções deliberadas fora da paleta observada (documentadas por serem necessidades funcionais
+   do dashboard que a página de origem não precisava expressar):
+   - --brand-danger usa um vermelho de sistema (#D70015) para ações destrutivas/urgência alta.
+   - --brand-secondary (preto quase puro) é usado para preenchimentos escuros, replicando o
+     card de destaque preto e o hover do botão outline (rgb(39,39,41)) observados na página. */
+:root {
+  --brand-primary:       #0066CC;  /* link azul observado ("Conversar com especialistas") */
+  --brand-primary-dark:  #004C99;
+  --brand-secondary:     #1D1D1F;  /* texto/heading principal observado, usado como preenchimento escuro */
+  --brand-secondary-dark:#000000;  /* fundo do card escuro em destaque */
+  --brand-accent:        #B64400;  /* rótulo "NOVO", único acento cromático fora da escala de cinza */
+  --brand-accent-dark:   #8F3600;
+  --brand-danger:        #D70015;  /* exceção funcional — ver nota acima */
+  --brand-info:          #0066CC;
+
+  --bg-page:    #F5F5F7;  /* fundo geral do body na página de origem */
+  --bg-surface: #FFFFFF;  /* fundo dos cards claros */
+  --bg-surface2:#FBFBFD;
+  --bg-hover:   #ECECEE;
+  --border:     #D2D2D7;  /* próximo do fundo dos botões circulares rgba(210,210,215,.64) */
+  --border-soft:#E8E8ED;
+  --text-main:  #1D1D1F;  /* texto principal observado */
+  --text-eyebrow:#424245; /* cor do eyebrow/kicker observado */
+  --text-sub:   #6E6E73;  /* texto secundário/atenuado observado */
+  --text-muted: #86868B;
+  --sidebar-bg: #1D1D1F;
+  --sidebar-text:#A1A1A6;
+  --sidebar-active:#0066CC;
+
+  --radius-sm: 10px;
+  --radius-md: 18px;   /* border-radius de card observado */
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --radius-pill: 980px; /* border-radius de botão-pílula observado */
+
+  --shadow-xs: 0 1px 3px rgba(0,0,0,.05);
+  --shadow-sm: 2px 4px 12px rgba(0,0,0,.08); /* box-shadow de card observado, idêntico em todos os cards */
+  --shadow-md: 0 8px 24px rgba(0,0,0,.12);
+  --shadow-lg: 0 16px 48px rgba(0,0,0,.18);
+
+  --font-main: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: var(--font-main);
+
+  --sidebar-w: 240px;
+  --topbar-h:  64px;
+  --transition: all .2s cubic-bezier(.4,0,.2,1);
+}
+[data-theme="dark"] {
+  --bg-page:    #000000;
+  --bg-surface: #1D1D1F;
+  --bg-surface2:#161617;
+  --bg-hover:   #2C2C2E;
+  --border:     #3A3A3C;
+  --border-soft:#2C2C2E;
+  --text-main:  #F5F5F7;
+  --text-eyebrow:#C7C7CC;
+  --text-sub:   #A1A1A6;
+  --text-muted: #6E6E73;
+  --sidebar-bg: #000000;
+  --sidebar-text:#A1A1A6;
+}
+
+/* ===== RESET & BASE ===== */
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; }
+body {
+  font-family:var(--font-main);
+  background:var(--bg-page);
+  color:var(--text-main);
+  min-height:100vh;
+  transition:background .3s,color .3s;
+  line-height:1.5;
+}
+a { color:inherit; text-decoration:none; }
+button { font-family:inherit; cursor:pointer; border:none; outline:none; }
+input, textarea, select { font-family:inherit; }
+img { max-width:100%; }
+
+/* SVG sprite — os símbolos são traçados no estilo Feather (ícones de linha), não formas preenchidas;
+   por isso usam stroke, não fill. Exceção: .icon-fill, para o glifo sólido do WhatsApp. */
+.icon { width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0; }
+.icon-lg { width:24px; height:24px; }
+.icon-sm { width:16px; height:16px; }
+.icon-xl { width:32px; height:32px; stroke-width:1.3; }
+.icon-fill { fill:currentColor; stroke:none; }
+.icon-inline { width:12px; height:12px; vertical-align:-1px; margin-right:3px; stroke-width:2; }
+
+/* ===== LAYOUT ===== */
+.app { display:flex; min-height:100vh; }
+
+/* SIDEBAR */
+.sidebar {
+  width:var(--sidebar-w);
+  background:var(--sidebar-bg);
+  display:flex;
+  flex-direction:column;
+  position:fixed;
+  left:0; top:0; bottom:0;
+  z-index:100;
+  transition:transform .3s cubic-bezier(.4,0,.2,1);
+  overflow:hidden;
+}
+.sidebar-logo {
+  padding:24px 20px 20px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.sidebar-logo-mark {
+  display:flex; align-items:center; gap:10px;
+}
+.sidebar-logo-img-wrap {
+  background:rgba(255,255,255,.96);
+  border-radius:10px;
+  padding:7px 12px;
+  display:flex; align-items:center; justify-content:center;
+}
+.sidebar-logo-img-wrap img {
+  height:34px; width:auto; display:block;
+}
+.sidebar-logo-caption {
+  font-size:10px; font-weight:600; letter-spacing:.8px;
+  text-transform:uppercase; color:var(--sidebar-text);
+  margin-top:8px; text-align:center;
+}
+
+.sidebar-nav { flex:1; padding:12px 0; overflow-y:auto; }
+.nav-section { padding:8px 16px 4px; }
+.nav-section-label {
+  font-size:10px; font-weight:600; letter-spacing:1.2px;
+  text-transform:uppercase; color:rgba(255,255,255,.35);
+}
+.nav-item {
+  display:flex; align-items:center; gap:12px;
+  padding:10px 20px;
+  color:var(--sidebar-text);
+  font-size:14px; font-weight:500;
+  border-radius:0; cursor:pointer;
+  transition:var(--transition);
+  position:relative;
+}
+.nav-item:hover { background:rgba(255,255,255,.08); color:#fff; }
+.nav-item.active {
+  background:rgba(255,255,255,.1);
+  color:#fff;
+}
+.nav-item.active::before {
+  content:'';
+  position:absolute; left:0; top:20%; bottom:20%;
+  width:3px; border-radius:0 3px 3px 0;
+  background:var(--brand-primary);
+}
+.nav-item .badge {
+  margin-left:auto;
+  background:var(--brand-accent);
+  color:#fff; font-size:10px; font-weight:600;
+  padding:1px 7px; border-radius:20px;
+}
+
+.sidebar-footer { padding:16px; border-top:1px solid rgba(255,255,255,.06); }
+.theme-toggle {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 12px;
+  background:rgba(255,255,255,.05); border-radius:var(--radius-sm);
+  color:var(--sidebar-text); font-size:13px; font-weight:600;
+  cursor:pointer; width:100%;
+  transition:var(--transition);
+}
+.theme-toggle:hover { background:rgba(255,255,255,.1); }
+
+/* MAIN CONTENT */
+.main-wrap {
+  flex:1;
+  margin-left:var(--sidebar-w);
+  display:flex; flex-direction:column;
+  min-height:100vh;
+}
+
+/* TOPBAR */
+.topbar {
+  height:var(--topbar-h);
+  background:var(--bg-surface);
+  border-bottom:1px solid var(--border-soft);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 28px;
+  position:sticky; top:0; z-index:50;
+  box-shadow:var(--shadow-xs);
+}
+.topbar-left { display:flex; align-items:center; gap:16px; }
+.topbar-title { font-size:19px; font-weight:600; color:var(--text-main); }
+.topbar-right { display:flex; align-items:center; gap:12px; }
+.topbar-btn {
+  width:38px; height:38px;
+  background:var(--bg-surface2);
+  border-radius:var(--radius-sm);
+  display:flex; align-items:center; justify-content:center;
+  color:var(--text-sub);
+  transition:var(--transition); cursor:pointer;
+}
+.topbar-btn:hover { background:var(--brand-primary); color:#fff; }
+.hamburger { display:none; }
+
+/* PAGE AREA */
+.page-area { flex:1; padding:28px; }
+.page { display:none; }
+.page.active { display:block; }
+
+/* BOTTOM NAV (mobile) */
+.bottom-nav {
+  display:none;
+  position:fixed; bottom:0; left:0; right:0;
+  background:var(--bg-surface);
+  border-top:1px solid var(--border-soft);
+  padding:8px 4px 12px;
+  z-index:200;
+  justify-content:space-around;
+  box-shadow:0 -4px 20px rgba(0,0,0,.1);
+}
+.bnav-item {
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  padding:6px 12px; border-radius:var(--radius-sm);
+  color:var(--text-muted); font-size:10px; font-weight:600;
+  cursor:pointer; transition:var(--transition);
+  text-transform:uppercase; letter-spacing:.5px;
+}
+.bnav-item.active { color:var(--brand-primary); }
+.bnav-item .icon { width:22px; height:22px; }
+
+/* ===== COMPONENTS ===== */
+
+/* Cards — radius 18px e box-shadow 2px 4px 12px rgba(0,0,0,.08) observados em todos os cards da página */
+.card {
+  background:var(--bg-surface);
+  border:none;
+  border-radius:var(--radius-md);
+  padding:28px;
+  box-shadow:var(--shadow-sm);
+  transition:var(--transition);
+}
+.card:hover { box-shadow:var(--shadow-md); }
+
+/* Metric cards */
+.metrics-grid {
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:16px; margin-bottom:28px;
+}
+.metric-card {
+  background:var(--bg-surface);
+  border:none;
+  border-radius:var(--radius-md);
+  padding:24px;
+  display:flex; align-items:flex-start; gap:14px;
+  box-shadow:var(--shadow-sm);
+  transition:var(--transition);
+  position:relative; overflow:hidden;
+}
+/* Apenas 2 acentos cromáticos fora da escala de cinza (azul = informativo, laranja = requer atenção),
+   coerente com a paleta observada — sem gradientes multicoloridos. */
+.metric-card.green::before,
+.metric-card.purple::before,
+.metric-card.orange::before,
+.metric-card.blue::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:3px;
+}
+.metric-card.green::before { background:var(--brand-primary); }
+.metric-card.purple::before { background:var(--brand-accent); }
+.metric-card.orange::before { background:var(--brand-accent); }
+.metric-card.blue::before { background:var(--text-muted); }
+.metric-card:hover { box-shadow:var(--shadow-md); }
+.metric-icon {
+  width:46px; height:46px; border-radius:var(--radius-sm);
+  display:flex; align-items:center; justify-content:center;
+  font-size:22px; flex-shrink:0;
+}
+.metric-icon.green { background:rgba(0,102,204,.1); color:var(--brand-primary); }
+.metric-icon.purple { background:rgba(182,68,0,.1); color:var(--brand-accent); }
+.metric-icon.orange { background:rgba(182,68,0,.1); color:var(--brand-accent); }
+.metric-icon.blue { background:rgba(110,110,115,.12); color:var(--text-sub); }
+.metric-val { font-size:28px; font-weight:600; color:var(--text-main); font-family:var(--font-main); font-variant-numeric:tabular-nums; line-height:1; }
+.metric-label { font-size:12px; font-weight:600; color:var(--text-eyebrow); margin-top:4px; text-transform:uppercase; letter-spacing:.3px; }
+
+/* Section headers — padrão "título bold + continuação atenuada" observado nos headings de seção */
+.section-header {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:16px;
+}
+.section-title { font-size:20px; font-weight:600; color:var(--text-main); letter-spacing:-.01em; }
+.section-sub { font-size:13px; color:var(--text-sub); margin-top:2px; }
+
+/* Buttons — pílula (border-radius 980px), tal como o botão outline observado na página */
+.btn {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:8px 18px; border-radius:var(--radius-pill);
+  font-size:14px; font-weight:400;
+  transition:var(--transition); cursor:pointer;
+}
+/* Preenchimento escuro = o próprio estado hover do botão outline observado (rgb(39,39,41)),
+   promovido a estado padrão para servir de call-to-action primária. */
+.btn-primary { background:#272729; color:#fff; }
+.btn-primary:hover { background:#000; box-shadow:var(--shadow-sm); }
+/* Botão outline "button-secondary-neutral": borda 0.667px solid texto principal, pílula, inverte no hover */
+.btn-secondary { background:transparent; color:var(--text-main); border:1px solid var(--text-main); }
+.btn-secondary:hover { background:#272729; color:#fff; border-color:transparent; }
+.btn-accent { background:var(--brand-accent); color:#fff; }
+.btn-accent:hover { background:var(--brand-accent-dark); }
+.btn-ghost {
+  background:var(--bg-surface2); color:var(--text-sub);
+  border:1px solid var(--border);
+}
+.btn-ghost:hover { background:var(--bg-hover); color:var(--text-main); }
+.btn-danger { background:var(--brand-danger); color:#fff; }
+.btn-danger:hover { background:#A80012; }
+.btn-sm { padding:6px 14px; font-size:13px; }
+.btn-xs { padding:4px 11px; font-size:12px; }
+
+/* Badges */
+.badge {
+  display:inline-flex; align-items:center;
+  padding:3px 10px; border-radius:20px;
+  font-size:11px; font-weight:600;
+}
+.badge-green { background:rgba(0,102,204,.1); color:var(--brand-primary); }
+.badge-purple { background:rgba(29,29,31,.06); color:var(--text-main); }
+.badge-orange { background:rgba(182,68,0,.1); color:var(--brand-accent); }
+.badge-blue { background:rgba(0,102,204,.1); color:var(--brand-primary); }
+.badge-red { background:rgba(215,0,21,.1); color:var(--brand-danger); }
+.badge-gray { background:var(--bg-surface2); color:var(--text-muted); }
+
+/* Forms */
+.form-group { margin-bottom:14px; }
+.form-label { display:block; font-size:12px; font-weight:600; color:var(--text-eyebrow); margin-bottom:6px; letter-spacing:.3px; text-transform:uppercase; }
+.form-control {
+  width:100%; padding:10px 14px;
+  background:var(--bg-surface2); border:1px solid var(--border);
+  border-radius:var(--radius-sm); color:var(--text-main);
+  font-family:var(--font-main); font-size:14px;
+  transition:var(--transition);
+}
+.form-control:focus { outline:none; border-color:var(--brand-primary); box-shadow:0 0 0 3px rgba(0,102,204,.12); }
+.form-control::placeholder { color:var(--text-muted); }
+select.form-control { cursor:pointer; }
+textarea.form-control { resize:vertical; min-height:90px; }
+
+/* Grid layouts */
+.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+.grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; }
+.grid-auto { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; }
+
+/* Table */
+.table-wrap { overflow-x:auto; border-radius:var(--radius-md); border:1px solid var(--border-soft); }
+table { width:100%; border-collapse:collapse; font-size:14px; }
+thead { background:var(--bg-surface2); }
+th { padding:12px 16px; text-align:left; font-size:11px; font-weight:600; letter-spacing:.6px; text-transform:uppercase; color:var(--text-eyebrow); border-bottom:1px solid var(--border-soft); }
+td { padding:13px 16px; border-bottom:1px solid var(--border-soft); vertical-align:middle; color:var(--text-main); }
+tr:last-child td { border-bottom:none; }
+tbody tr { transition:var(--transition); }
+tbody tr:hover { background:var(--bg-hover); }
+
+/* Kanban */
+.kanban { display:flex; gap:16px; overflow-x:auto; padding-bottom:8px; }
+.kanban-col {
+  flex:0 0 260px;
+  background:var(--bg-surface2);
+  border-radius:var(--radius-md);
+  padding:14px;
+  border:1px solid var(--border-soft);
+}
+.kanban-col-header {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:12px;
+}
+.kanban-col-title { font-size:13px; font-weight:600; color:var(--text-main); }
+.kanban-col-count {
+  background:var(--bg-surface); border:1px solid var(--border-soft);
+  border-radius:20px; padding:1px 10px;
+  font-size:11px; font-weight:600; color:var(--text-muted);
+}
+.kanban-card {
+  background:var(--bg-surface);
+  border:1px solid var(--border-soft);
+  border-radius:var(--radius-sm);
+  padding:12px 14px; margin-bottom:8px;
+  box-shadow:var(--shadow-xs);
+  transition:var(--transition); cursor:default;
+}
+.kanban-card:hover { box-shadow:var(--shadow-sm); transform:translateY(-1px); }
+.kanban-card-title { font-size:13px; font-weight:600; color:var(--text-main); margin-bottom:4px; }
+.kanban-card-sub { font-size:12px; color:var(--text-muted); margin-bottom:8px; }
+.kanban-card-footer { display:flex; align-items:center; justify-content:space-between; }
+
+/* Aviso swim lanes */
+.aviso-lane { margin-bottom:28px; border-radius:var(--radius-lg); overflow:hidden; border:1px solid var(--border-soft); }
+.aviso-lane-header {
+  display:flex; align-items:center; gap:10px;
+  padding:12px 16px;
+  background:var(--bg-surface2);
+  border-bottom:2px solid var(--brand-primary);
+  font-size:14px; font-weight:600; color:var(--text-main);
+}
+.aviso-lane-header.lane-turma { border-bottom-color:var(--brand-accent); }
+.aviso-lane-body { padding:12px; background:var(--bg-surface); }
+.aviso-lane-body .kanban { gap:12px; }
+.aviso-lane-body .kanban-col { flex:1 1 0; min-width:0; }
+
+/* Empty state */
+.empty-state {
+  text-align:center; padding:48px 20px;
+  color:var(--text-muted);
+}
+.empty-state-icon { margin-bottom:12px; display:flex; align-items:center; justify-content:center; }
+.empty-state-icon .icon { width:36px; height:36px; stroke-width:1.3; opacity:.4; }
+.empty-state-text { font-size:15px; font-weight:600; }
+.empty-state-sub { font-size:13px; margin-top:4px; }
+
+/* Ícone dentro de heading/label (substitui os emojis por SVGs monocromáticos) */
+.section-title { display:flex; align-items:center; gap:8px; }
+.kanban-col-title { display:inline-flex; align-items:center; gap:6px; }
+.modal-title { display:flex; align-items:center; gap:8px; }
+.form-label.has-icon { display:flex; align-items:center; gap:6px; text-transform:none; }
+.status-dot { width:8px; height:8px; border-radius:50%; display:inline-block; flex-shrink:0; }
+.status-dot.st-danger { background:var(--brand-danger); }
+.status-dot.st-accent { background:var(--brand-accent); }
+.status-dot.st-primary { background:var(--brand-primary); }
+.status-dot.st-muted { background:var(--text-muted); }
+
+/* Progress bar — preenchimento sólido, sem gradiente (a identidade Apple é predominantemente flat) */
+.progress { background:var(--bg-surface2); border-radius:20px; height:8px; overflow:hidden; }
+.progress-bar { height:100%; border-radius:20px; background:var(--brand-primary); transition:width .4s; }
+
+/* Toast */
+.toast-container { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:8px; }
+.toast {
+  background:var(--bg-surface); border:1px solid var(--border-soft);
+  border-radius:var(--radius-md); padding:14px 18px;
+  box-shadow:var(--shadow-lg);
+  display:flex; align-items:center; gap:12px;
+  font-size:14px; font-weight:600; color:var(--text-main);
+  min-width:280px; max-width:380px;
+  animation:slideIn .3s cubic-bezier(.4,0,.2,1);
+}
+.toast.success { border-left:4px solid var(--brand-primary); }
+.toast.error { border-left:4px solid var(--brand-danger); }
+.toast.info { border-left:4px solid var(--brand-info); }
+@keyframes slideIn { from { transform:translateX(100%); opacity:0; } to { transform:translateX(0); opacity:1; } }
+@keyframes slideOut { from { transform:translateX(0); opacity:1; } to { transform:translateX(100%); opacity:0; } }
+
+/* Modal */
+.modal-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,.5); backdrop-filter:blur(4px);
+  z-index:500; display:none; align-items:center; justify-content:center;
+  padding:20px;
+}
+.modal-overlay.open { display:flex; }
+.modal {
+  background:var(--bg-surface); border-radius:var(--radius-lg);
+  padding:28px; width:100%; max-width:500px; max-height:90vh; overflow-y:auto;
+  box-shadow:var(--shadow-lg);
+  animation:modalIn .25s cubic-bezier(.4,0,.2,1);
+}
+.modal-lg { max-width:720px; }
+@keyframes modalIn { from { transform:scale(.94); opacity:0; } to { transform:scale(1); opacity:1; } }
+.modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:22px; }
+.modal-title { font-size:18px; font-weight:600; color:var(--text-main); }
+.modal-close {
+  width:34px; height:34px; border-radius:var(--radius-sm);
+  background:var(--bg-surface2); color:var(--text-muted);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:var(--transition);
+}
+.modal-close:hover { background:var(--brand-danger); color:#fff; }
+.modal-footer { display:flex; gap:10px; justify-content:flex-end; margin-top:22px; }
+
+/* Search bar */
+.search-wrap { position:relative; }
+.search-wrap .icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); pointer-events:none; }
+.search-input { padding-left:40px !important; }
+
+/* Filter tabs */
+.filter-tabs { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:16px; }
+.filter-tab {
+  padding:6px 16px; border-radius:20px; font-size:13px; font-weight:600;
+  background:var(--bg-surface2); color:var(--text-muted);
+  border:1px solid var(--border-soft); cursor:pointer; transition:var(--transition);
+}
+.filter-tab.active { background:var(--brand-primary); color:#fff; border-color:transparent; }
+
+/* Urgency dots */
+.urg-dot {
+  width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:5px;
+}
+.urg-alta { background:var(--brand-danger); }
+.urg-media { background:var(--brand-accent); }
+.urg-baixa { background:var(--brand-primary); }
+
+/* Avatar — preenchimento sólido, sem gradiente */
+.avatar {
+  width:36px; height:36px; border-radius:50%;
+  background:var(--brand-secondary);
+  display:flex; align-items:center; justify-content:center;
+  color:#fff; font-size:14px; font-weight:600;
+  flex-shrink:0;
+}
+
+/* Turma pills */
+.turma-pill {
+  display:inline-block; padding:3px 10px; border-radius:20px;
+  font-size:11px; font-weight:600;
+  background:rgba(0,102,204,.08);
+  color:var(--brand-primary-dark);
+}
+
+/* Activity feed */
+.activity-item {
+  display:flex; align-items:flex-start; gap:12px; padding:12px 0;
+  border-bottom:1px solid var(--border-soft);
+}
+.activity-item:last-child { border-bottom:none; }
+.activity-dot {
+  width:8px; height:8px; border-radius:50%; margin-top:7px; flex-shrink:0;
+}
+
+/* Cardapio grid */
+.cardapio-grid {
+  display:grid; grid-template-columns:repeat(5,1fr); gap:12px;
+}
+.dia-card {
+  background:var(--bg-surface2); border-radius:var(--radius-md);
+  padding:16px; border:1px solid var(--border-soft); text-align:center;
+}
+.dia-card-label { font-size:11px; font-weight:600; color:var(--text-eyebrow); text-transform:uppercase; letter-spacing:.8px; margin-bottom:8px; }
+.dia-card-content { font-size:13px; font-weight:400; color:var(--text-main); line-height:1.4; }
+
+/* ===== RESPONSIVE ===== */
+
+/* ── Tablet wide (≤1100px) ── */
+@media (max-width:1100px) {
+  .metrics-grid  { grid-template-columns:repeat(2,1fr); }
+  .grid-3        { grid-template-columns:1fr 1fr; }
+  .cardapio-grid { grid-template-columns:repeat(3,1fr); }
+  .kanban-col    { flex:0 0 220px; }
+}
+
+/* ── Tablet portrait (≤900px) ── */
+@media (max-width:900px) {
+  .kanban-col { flex:0 0 200px; }
+  .grid-auto  { grid-template-columns:repeat(2,1fr); }
+}
+
+/* ── Mobile landscape / small tablet (≤768px) ── */
+@media (max-width:768px) {
+  /* Sidebar desliza */
+  .sidebar { transform:translateX(-100%); }
+  .sidebar.open { transform:translateX(0); }
+  .main-wrap { margin-left:0; }
+
+  /* Topbar */
+  .topbar { padding:0 16px; }
+  .hamburger { display:flex; }
+
+  /* Conteúdo com espaço para bottom-nav */
+  .page-area { padding:16px 16px 84px; }
+  .bottom-nav { display:flex; }
+
+  /* Grids */
+  .metrics-grid  { grid-template-columns:1fr 1fr; gap:12px; }
+  .grid-2        { grid-template-columns:1fr; }
+  .grid-3        { grid-template-columns:1fr; }
+  .grid-auto     { grid-template-columns:1fr; }
+  .cardapio-grid { grid-template-columns:repeat(2,1fr); }
+
+  /* Kanban vira coluna */
+  .kanban { flex-direction:column; }
+  .kanban-col { flex:none; width:100%; }
+
+  /* Section header envolve quando estreito */
+  .section-header { flex-wrap:wrap; gap:10px; }
+
+  /* Modal */
+  .modal-overlay { padding:12px; }
+  .modal { padding:22px 16px; }
+
+  /* Toast acima do bottom-nav */
+  .toast-container { bottom:80px; right:12px; left:12px; }
+  .toast { min-width:unset; max-width:100%; }
+
+  /* Tabela mais compacta */
+  td, th { padding:10px 12px; }
+}
+
+/* ── Mobile portrait (≤480px) ── */
+@media (max-width:480px) {
+  /* Tipografia */
+  .topbar-title { font-size:15px; }
+  .section-title { font-size:14px; }
+
+  /* Botão "Bot" na topbar: só ícone */
+  .topbar-right .btn-primary { padding:7px 10px; font-size:0; gap:0; }
+  .topbar-right .btn-primary .icon { display:block; width:18px; height:18px; }
+
+  /* Grids */
+  .metrics-grid  { grid-template-columns:1fr; }
+  .cardapio-grid { grid-template-columns:1fr; }
+  .grid-auto     { grid-template-columns:1fr; }
+
+  /* Section-header empilha */
+  .section-header { flex-direction:column; align-items:flex-start; }
+  .section-header > button,
+  .section-header > .btn { width:100%; justify-content:center; }
+
+  /* Modal ocupa quase a tela toda no rodapé */
+  .modal-overlay { padding:0; align-items:flex-end; }
+  .modal         { border-radius:var(--radius-lg) var(--radius-lg) 0 0; max-height:88vh; }
+  .modal-lg      { max-width:100%; }
+  .modal-footer  { flex-wrap:wrap; }
+  .modal-footer > .btn { flex:1; justify-content:center; }
+
+  /* Cards e área */
+  .metric-card { padding:14px 12px; }
+  .kanban-card { padding:10px 12px; }
+  .page-area { padding:12px 12px 80px; }
+
+  /* Tabela */
+  td, th { padding:8px 10px; font-size:13px; }
+
+  /* Bottom-nav mais compacto */
+  .bnav-item { padding:5px 6px; font-size:9px; letter-spacing:0; }
+  .bnav-item .icon { width:20px; height:20px; }
+
+  /* Toast */
+  .toast-container { bottom:72px; }
+}
+</style>
+</head>
+<body>
+
+<!-- SVG SPRITE -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="icon-dash" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="13" width="7" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="4" rx="1.5"/><rect x="13" y="10" width="8" height="11" rx="1.5"/></symbol>
+  <symbol id="icon-users" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="icon-food" viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></symbol>
+  <symbol id="icon-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></symbol>
+  <symbol id="icon-alert" viewBox="0 0 24 24"><path d="m10.29 3.86-8.82 15.28A2 2 0 0 0 3.18 22h17.64a2 2 0 0 0 1.71-2.86L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></symbol>
+  <symbol id="icon-clipboard" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M9 14l2 2 4-4"/></symbol>
+  <symbol id="icon-bell" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></symbol>
+  <symbol id="icon-megaphone" viewBox="0 0 24 24"><path d="m3 11 18-5v12L3 13v-2z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></symbol>
+  <symbol id="icon-key" viewBox="0 0 24 24"><path d="m21 2-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/></symbol>
+  <symbol id="icon-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></symbol>
+  <symbol id="icon-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+  <symbol id="icon-edit" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></symbol>
+  <symbol id="icon-trash" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6m4-6v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></symbol>
+  <symbol id="icon-x" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+  <symbol id="icon-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol>
+  <symbol id="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></symbol>
+  <symbol id="icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></symbol>
+  <symbol id="icon-menu" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></symbol>
+  <symbol id="icon-whatsapp" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.118.554 4.108 1.523 5.833L0 24l6.335-1.492C8.05 23.447 9.998 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.666-.51-5.197-1.398l-.373-.22-3.84.905.959-3.74-.242-.386A9.944 9.944 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></symbol>
+  <symbol id="icon-refresh" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></symbol>
+  <symbol id="icon-send" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></symbol>
+  <symbol id="icon-school" viewBox="0 0 24 24"><path d="M2 20h20"/><path d="M4 20V10l8-7 8 7v10"/><path d="M9 20v-5h6v5"/><path d="M12 7v3"/></symbol>
+  <symbol id="icon-user" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+  <symbol id="icon-inbox" viewBox="0 0 24 24"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></symbol>
+  <symbol id="icon-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></symbol>
+  <symbol id="icon-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></symbol>
+  <symbol id="icon-archive" viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></symbol>
+</svg>
+
+<!-- APP -->
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-img-wrap">
+        <img src="https://escolaraiodeluz.com.br/wp-content/uploads/2023/05/logotipo-topo-raiodeluz.png" alt="Colégio Raio de Luz"/>
+      </div>
+      <div class="sidebar-logo-caption">Escola Digital</div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section"><span class="nav-section-label">Principal</span></div>
+      <div class="nav-item active" data-page="dashboard" id="nav-dashboard">
+        <svg class="icon"><use href="#icon-dash"/></svg> Dashboard
+      </div>
+      <div class="nav-item" data-page="responsaveis" id="nav-responsaveis">
+        <svg class="icon"><use href="#icon-users"/></svg> Responsáveis
+      </div>
+
+      <div class="nav-section"><span class="nav-section-label">Escola</span></div>
+      <div class="nav-item" data-page="cardapio" id="nav-cardapio">
+        <svg class="icon"><use href="#icon-food"/></svg> Cardápio
+      </div>
+      <div class="nav-item" data-page="agenda" id="nav-agenda">
+        <svg class="icon"><use href="#icon-calendar"/></svg> Agenda
+      </div>
+
+      <div class="nav-section"><span class="nav-section-label">Atendimento</span></div>
+      <div class="nav-item" data-page="ocorrencias" id="nav-ocorrencias">
+        <svg class="icon"><use href="#icon-alert"/></svg> Ocorrências
+      </div>
+      <div class="nav-item" data-page="solicitacoes" id="nav-solicitacoes">
+        <svg class="icon"><use href="#icon-clipboard"/></svg> Solicitações
+      </div>
+
+      <div class="nav-section"><span class="nav-section-label">Comunicação</span></div>
+      <div class="nav-item" data-page="avisos" id="nav-avisos">
+        <svg class="icon"><use href="#icon-bell"/></svg> Avisos
+      </div>
+      <div class="nav-item" data-page="comunicados" id="nav-comunicados">
+        <svg class="icon"><use href="#icon-megaphone"/></svg> Comunicados
+      </div>
+      <div class="nav-item" data-page="autorizacoes" id="nav-autorizacoes">
+        <svg class="icon"><use href="#icon-key"/></svg> Autorizações
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="theme-toggle" id="themeToggle" title="Alternar tema">
+        <svg class="icon icon-sm"><use href="#icon-moon" id="themeIcon"/></svg>
+        <span id="themeLabel">Modo Escuro</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN WRAP -->
+  <div class="main-wrap">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="topbar-btn hamburger" id="hamburgerBtn" title="Menu">
+          <svg class="icon"><use href="#icon-menu"/></svg>
+        </button>
+        <div>
+          <div class="topbar-title" id="topbarTitle">Dashboard</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="topbar-btn" id="refreshBtn" title="Atualizar">
+          <svg class="icon"><use href="#icon-refresh"/></svg>
+        </button>
+        <button class="btn btn-primary btn-sm" onclick="openBotConfig()">
+          <svg class="icon icon-sm icon-fill"><use href="#icon-whatsapp"/></svg> Bot
+        </button>
+      </div>
+    </header>
+
+    <!-- PAGES -->
+    <main class="page-area">
+
+      <!-- ===== DASHBOARD ===== -->
+      <div class="page active" id="page-dashboard">
+        <div class="metrics-grid">
+          <div class="metric-card green">
+            <div class="metric-icon green"><svg class="icon icon-lg"><use href="#icon-users"/></svg></div>
+            <div>
+              <div class="metric-val" id="mt-responsaveis">—</div>
+              <div class="metric-label">Responsáveis</div>
+            </div>
+          </div>
+          <div class="metric-card purple">
+            <div class="metric-icon purple"><svg class="icon icon-lg"><use href="#icon-alert"/></svg></div>
+            <div>
+              <div class="metric-val" id="mt-ocorrencias">—</div>
+              <div class="metric-label">Ocorrências Abertas</div>
+            </div>
+          </div>
+          <div class="metric-card orange">
+            <div class="metric-icon orange"><svg class="icon icon-lg"><use href="#icon-bell"/></svg></div>
+            <div>
+              <div class="metric-val" id="mt-avisos">—</div>
+              <div class="metric-label">Avisos Pendentes</div>
+            </div>
+          </div>
+          <div class="metric-card blue">
+            <div class="metric-icon blue"><svg class="icon icon-lg"><use href="#icon-calendar"/></svg></div>
+            <div>
+              <div class="metric-val" id="mt-agenda">—</div>
+              <div class="metric-label">Próximos Eventos</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <!-- Próximos eventos -->
+          <div class="card">
+            <div class="section-header">
+              <div>
+                <div class="section-title"><svg class="icon icon-sm"><use href="#icon-calendar"/></svg> Próximos Eventos</div>
+                <div class="section-sub">Agenda da escola</div>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="navigate('agenda')">Ver tudo</button>
+            </div>
+            <div id="dash-agenda-list">
+              <div class="empty-state"><div class="empty-state-icon"><svg class="icon"><use href="#icon-calendar"/></svg></div><div class="empty-state-text">Carregando...</div></div>
+            </div>
+          </div>
+
+          <!-- Ocorrências recentes -->
+          <div class="card">
+            <div class="section-header">
+              <div>
+                <div class="section-title"><svg class="icon icon-sm"><use href="#icon-alert"/></svg> Ocorrências Recentes</div>
+                <div class="section-sub">Últimas 5 abertas</div>
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="navigate('ocorrencias')">Ver kanban</button>
+            </div>
+            <div id="dash-occ-list">
+              <div class="empty-state"><div class="empty-state-icon"><svg class="icon"><use href="#icon-alert"/></svg></div><div class="empty-state-text">Carregando...</div></div>
+            </div>
+          </div>
+
+          <!-- Comunicados recentes -->
+          <div class="card">
+            <div class="section-header">
+              <div>
+                <div class="section-title"><svg class="icon icon-sm"><use href="#icon-megaphone"/></svg> Comunicados</div>
+                <div class="section-sub">Últimas mensagens enviadas</div>
+              </div>
+              <button class="btn btn-secondary btn-sm" onclick="openNovoComunicado()">+ Novo</button>
+            </div>
+            <div id="dash-comunicados-list">
+              <div class="empty-state"><div class="empty-state-icon"><svg class="icon"><use href="#icon-megaphone"/></svg></div><div class="empty-state-text">Carregando...</div></div>
+            </div>
+          </div>
+
+          <!-- Cardápio atual -->
+          <div class="card">
+            <div class="section-header">
+              <div>
+                <div class="section-title"><svg class="icon icon-sm"><use href="#icon-food"/></svg> Cardápio da Semana</div>
+                <div class="section-sub">Menu semanal publicado</div>
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="navigate('cardapio')">Editar</button>
+            </div>
+            <div id="dash-cardapio-preview">
+              <div class="empty-state"><div class="empty-state-icon"><svg class="icon"><use href="#icon-food"/></svg></div><div class="empty-state-text">Sem cardápio publicado</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== RESPONSÁVEIS ===== -->
+      <div class="page" id="page-responsaveis">
+        <div class="section-header" style="margin-bottom:20px">
+          <div>
+            <div class="section-title"><svg class="icon icon-sm"><use href="#icon-users"/></svg> Responsáveis</div>
+            <div class="section-sub">Pais e responsáveis cadastrados</div>
+          </div>
+          <button class="btn btn-primary" id="btnNovoResp" onclick="openNovoResponsavel()">
+            <svg class="icon icon-sm"><use href="#icon-plus"/></svg> Novo Responsável
+          </button>
+        </div>
+
+        <div class="card" style="margin-bottom:16px">
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+            <div class="search-wrap" style="flex:1;min-width:220px">
+              <svg class="icon icon-sm"><use href="#icon-search"/></svg>
+              <input type="text" class="form-control search-input" id="respSearch" placeholder="Buscar por nome, aluno ou turma..." oninput="RespApp.filter()"/>
+            </div>
+            <select class="form-control" id="respTurmaFilter" onchange="RespApp.filter()" style="width:auto">
+              <option value="">Todas as turmas</option>
+              <option>Berçário</option>
+              <option>Maternal I</option>
+              <option>Maternal II</option>
+              <option>Jardim I</option>
+              <option>Jardim II</option>
+              <option>Pré</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="resp-list">
+          <div class="empty-state"><div class="empty-state-icon"><svg class="icon"><use href="#icon-users"/></svg></div><div class="empty-state-text">Carregando...</div></div>
+        </div>
+      </div>
+
+      <!-- ===== CARDÁPIO ===== -->
+      <div class="page" id="page-cardapio">
+        <div class="section-header" style="margin-bottom:20px">
+          <div>
+            <div class="section-title"><svg class="icon icon-sm"><use href="#icon-food"/></svg> Cardápio Semanal</div>
+            <div class="section-sub">Gerencie o menu da semana</div>
+          </div>
+          <button class="btn btn-primary" onclick="openNovoCardapio()">
+            <svg class="icon icon-sm"><use href="#icon-plus"/></svg> Publicar Semana
+          </button>
+        </div>
+        <div id="cardapio-content">
+          <div class="empty-state"><div class="empty-state-icon"><svg class="icon"><use href="#icon-food"/></svg></div><div class="empty-state-text">Carregando cardápio...</div></div>
+        </div>
+      </div>
+
+      <!-- ===== AGENDA ===== -->
+      <div class="page" id="page-agenda">
+        <div class="section-header" style="margin-bottom:20px">
+          <div>
+            <div class="section-title"><svg class="icon icon-sm"><use href="#icon-calendar"/></svg> Agenda de Eventos</div>
+            <div class="section-sub">Calendário escolar</div>
+          </div>
+          <button class="btn btn-primary" onclick="openNovoEvento()">
+            <svg class="icon icon-sm"><use href="#icon-plus"/></svg> Novo Evento
+          </button>
+        </div>
+        <div class="filter-tabs" id="agenda-turma-filters">
+          <span class="filter-tab active" onclick="AgendaApp.filterTurma(this,'')">Todas as turmas</span>
+          <span class="filter-tab" onclick="AgendaApp.filterTurma(this,'Berçário')">Berçário</span>
+          <span class="filter-tab" onclick="AgendaApp.filterTurma(this,'Maternal I')">Maternal I</span>
+          <span class="filter-tab" onclick="AgendaApp.filterTurma(this,'Maternal II')">Maternal II</span>
+          <span class="filter-tab" onclick="AgendaApp.filterTurma(this,'Jardim I')">Jardim I</span>
+          <span class="filter-tab" onclick="AgendaApp.filterTurma(this,'Jardim II')">Jardim II</span>
+          <span class="filter-tab" onclick="AgendaApp.filterTurma(this,'Pré')">Pré</span>
+        </div>
+        <div id="agenda-list">
+          <div class="empty-state"><div class="empty-state-icon"><svg class="icon"><use href="#icon-calendar"/></svg></div><div class="empty-state-text">Carregando agenda...</div></div>
+        </div>
+      </div>
+
+      <!-- ===== OCORRÊNCIAS ===== -->
+      <div class="page" id="page-ocorrencias">
+        <div class="section-header" style="margin-bottom:20px">
+          <div>
+            <div class="section-title"><svg class="icon icon-sm"><use href="#icon-alert"/></svg> Ocorrências</div>
+            <div class="section-sub">Kanban de atendimento</div>
+          </div>
+        </div>
+        <div class="kanban" id="occ-kanban">
+          <div class="kanban-col" id="occ-col-aberta">
+            <div class="kanban-col-header">
+              <span class="kanban-col-title"><span class="status-dot st-danger"></span> Aberta</span>
+              <span class="kanban-col-count" id="occ-cnt-aberta">0</span>
+            </div>
+            <div class="kanban-cards" id="occ-cards-aberta"></div>
+          </div>
+          <div class="kanban-col" id="occ-col-analise">
+            <div class="kanban-col-header">
+              <span class="kanban-col-title"><span class="status-dot st-accent"></span> Em Análise</span>
+              <span class="kanban-col-count" id="occ-cnt-analise">0</span>
+            </div>
+            <div class="kanban-cards" id="occ-cards-analise"></div>
+          </div>
+          <div class="kanban-col" id="occ-col-andamento">
+            <div class="kanban-col-header">
+              <span class="kanban-col-title"><span class="status-dot st-primary"></span> Em Andamento</span>
+              <span class="kanban-col-count" id="occ-cnt-andamento">0</span>
+            </div>
+            <div class="kanban-cards" id="occ-cards-andamento"></div>
+          </div>
+          <div class="kanban-col" id="occ-col-resolvida">
+            <div class="kanban-col-header">
+              <span class="kanban-col-title"><svg class="icon icon-sm"><use href="#icon-check"/></svg> Resolvida</span>
+              <span class="kanban-col-count" id="occ-cnt-resolvida">0</span>
+            </div>
+            <div class="kanban-cards" id="occ-cards-resolvida"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== SOLICITAÇÕES ===== -->
+      <div class="page" id="page-solicitacoes">
+        <div class="section-header" style="margin-bottom:20px">
+          <div>
+            <div class="section-title"><svg class="icon icon-sm"><use href="#icon-clipboard"/></svg> Solicitações</div>
+            <div class="section-sub">Pedidos administrativos dos responsáveis</div>
+          </div>
+        </div>
+        <div class="kanban" id="sol-kanban">
+          <div class="kanban-col">
+            <div class="kanban-col-header">
+              <span class="kanban-col-title"><svg class="icon icon-sm"><use href="#icon-inbox"/></svg> Pendente</span>
+              <span class="kanban-col-count" id="sol-cnt-pendente">0</span>
+            </div>
+            <div class="kanban-cards" id="sol-cards-pendente"></div>
+          </div>
+          <div class="kanban-col">
+            <div class="kanban-col-header">
+              <span class="kanban-col-title"><svg class="icon icon-sm"><use href="#icon-search"/></svg> Análise</span>
+              <span class="kanban-col-count" id="sol-cnt-analise">0</span>
+            </div>
+            <div class="kanban-cards" id="sol-cards-analise"></div>
+          </div>
+          <div class="kanban-col">
+            <div class="kanban-col-header">
+              <span class="kanban-col-title"><svg class="icon icon-sm"><use href="#icon-settings"/></svg> Andamento</span>
+              <span class="kanban-col-count" id="sol-cnt-andamento">0</span>
+            </div>
+            <div class="kanban-cards" id="sol-cards-andamento"></div>
+          </div>
+          <div class="kanban-col">
+            <div class="kanban-col-header">
+              <span class="kanban-col-title"><svg class="icon icon-sm"><use href="#icon-check"/></svg> Resolvido</span>
+              <span class="kanban-col-count" id="sol-cnt-resolvido">0</span>
+            </div>
+            <div class="kanban-cards" id="sol-cards-resolvido"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== AVISOS ===== -->
+      <div class="page" id="page-avisos">
+        <div class="section-header" style="margin-bottom:20px">
+          <div>
+            <div class="section-title"><svg class="icon icon-sm"><use href="#icon-bell"/></svg> Avisos</div>
+            <div class="section-sub">Por responsável (Individual) e por turma</div>
+          </div>
+          <button class="btn btn-primary" onclick="openNovoAviso()">
+            <svg class="icon icon-sm"><use href="#icon-plus"/></svg> Novo Aviso
+          </button>
+        </div>
+        <div id="avisos-kanban">
+          <div class="empty-state"><div class="empty-state-icon"><svg class="icon"><use href="#icon-bell"/></svg></div><div class="empty-state-text">Carregando avisos...</div></div>
+        </div>
+      </div>
+
+      <!-- ===== COMUNICADOS ===== -->
+      <div class="page" id="page-comunicados">
+        <div class="section-header" style="margin-bottom:20px">
+          <div>
+            <div class="section-title"><svg class="icon icon-sm"><use href="#icon-megaphone"/></svg> Comunicados em Massa</div>
+            <div class="section-sub">Enviar mensagens para todos os responsáveis</div>
+          </div>
+          <button class="btn btn-secondary" onclick="openNovoComunicado()">
+            <svg class="icon icon-sm"><use href="#icon-plus"/></svg> Novo Comunicado
+          </button>
+        </div>
+        <div id="comunicados-list">
+          <div class="empty-state"><div class="empty-state-icon"><svg class="icon"><use href="#icon-megaphone"/></svg></div><div class="empty-state-text">Carregando...</div></div>
+        </div>
+      </div>
+
+      <!-- ===== AUTORIZAÇÕES ===== -->
+      <div class="page" id="page-autorizacoes">
+        <div class="section-header" style="margin-bottom:20px">
+          <div>
+            <div class="section-title"><svg class="icon icon-sm"><use href="#icon-key"/></svg> Autorizações de Busca</div>
+            <div class="section-sub">Quem está autorizado a buscar cada aluno</div>
+          </div>
+          <button class="btn btn-primary" onclick="openNovaAuth()">
+            <svg class="icon icon-sm"><use href="#icon-plus"/></svg> Nova Autorização
+          </button>
+        </div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="search-wrap">
+            <svg class="icon icon-sm"><use href="#icon-search"/></svg>
+            <input type="text" class="form-control search-input" id="authSearch" placeholder="Buscar por aluno, responsável ou autorizado..." oninput="AuthApp.filter()"/>
+          </div>
+        </div>
+        <div id="auth-list">
+          <div class="empty-state"><div class="empty-state-icon"><svg class="icon"><use href="#icon-key"/></svg></div><div class="empty-state-text">Carregando autorizações...</div></div>
+        </div>
+      </div>
+
+
+    </main><!-- end page-area -->
+  </div><!-- end main-wrap -->
+</div><!-- end app -->
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <div class="bnav-item active" data-page="dashboard">
+    <svg class="icon"><use href="#icon-dash"/></svg>Dashboard
+  </div>
+  <div class="bnav-item" data-page="responsaveis">
+    <svg class="icon"><use href="#icon-users"/></svg>Resp.
+  </div>
+  <div class="bnav-item" data-page="cardapio">
+    <svg class="icon"><use href="#icon-food"/></svg>Cardápio
+  </div>
+  <div class="bnav-item" data-page="ocorrencias">
+    <svg class="icon"><use href="#icon-alert"/></svg>Ocorr.
+  </div>
+  <div class="bnav-item" data-page="comunicados">
+    <svg class="icon"><use href="#icon-megaphone"/></svg>Comunicados
+  </div>
+</nav>
+
+<!-- MODALS -->
+
+<!-- NOVO RESPONSÁVEL -->
+<div class="modal-overlay" id="modal-responsavel">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="resp-modal-title">Novo Responsável</span>
+      <button class="modal-close" onclick="closeModal('modal-responsavel')"><svg class="icon icon-sm"><use href="#icon-x"/></svg></button>
+    </div>
+    <input type="hidden" id="resp-edit-id"/>
+    <div class="form-group">
+      <label class="form-label">Nome completo</label>
+      <input type="text" class="form-control" id="resp-nome" placeholder="Nome do responsável"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Telefone (WhatsApp)</label>
+      <input type="text" class="form-control" id="resp-tel" placeholder="5511999999999"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Nome do Aluno</label>
+      <input type="text" class="form-control" id="resp-aluno" placeholder="Nome do filho(a)"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Turma</label>
+      <select class="form-control" id="resp-turma">
+        <option value="">Selecionar turma</option>
+        <option>Berçário</option><option>Maternal I</option><option>Maternal II</option>
+        <option>Jardim I</option><option>Jardim II</option><option>Pré</option>
+      </select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-responsavel')">Cancelar</button>
+      <button class="btn btn-primary" onclick="RespApp.save()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOVO CARDÁPIO -->
+<div class="modal-overlay" id="modal-cardapio">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <span class="modal-title"><svg class="icon"><use href="#icon-food"/></svg> Publicar Cardápio da Semana</span>
+      <button class="modal-close" onclick="closeModal('modal-cardapio')"><svg class="icon icon-sm"><use href="#icon-x"/></svg></button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Semana (data da segunda-feira)</label>
+      <input type="date" class="form-control" id="card-semana"/>
+    </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label">Segunda-feira</label>
+        <textarea class="form-control" id="card-segunda" rows="2" placeholder="Ex: Arroz, feijão, frango grelhado, salada"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Terça-feira</label>
+        <textarea class="form-control" id="card-terca" rows="2" placeholder="Ex: Macarrão ao sugo, carne moída, suco"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Quarta-feira</label>
+        <textarea class="form-control" id="card-quarta" rows="2" placeholder="Ex: Arroz integral, lentilha, omelete"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Quinta-feira</label>
+        <textarea class="form-control" id="card-quinta" rows="2" placeholder="Ex: Feijoada, arroz branco, couve"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Sexta-feira</label>
+        <textarea class="form-control" id="card-sexta" rows="2" placeholder="Ex: Pizza integral, salada de frutas"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-cardapio')">Cancelar</button>
+      <button class="btn btn-primary" onclick="CardapioApp.save()">Publicar Cardápio</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOVO EVENTO -->
+<div class="modal-overlay" id="modal-evento">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title"><svg class="icon"><use href="#icon-calendar"/></svg> Novo Evento</span>
+      <button class="modal-close" onclick="closeModal('modal-evento')"><svg class="icon icon-sm"><use href="#icon-x"/></svg></button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Título do Evento</label>
+      <input type="text" class="form-control" id="ev-titulo" placeholder="Ex: Festa Junina, Reunião de Pais"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Data</label>
+      <input type="date" class="form-control" id="ev-data"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Turma (deixar vazio = todos)</label>
+      <select class="form-control" id="ev-turma">
+        <option value="">Todos</option>
+        <option>Berçário</option><option>Maternal I</option><option>Maternal II</option>
+        <option>Jardim I</option><option>Jardim II</option><option>Pré</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Descrição (opcional)</label>
+      <textarea class="form-control" id="ev-desc" rows="3" placeholder="Detalhes do evento..."></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-evento')">Cancelar</button>
+      <button class="btn btn-primary" onclick="AgendaApp.save()">Salvar Evento</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOVO AVISO -->
+<div class="modal-overlay" id="modal-aviso">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title"><svg class="icon"><use href="#icon-bell"/></svg> Novo Aviso</span>
+      <button class="modal-close" onclick="closeModal('modal-aviso')"><svg class="icon icon-sm"><use href="#icon-x"/></svg></button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Destinatário</label>
+      <select class="form-control" id="aviso-dest-tipo" onchange="AvisoApp.toggleDest()">
+        <option value="turma">Por Turma</option>
+        <option value="individual">Responsável específico</option>
+      </select>
+    </div>
+    <div class="form-group" id="aviso-turma-wrap">
+      <label class="form-label">Turma</label>
+      <select class="form-control" id="aviso-turma">
+        <option value="">Todas as turmas</option>
+        <option>Berçário</option><option>Maternal I</option><option>Maternal II</option>
+        <option>Jardim I</option><option>Jardim II</option><option>Pré</option>
+      </select>
+    </div>
+    <div class="form-group" id="aviso-resp-wrap" style="display:none">
+      <label class="form-label">Buscar Responsável</label>
+      <input type="text" class="form-control" id="aviso-resp-busca" placeholder="Digite o nome..." oninput="AvisoApp.buscarResp()"/>
+      <div id="aviso-resp-results" style="margin-top:6px"></div>
+      <input type="hidden" id="aviso-resp-id"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Título</label>
+      <input type="text" class="form-control" id="aviso-titulo" placeholder="Assunto do aviso"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Mensagem</label>
+      <textarea class="form-control" id="aviso-msg" rows="4" placeholder="Conteúdo do aviso..."></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-aviso')">Cancelar</button>
+      <button class="btn btn-primary" onclick="AvisoApp.send()">
+        <svg class="icon icon-sm"><use href="#icon-send"/></svg> Enviar via WhatsApp
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- NOVO COMUNICADO -->
+<div class="modal-overlay" id="modal-comunicado">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title"><svg class="icon"><use href="#icon-megaphone"/></svg> Novo Comunicado</span>
+      <button class="modal-close" onclick="closeModal('modal-comunicado')"><svg class="icon icon-sm"><use href="#icon-x"/></svg></button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Turma alvo (deixar vazio = todos)</label>
+      <select class="form-control" id="com-turma">
+        <option value="">Todos os responsáveis</option>
+        <option>Berçário</option><option>Maternal I</option><option>Maternal II</option>
+        <option>Jardim I</option><option>Jardim II</option><option>Pré</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Título</label>
+      <input type="text" class="form-control" id="com-titulo" placeholder="Título do comunicado"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Mensagem</label>
+      <textarea class="form-control" id="com-msg" rows="5" placeholder="Conteúdo do comunicado..."></textarea>
+    </div>
+    <div id="com-progress-wrap" style="display:none;margin-bottom:12px">
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:6px" id="com-progress-label">Enviando...</div>
+      <div class="progress"><div class="progress-bar" id="com-progress-bar" style="width:0%"></div></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-comunicado')">Cancelar</button>
+      <button class="btn btn-ghost" onclick="ComunicadoApp.saveDraft()"><svg class="icon icon-sm"><use href="#icon-archive"/></svg> Rascunho</button>
+      <button class="btn btn-secondary" id="btnEnviarCom" onclick="ComunicadoApp.sendAll()">
+        <svg class="icon icon-sm"><use href="#icon-send"/></svg> Enviar a Todos
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- NOVA AUTORIZAÇÃO -->
+<div class="modal-overlay" id="modal-auth">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title"><svg class="icon"><use href="#icon-key"/></svg> Nova Autorização de Busca</span>
+      <button class="modal-close" onclick="closeModal('modal-auth')"><svg class="icon icon-sm"><use href="#icon-x"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Responsável / Aluno *</label>
+        <input type="text" class="form-control" id="auth-resp-busca" placeholder="Buscar por nome do responsável ou aluno..." oninput="AuthApp.buscarResp()" autocomplete="off"/>
+        <div id="auth-resp-results" style="margin-top:4px"></div>
+        <input type="hidden" id="auth-resp-id"/>
+        <div id="auth-resp-preview" style="display:none;margin-top:8px;padding:8px 12px;border-radius:var(--radius-sm);background:var(--bg-surface2);border:1px solid var(--border-soft);font-size:13px"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nome do autorizado *</label>
+        <input type="text" class="form-control" id="auth-nome" placeholder="Ex: Avó Maria, Tio João..."/>
+      </div>
+      <div class="grid-2" style="gap:12px">
+        <div class="form-group">
+          <label class="form-label">Documento (RG/CPF)</label>
+          <input type="text" class="form-control" id="auth-doc" placeholder="Ex: 12.345.678-9"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Parentesco</label>
+          <select class="form-control" id="auth-parent">
+            <option value="">Selecione...</option>
+            <option>Avô/Avó</option>
+            <option>Tio/Tia</option>
+            <option>Irmão/Irmã</option>
+            <option>Pai/Mãe</option>
+            <option>Padrasto/Madrasta</option>
+            <option>Amigo(a) da família</option>
+            <option>Outro</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-auth')">Cancelar</button>
+      <button class="btn btn-primary" onclick="AuthApp.save()">Salvar Autorização</button>
+    </div>
+  </div>
+</div>
+
+<!-- BOT CONFIG -->
+<div class="modal-overlay" id="modal-bot">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title"><svg class="icon"><use href="#icon-settings"/></svg> Configurações do Bot</span>
+      <button class="modal-close" onclick="closeModal('modal-bot')"><svg class="icon icon-sm"><use href="#icon-x"/></svg></button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Nome do bot no WhatsApp</label>
+      <input type="text" class="form-control" id="bot-name" placeholder="Raio de Luz Digital"/>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-bot')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveBotName()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- OVERLAY para fechar sidebar no mobile -->
+<div id="sidebarOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:99" onclick="closeSidebar()"></div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ===== CONFIG =====
+const SUPABASE_URL  = 'https://ywsobgbpwhykkfolvoml.supabase.co/rest/v1';
+const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8';
+const EVOLUTION_URL = 'https://evolution.automacaopme.com.br';
+const EVOLUTION_KEY = '187303942A46-4052-8D89-5A4CA2523ABD';
+const INSTANCE      = 'bot-bruno';
+const WEBHOOK_BASE  = 'https://n8n.automacaopme.com.br/webhook/notificar-escola';
+
+// ===== SUPABASE HELPER =====
+async function supaApi(method, path, body) {
+  const headers = {
+    'apikey': SUPABASE_KEY,
+    'Authorization': 'Bearer ' + SUPABASE_KEY,
+    'Content-Type': 'application/json',
+  };
+  if (method !== 'GET') headers['Prefer'] = 'return=representation';
+  const opts = { method, headers };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(SUPABASE_URL + path, opts);
+  if (!res.ok) {
+    const msg = await res.text().catch(() => '');
+    console.error('[supaApi]', method, path, res.status, msg);
+    if (method === 'GET') return null;
+    throw new Error(msg || `Erro ${res.status}`);
+  }
+  if (res.status === 204) return true;
+  try { return await res.json(); } catch { return true; }
+}
+
+// ===== WHATSAPP HELPER =====
+async function sendWhatsApp(number, text) {
+  try {
+    await fetch(WEBHOOK_BASE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ number, text })
+    });
+  } catch(e) { console.warn('WhatsApp send failed', e); }
+}
+
+// ===== TOAST =====
+function showToast(msg, type = 'success') {
+  const tc = document.getElementById('toastContainer');
+  const icons = { success: '#icon-check', error: '#icon-x', info: '#icon-info' };
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<svg class="icon icon-sm"><use href="${icons[type]||'#icon-check'}"/></svg><span>${msg}</span>`;
+  tc.appendChild(t);
+  setTimeout(() => {
+    t.style.animation = 'slideOut .3s forwards';
+    setTimeout(() => t.remove(), 300);
+  }, 3500);
+}
+
+// ===== MODAL =====
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ===== NAVIGATION =====
+let currentPage = 'dashboard';
+function navigate(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.bnav-item').forEach(n => n.classList.remove('active'));
+  const pg = document.getElementById('page-'+page);
+  if (pg) { pg.classList.add('active'); }
+  document.getElementById('nav-'+page)?.classList.add('active');
+  document.querySelectorAll(`.bnav-item[data-page="${page}"]`).forEach(n => n.classList.add('active'));
+  const titles = {
+    dashboard:'Dashboard', responsaveis:'Responsáveis', cardapio:'Cardápio Semanal',
+    agenda:'Agenda', ocorrencias:'Ocorrências', solicitacoes:'Solicitações',
+    avisos:'Avisos', comunicados:'Comunicados', autorizacoes:'Autorizações'
+  };
+  document.getElementById('topbarTitle').textContent = titles[page] || page;
+  currentPage = page;
+  loadPage(page);
+  if (window.innerWidth < 768) closeSidebar();
+}
+
+document.querySelectorAll('.nav-item[data-page]').forEach(el =>
+  el.addEventListener('click', () => navigate(el.dataset.page))
+);
+document.querySelectorAll('.bnav-item[data-page]').forEach(el =>
+  el.addEventListener('click', () => navigate(el.dataset.page))
+);
+
+// ===== SIDEBAR MOBILE =====
+document.getElementById('hamburgerBtn').onclick = () => {
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebarOverlay').style.display = 'block';
+};
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').style.display = 'none';
+}
+
+// ===== THEME =====
+function applyTheme(dark) {
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  document.getElementById('themeIcon').href.baseVal = dark ? '#icon-sun' : '#icon-moon';
+  document.getElementById('themeLabel').textContent = dark ? 'Modo Claro' : 'Modo Escuro';
+  localStorage.setItem('escola-theme', dark ? 'dark' : 'light');
+}
+const savedTheme = localStorage.getItem('escola-theme') || 'light';
+applyTheme(savedTheme === 'dark');
+document.getElementById('themeToggle').onclick = () => {
+  applyTheme(document.documentElement.getAttribute('data-theme') !== 'dark');
+};
+
+// ===== DATE HELPERS =====
+function fmtDataBr(iso) {
+  if (!iso) return '?';
+  return new Date(iso+'T12:00:00').toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' });
+}
+function fmtRelative(iso) {
+  if (!iso) return '?';
+  const d = new Date(iso), now = new Date();
+  const diff = (now - d) / 1000;
+  if (diff < 3600) return `há ${Math.floor(diff/60)}min`;
+  const today = now.toDateString(), dstr = d.toDateString();
+  if (today === dstr) return `hoje ${d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`;
+  return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+}
+function urgBadge(u) {
+  const map = { alta:'badge-red', media:'badge-orange', baixa:'badge-green' };
+  const label = { alta:'Alta', media:'Média', baixa:'Baixa' };
+  return `<span class="badge ${map[u]||'badge-gray'}">${label[u]||u||'—'}</span>`;
+}
+function initials(name) {
+  if (!name) return '?';
+  return name.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+}
+
+// ===== PAGE LOADER =====
+async function loadPage(page) {
+  const loaders = {
+    dashboard: loadDashboard,
+    responsaveis: () => RespApp.load(),
+    cardapio: () => CardapioApp.load(),
+    agenda: () => AgendaApp.load(),
+    ocorrencias: () => OccApp.load(),
+    solicitacoes: () => SolApp.load(),
+    avisos: () => AvisoApp.load(),
+    comunicados: () => ComunicadoApp.load(),
+    autorizacoes: () => AuthApp.load()
+  };
+  if (loaders[page]) await loaders[page]();
+}
+
+// ===== DASHBOARD =====
+async function loadDashboard() {
+  const [resps, occs, avisos, agenda, cardapio, comunicados] = await Promise.all([
+    supaApi('GET', '/responsaveis?select=id&limit=1000'),
+    supaApi('GET', '/ocorrencias_escola?status=eq.aberta&select=id&limit=1000'),
+    supaApi('GET', '/avisos?status=eq.pendente&select=id&limit=1000'),
+    supaApi('GET', '/agenda?data=gte.'+new Date().toISOString().split('T')[0]+'&select=id&limit=1000'),
+    supaApi('GET', '/cardapio?select=*&order=semana_inicio.desc&limit=1'),
+    supaApi('GET', '/comunicados_escola?select=*&order=created_at.desc&limit=10')
+  ]);
+
+  document.getElementById('mt-responsaveis').textContent = resps?.length ?? '—';
+  document.getElementById('mt-ocorrencias').textContent = occs?.length ?? '—';
+  document.getElementById('mt-avisos').textContent = avisos?.length ?? '—';
+  document.getElementById('mt-agenda').textContent = agenda?.length ?? '—';
+
+  // Próximos eventos (dashboard)
+  const agendaFull = await supaApi('GET', '/agenda?data=gte.'+new Date().toISOString().split('T')[0]+'&select=*&order=data.asc&limit=5');
+  const dal = document.getElementById('dash-agenda-list');
+  if (!agendaFull?.length) {
+    dal.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg class="icon"><use href="#icon-calendar"/></svg></div><div class="empty-state-text">Nenhum evento próximo</div></div>';
+  } else {
+    dal.innerHTML = agendaFull.map(e => `
+      <div class="activity-item">
+        <div class="activity-dot" style="background:var(--brand-primary)"></div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:600">${e.titulo}</div>
+          <div style="font-size:12px;color:var(--text-muted)">${fmtDataBr(e.data)} ${e.turma ? '· '+e.turma : '· Todos'}</div>
+        </div>
+      </div>`).join('');
+  }
+
+  // Ocorrências recentes
+  const occFull = await supaApi('GET', '/ocorrencias_escola?status=eq.aberta&select=*&order=created_at.desc&limit=5');
+  const ol = document.getElementById('dash-occ-list');
+  if (!occFull?.length) {
+    ol.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg class="icon"><use href="#icon-check"/></svg></div><div class="empty-state-text">Nenhuma ocorrência aberta</div></div>';
+  } else {
+    ol.innerHTML = occFull.map(o => `
+      <div class="activity-item">
+        <div class="activity-dot" style="background:var(--brand-danger)"></div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:600">${o.titulo||'Sem título'}</div>
+          <div style="font-size:12px;color:var(--text-muted)">${o.aluno||''} · ${fmtRelative(o.created_at)}</div>
+        </div>
+        ${urgBadge(o.urgencia)}
+      </div>`).join('');
+  }
+
+  // Comunicados
+  const cl = document.getElementById('dash-comunicados-list');
+  if (!comunicados?.length) {
+    cl.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg class="icon"><use href="#icon-megaphone"/></svg></div><div class="empty-state-text">Nenhum comunicado ainda</div></div>';
+  } else {
+    cl.innerHTML = comunicados.slice(0,5).map(c => `
+      <div class="activity-item">
+        <div class="activity-dot" style="background:var(--brand-secondary)"></div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:600">${c.titulo}</div>
+          <div style="font-size:12px;color:var(--text-muted)">${fmtRelative(c.created_at)} · ${c.destinatarios||0} enviados</div>
+        </div>
+        <span class="badge ${c.status==='enviado'?'badge-green':'badge-gray'}">${c.status==='enviado'?'Enviado':'Rascunho'}</span>
+      </div>`).join('');
+  }
+
+  // Cardápio preview
+  const cp = document.getElementById('dash-cardapio-preview');
+  if (!cardapio?.length) {
+    cp.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg class="icon"><use href="#icon-food"/></svg></div><div class="empty-state-text">Sem cardápio publicado esta semana</div></div>';
+  } else {
+    const c = cardapio[0];
+    const dias = [['Segunda','segunda'],['Terça','terca'],['Quarta','quarta'],['Quinta','quinta'],['Sexta','sexta']];
+    cp.innerHTML = `<div style="display:flex;flex-direction:column;gap:6px">` +
+      dias.map(([label,key]) => c[key] ? `<div style="display:flex;gap:8px;font-size:13px"><span><strong>${label}:</strong></span><span style="color:var(--text-sub)">${c[key]}</span></div>` : '').join('') +
+      `</div>`;
+  }
+}
+
+// ===== RESPONSÁVEIS APP =====
+const RespApp = {
+  data: [], filtered: [],
+  async load() {
+    const data = await supaApi('GET', '/responsaveis?select=*&order=turma.asc,nome.asc');
+    this.data = data || [];
+    this.filter();
+  },
+  filter() {
+    const q = document.getElementById('respSearch').value.toLowerCase();
+    const turma = document.getElementById('respTurmaFilter').value;
+    this.filtered = this.data.filter(r =>
+      (!q || r.nome?.toLowerCase().includes(q) || r.aluno?.toLowerCase().includes(q) || r.turma?.toLowerCase().includes(q)) &&
+      (!turma || r.turma === turma)
+    );
+    this.render();
+  },
+  render() {
+    const el = document.getElementById('resp-list');
+    if (!this.filtered.length) {
+      el.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg class="icon"><use href="#icon-users"/></svg></div><div class="empty-state-text">Nenhum responsável encontrado</div></div>';
+      return;
+    }
+    const byTurma = {};
+    this.filtered.forEach(r => {
+      const t = r.turma || 'Sem turma';
+      if (!byTurma[t]) byTurma[t] = [];
+      byTurma[t].push(r);
+    });
+    el.innerHTML = Object.entries(byTurma).map(([turma, list]) => `
+      <div style="margin-bottom:20px">
+        <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);margin-bottom:10px;display:flex;align-items:center;gap:6px">
+          <svg class="icon icon-inline"><use href="#icon-school"/></svg>${turma} <span style="font-size:11px;color:var(--text-muted);font-weight:600">(${list.length})</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Responsável</th><th>Aluno</th><th>Telefone</th><th>Cadastro</th><th></th></tr></thead>
+            <tbody>
+              ${list.map(r => `
+                <tr>
+                  <td><div style="display:flex;align-items:center;gap:10px">
+                    <div class="avatar">${initials(r.nome)}</div>
+                    <div>
+                      <div style="font-weight:600">${r.nome}</div>
+                    </div>
+                  </div></td>
+                  <td>
+                    <div style="font-weight:600">${r.aluno||'—'}</div>
+                    <span class="turma-pill">${r.turma||'—'}</span>
+                  </td>
+                  <td style="font-family:var(--font-mono);font-size:12px">${r.telefone||'—'}</td>
+                  <td style="font-size:12px;color:var(--text-muted)">${fmtDataBr(r.created_at)}</td>
+                  <td>
+                    <div style="display:flex;gap:6px">
+                      <button class="btn btn-ghost btn-xs" onclick="RespApp.edit(${r.id})"><svg class="icon icon-sm"><use href="#icon-edit"/></svg> Editar</button>
+                      <button class="btn btn-danger btn-xs" onclick="RespApp.delete(${r.id},'${r.nome}')"><svg class="icon icon-sm"><use href="#icon-trash"/></svg></button>
+                    </div>
+                  </td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>`).join('');
+  },
+  async save() {
+    const id = document.getElementById('resp-edit-id').value;
+    const body = {
+      nome: document.getElementById('resp-nome').value.trim(),
+      telefone: document.getElementById('resp-tel').value.trim(),
+      aluno: document.getElementById('resp-aluno').value.trim(),
+      turma: document.getElementById('resp-turma').value
+    };
+    if (!body.nome || !body.telefone || !body.aluno) { showToast('Preencha todos os campos obrigatórios', 'error'); return; }
+    try {
+      if (id) {
+        await supaApi('PATCH', `/responsaveis?id=eq.${id}`, body);
+        showToast('Responsável atualizado!');
+      } else {
+        await supaApi('POST', '/responsaveis', body);
+        showToast('Responsável cadastrado!');
+      }
+      closeModal('modal-responsavel');
+      this.load();
+    } catch(e) { showToast('Erro ao salvar: ' + e.message, 'error'); }
+  },
+  edit(id) {
+    const r = this.data.find(x => x.id === id);
+    if (!r) return;
+    document.getElementById('resp-modal-title').textContent = 'Editar Responsável';
+    document.getElementById('resp-edit-id').value = id;
+    document.getElementById('resp-nome').value = r.nome || '';
+    document.getElementById('resp-tel').value = r.telefone || '';
+    document.getElementById('resp-aluno').value = r.aluno || '';
+    document.getElementById('resp-turma').value = r.turma || '';
+    openModal('modal-responsavel');
+  },
+  async delete(id, nome) {
+    if (!confirm(`Excluir o responsável "${nome}"? Esta ação não pode ser desfeita.`)) return;
+    try {
+      await supaApi('DELETE', `/responsaveis?id=eq.${id}`);
+      showToast('Responsável excluído.');
+      this.load();
+    } catch(e) { showToast('Erro ao excluir: ' + e.message, 'error'); }
+  }
+};
+
+function openNovoResponsavel() {
+  document.getElementById('resp-modal-title').textContent = 'Novo Responsável';
+  document.getElementById('resp-edit-id').value = '';
+  ['resp-nome','resp-tel','resp-aluno'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('resp-turma').value = '';
+  openModal('modal-responsavel');
+}
+
+// ===== CARDÁPIO APP =====
+const CardapioApp = {
+  data: [],
+  async load() {
+    const data = await supaApi('GET', '/cardapio?select=*&order=semana_inicio.desc&limit=8');
+    this.data = data || [];
+    this.render();
+  },
+  render() {
+    const el = document.getElementById('cardapio-content');
+    if (!this.data.length) {
+      el.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg class="icon"><use href="#icon-food"/></svg></div><div class="empty-state-text">Nenhum cardápio publicado ainda</div><div class="empty-state-sub">Clique em "Publicar Semana" para começar</div></div>';
+      return;
+    }
+    el.innerHTML = this.data.map((c, idx) => `
+      <div class="card" style="margin-bottom:16px">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Semana de ${fmtDataBr(c.semana_inicio)}</div>
+            ${idx===0 ? '<span class="badge badge-green">Semana atual</span>' : ''}
+          </div>
+          <button class="btn btn-danger btn-xs" onclick="CardapioApp.delete(${c.id})"><svg class="icon icon-sm"><use href="#icon-trash"/></svg> Remover</button>
+        </div>
+        <div class="cardapio-grid">
+          ${[['Segunda','segunda'],['Terça','terca'],['Quarta','quarta'],['Quinta','quinta'],['Sexta','sexta']].map(([l,k]) => `
+            <div class="dia-card">
+              <div class="dia-card-label">${l}</div>
+              <div class="dia-card-content">${c[k] || '<span style="color:var(--text-muted)">—</span>'}</div>
+            </div>`).join('')}
+        </div>
+      </div>`).join('');
+  },
+  async save() {
+    const body = {
+      semana_inicio: document.getElementById('card-semana').value,
+      segunda: document.getElementById('card-segunda').value.trim(),
+      terca:   document.getElementById('card-terca').value.trim(),
+      quarta:  document.getElementById('card-quarta').value.trim(),
+      quinta:  document.getElementById('card-quinta').value.trim(),
+      sexta:   document.getElementById('card-sexta').value.trim()
+    };
+    if (!body.semana_inicio) { showToast('Selecione a data da semana', 'error'); return; }
+    try {
+      await supaApi('POST', '/cardapio', body);
+      showToast('Cardápio publicado! Os responsáveis já podem consultar.');
+      closeModal('modal-cardapio');
+      this.load();
+    } catch(e) { showToast('Erro ao publicar: ' + e.message, 'error'); }
+  },
+  async delete(id) {
+    if (!confirm('Remover este cardápio?')) return;
+    try {
+      await supaApi('DELETE', `/cardapio?id=eq.${id}`);
+      showToast('Cardápio removido.');
+      this.load();
+    } catch(e) { showToast('Erro ao remover: ' + e.message, 'error'); }
+  }
+};
+
+function openNovoCardapio() {
+  ['card-segunda','card-terca','card-quarta','card-quinta','card-sexta'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('card-semana').value = '';
+  openModal('modal-cardapio');
+}
+
+// ===== AGENDA APP =====
+const AgendaApp = {
+  data: [], turmaFilter: '',
+  async load() {
+    const data = await supaApi('GET', '/agenda?select=*&order=data.asc');
+    this.data = data || [];
+    this.render();
+  },
+  filterTurma(el, turma) {
+    document.querySelectorAll('#agenda-turma-filters .filter-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    this.turmaFilter = turma;
+    this.render();
+  },
+  render() {
+    const el = document.getElementById('agenda-list');
+    const today = new Date().toISOString().split('T')[0];
+    let list = this.data.filter(e => !this.turmaFilter || !e.turma || e.turma === this.turmaFilter);
+    if (!list.length) {
+      el.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg class="icon"><use href="#icon-calendar"/></svg></div><div class="empty-state-text">Nenhum evento encontrado</div></div>';
+      return;
+    }
+    const past = list.filter(e => e.data < today);
+    const upcoming = list.filter(e => e.data >= today);
+    const renderGroup = (items, label) => items.length ? `
+      <div style="margin-bottom:20px">
+        <div style="font-size:12px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px">${label}</div>
+        <div class="grid-auto">
+          ${items.map(e => `
+            <div class="card" style="border-left:3px solid var(--brand-primary)">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+                <div>
+                  <div style="font-weight:600;margin-bottom:4px">${e.titulo}</div>
+                  <div style="font-size:12px;color:var(--text-muted)"><svg class="icon icon-inline"><use href="#icon-calendar"/></svg>${fmtDataBr(e.data)}</div>
+                  ${e.turma ? `<span class="turma-pill" style="margin-top:6px;display:inline-block">${e.turma}</span>` : '<span class="badge badge-gray" style="margin-top:6px">Todas as turmas</span>'}
+                  ${e.descricao ? `<div style="font-size:13px;color:var(--text-sub);margin-top:8px">${e.descricao}</div>` : ''}
+                </div>
+                <button class="btn btn-danger btn-xs" onclick="AgendaApp.delete(${e.id})"><svg class="icon icon-sm"><use href="#icon-trash"/></svg></button>
+              </div>
+            </div>`).join('')}
+        </div>
+      </div>` : '';
+    el.innerHTML = renderGroup(upcoming, 'Próximos eventos') + renderGroup(past, 'Eventos passados');
+  },
+  async save() {
+    const body = {
+      titulo:   document.getElementById('ev-titulo').value.trim(),
+      data:     document.getElementById('ev-data').value,
+      turma:    document.getElementById('ev-turma').value || null,
+      descricao:document.getElementById('ev-desc').value.trim() || null
+    };
+    if (!body.titulo || !body.data) { showToast('Preencha título e data', 'error'); return; }
+    try {
+      await supaApi('POST', '/agenda', body);
+      showToast('Evento criado!');
+      closeModal('modal-evento');
+      this.load();
+    } catch(e) { showToast('Erro ao criar evento: ' + e.message, 'error'); }
+  },
+  async delete(id) {
+    if (!confirm('Excluir este evento?')) return;
+    try {
+      await supaApi('DELETE', `/agenda?id=eq.${id}`);
+      showToast('Evento excluído.');
+      this.load();
+    } catch(e) { showToast('Erro ao excluir: ' + e.message, 'error'); }
+  }
+};
+
+function openNovoEvento() {
+  ['ev-titulo','ev-desc'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('ev-data').value = '';
+  document.getElementById('ev-turma').value = '';
+  openModal('modal-evento');
+}
+
+// ===== OCORRÊNCIAS APP (KANBAN) =====
+const STATUS_OCC = ['aberta','analise','andamento','resolvida'];
+const STATUS_OCC_NEXT = { aberta:'analise', analise:'andamento', andamento:'resolvida' };
+const STATUS_OCC_LABEL = { aberta:'Aberta', analise:'Em Análise', andamento:'Em Andamento', resolvida:'Resolvida' };
+
+const OccApp = {
+  data: [],
+  async load() {
+    const data = await supaApi('GET', '/ocorrencias_escola?select=*,responsaveis(nome,aluno,turma)&order=created_at.desc');
+    this.data = data || [];
+    this.render();
+  },
+  render() {
+    STATUS_OCC.forEach(s => {
+      const items = this.data.filter(o => o.status === s);
+      document.getElementById(`occ-cnt-${s}`).textContent = items.length;
+      document.getElementById(`occ-cards-${s}`).innerHTML = items.length
+        ? items.map(o => this.card(o)).join('')
+        : '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:12px">Nenhuma ocorrência</div>';
+    });
+  },
+  card(o) {
+    const resp = o.responsaveis;
+    const hasNext = STATUS_OCC_NEXT[o.status];
+    return `<div class="kanban-card">
+      <div class="kanban-card-title">${o.titulo||'Sem título'}</div>
+      <div class="kanban-card-sub"><svg class="icon icon-inline"><use href="#icon-user"/></svg>${o.aluno||resp?.aluno||'?'} · ${resp?.turma||'?'}</div>
+      <div style="font-size:12px;color:var(--text-sub);margin-bottom:8px">${o.descricao?.substring(0,80)||''}${o.descricao?.length>80?'...':''}</div>
+      <div class="kanban-card-footer">
+        ${urgBadge(o.urgencia)}
+        <div style="display:flex;gap:4px">
+          ${hasNext ? `<button class="btn btn-primary btn-xs" onclick="OccApp.advance(${o.id},'${STATUS_OCC_NEXT[o.status]}')">→ ${STATUS_OCC_LABEL[STATUS_OCC_NEXT[o.status]]}</button>` : '<span class="badge badge-green"><svg class="icon icon-inline"><use href="#icon-check"/></svg>Resolvida</span>'}
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:6px">${fmtRelative(o.created_at)}</div>
+    </div>`;
+  },
+  async advance(id, newStatus) {
+    try {
+      await supaApi('PATCH', `/ocorrencias_escola?id=eq.${id}`, { status: newStatus });
+      showToast('Status atualizado!');
+      this.load();
+    } catch(e) { showToast('Erro ao atualizar: ' + e.message, 'error'); }
+  }
+};
+
+// ===== SOLICITAÇÕES APP (KANBAN) =====
+const STATUS_SOL = ['pendente','analise','andamento','resolvido'];
+const STATUS_SOL_NEXT = { pendente:'analise', analise:'andamento', andamento:'resolvido' };
+const STATUS_SOL_LABEL = { pendente:'Pendente', analise:'Análise', andamento:'Andamento', resolvido:'Resolvido' };
+
+const SolApp = {
+  data: [],
+  async load() {
+    const data = await supaApi('GET', '/solicitacoes?select=*,responsaveis(nome,aluno,turma)&order=created_at.desc');
+    this.data = data || [];
+    this.render();
+  },
+  render() {
+    STATUS_SOL.forEach(s => {
+      const items = this.data.filter(o => o.status === s);
+      document.getElementById(`sol-cnt-${s}`).textContent = items.length;
+      document.getElementById(`sol-cards-${s}`).innerHTML = items.length
+        ? items.map(o => this.card(o)).join('')
+        : '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:12px">Nenhuma solicitação</div>';
+    });
+  },
+  card(o) {
+    const resp = o.responsaveis;
+    const hasNext = STATUS_SOL_NEXT[o.status];
+    return `<div class="kanban-card">
+      <div class="kanban-card-title">${o.tipo||'Solicitação'}</div>
+      <div class="kanban-card-sub"><svg class="icon icon-inline"><use href="#icon-user"/></svg>${resp?.nome||'?'} · ${resp?.turma||'?'}</div>
+      <div style="font-size:12px;color:var(--text-sub);margin-bottom:8px">${o.descricao?.substring(0,80)||''}${o.descricao?.length>80?'...':''}</div>
+      <div class="kanban-card-footer">
+        <span style="font-size:11px;color:var(--text-muted)">${fmtRelative(o.created_at)}</span>
+        ${hasNext ? `<button class="btn btn-primary btn-xs" onclick="SolApp.advance(${o.id},'${STATUS_SOL_NEXT[o.status]}')">→ ${STATUS_SOL_LABEL[STATUS_SOL_NEXT[o.status]]}</button>` : '<span class="badge badge-green"><svg class="icon icon-inline"><use href="#icon-check"/></svg></span>'}
+      </div>
+    </div>`;
+  },
+  async advance(id, status) {
+    try {
+      await supaApi('PATCH', `/solicitacoes?id=eq.${id}`, { status });
+      showToast('Status atualizado!');
+      this.load();
+    } catch(e) { showToast('Erro ao atualizar: ' + e.message, 'error'); }
+  }
+};
+
+// ===== AVISOS APP =====
+const AvisoApp = {
+  data: [],
+  allResp: [],
+  _resp(a) { return Array.isArray(a.responsaveis) ? a.responsaveis[0] : a.responsaveis; },
+  async load() {
+    const [data, resps] = await Promise.all([
+      supaApi('GET', '/avisos?select=*,responsaveis(nome,aluno,turma)&order=created_at.desc'),
+      supaApi('GET', '/responsaveis?select=id,nome,telefone,aluno,turma&order=nome.asc')
+    ]);
+    this.data = data || [];
+    this.allResp = resps || [];
+    this.render();
+  },
+  render() {
+    const el = document.getElementById('avisos-kanban');
+    if (!this.data.length) {
+      el.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg class="icon"><use href="#icon-bell"/></svg></div><div class="empty-state-text">Nenhum aviso encontrado</div></div>';
+      return;
+    }
+    // Agrupar por turma; sem turma → raia "Individual"
+    const lanes = {};
+    this.data.forEach(a => {
+      const resp = this._resp(a);
+      const lane = resp?.turma || 'Individual';
+      if (!lanes[lane]) lanes[lane] = { pendente: [], lido: [] };
+      const bucket = a.status === 'lido' ? 'lido' : 'pendente';
+      lanes[lane][bucket].push(a);
+    });
+    // Individual primeiro, depois turmas em ordem alfabética
+    const keys = Object.keys(lanes).sort((a, b) => {
+      if (a === 'Individual') return -1;
+      if (b === 'Individual') return 1;
+      return a.localeCompare(b, 'pt');
+    });
+    el.innerHTML = keys.map(lane => {
+      const isInd = lane === 'Individual';
+      const total = lanes[lane].pendente.length + lanes[lane].lido.length;
+      return `<div class="aviso-lane">
+        <div class="aviso-lane-header ${isInd ? '' : 'lane-turma'}">
+          ${isInd ? '<svg class="icon icon-inline"><use href="#icon-user"/></svg>Individual' : '<svg class="icon icon-inline"><use href="#icon-school"/></svg>' + lane}
+          <span class="badge badge-gray" style="font-size:11px">${total}</span>
+        </div>
+        <div class="aviso-lane-body">
+          <div class="kanban">
+            <div class="kanban-col">
+              <div class="kanban-col-header">
+                <span class="kanban-col-title"><svg class="icon icon-sm"><use href="#icon-inbox"/></svg> Pendente</span>
+                <span class="kanban-col-count">${lanes[lane].pendente.length}</span>
+              </div>
+              <div class="kanban-cards">
+                ${lanes[lane].pendente.map(a => this.card(a)).join('') ||
+                  '<div style="text-align:center;padding:16px;color:var(--text-muted);font-size:12px">Nenhum</div>'}
+              </div>
+            </div>
+            <div class="kanban-col">
+              <div class="kanban-col-header">
+                <span class="kanban-col-title"><svg class="icon icon-sm"><use href="#icon-check"/></svg> Lido</span>
+                <span class="kanban-col-count">${lanes[lane].lido.length}</span>
+              </div>
+              <div class="kanban-cards">
+                ${lanes[lane].lido.map(a => this.card(a)).join('') ||
+                  '<div style="text-align:center;padding:16px;color:var(--text-muted);font-size:12px">Nenhum</div>'}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  },
+  card(a) {
+    const resp = this._resp(a);
+    const isLido = a.status === 'lido';
+    return `<div class="kanban-card">
+      <div class="kanban-card-title">${a.titulo}</div>
+      <div class="kanban-card-sub"><svg class="icon icon-inline"><use href="#icon-user"/></svg>${resp?.nome||'?'} &nbsp;·&nbsp; ${resp?.aluno||'?'}</div>
+      <div style="font-size:12px;color:var(--text-sub);margin-bottom:8px;line-height:1.5">${a.mensagem||''}</div>
+      <div class="kanban-card-footer">
+        <span style="font-size:11px;color:var(--text-muted)">${fmtRelative(a.created_at)}</span>
+        ${isLido
+          ? '<span class="badge badge-green" style="font-size:11px"><svg class="icon icon-inline"><use href="#icon-check"/></svg>Lido</span>'
+          : `<button class="btn btn-primary btn-xs" onclick="AvisoApp.markRead(${a.id})"><svg class="icon icon-sm"><use href="#icon-check"/></svg> Marcar lido</button>`}
+      </div>
+    </div>`;
+  },
+  async markRead(id) {
+    try {
+      await supaApi('PATCH', `/avisos?id=eq.${id}`, { status: 'lido' });
+      this.load();
+    } catch(e) { showToast('Erro: ' + e.message, 'error'); }
+  },
+  toggleDest() {
+    const tipo = document.getElementById('aviso-dest-tipo').value;
+    document.getElementById('aviso-turma-wrap').style.display = tipo === 'turma' ? '' : 'none';
+    document.getElementById('aviso-resp-wrap').style.display = tipo === 'individual' ? '' : 'none';
+  },
+  buscarResp() {
+    const q = document.getElementById('aviso-resp-busca').value.toLowerCase();
+    const res = document.getElementById('aviso-resp-results');
+    if (!q) { res.innerHTML = ''; return; }
+    const found = this.allResp.filter(r => r.nome?.toLowerCase().includes(q) || r.aluno?.toLowerCase().includes(q)).slice(0,5);
+    res.innerHTML = found.length ? found.map(r => `
+      <div onclick="AvisoApp.selectResp(${r.id},'${r.nome}')" style="padding:8px 12px;border-radius:var(--radius-sm);background:var(--bg-surface2);margin-bottom:4px;cursor:pointer;font-size:13px;font-weight:600;border:1px solid var(--border-soft)" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background='var(--bg-surface2)'">
+        ${r.nome} <span style="color:var(--text-muted)">· ${r.aluno} · ${r.turma}</span>
+      </div>`).join('') : '<div style="font-size:12px;color:var(--text-muted);padding:8px">Nenhum encontrado</div>';
+  },
+  selectResp(id, nome) {
+    document.getElementById('aviso-resp-id').value = id;
+    document.getElementById('aviso-resp-busca').value = nome;
+    document.getElementById('aviso-resp-results').innerHTML = '';
+  },
+  async send() {
+    const tipo = document.getElementById('aviso-dest-tipo').value;
+    const titulo = document.getElementById('aviso-titulo').value.trim();
+    const msg = document.getElementById('aviso-msg').value.trim();
+    if (!titulo || !msg) { showToast('Preencha título e mensagem', 'error'); return; }
+
+    let targets = [];
+    if (tipo === 'individual') {
+      const rid = document.getElementById('aviso-resp-id').value;
+      if (!rid) { showToast('Selecione um responsável', 'error'); return; }
+      const r = this.allResp.find(x => x.id == rid);
+      if (r) targets = [r];
+    } else {
+      const turma = document.getElementById('aviso-turma').value;
+      targets = turma ? this.allResp.filter(r => r.turma === turma) : this.allResp;
+    }
+
+    if (!targets.length) { showToast('Nenhum responsável encontrado', 'error'); return; }
+
+    try {
+      for (const r of targets) {
+        await supaApi('POST', '/avisos', { responsavel_id: r.id, titulo, mensagem: msg, status: 'pendente' });
+        if (r.telefone) {
+          await sendWhatsApp(r.telefone, `📢 *${titulo}*\n\n${msg}\n\n_Colégio Raio de Luz 🌟_`);
+        }
+      }
+      showToast(`Aviso enviado para ${targets.length} responsável(is)!`);
+      closeModal('modal-aviso');
+      this.load();
+    } catch(e) { showToast('Erro ao enviar aviso: ' + e.message, 'error'); }
+  }
+};
+
+function openNovoAviso() {
+  ['aviso-titulo','aviso-msg','aviso-resp-busca','aviso-resp-id'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('aviso-dest-tipo').value = 'turma';
+  document.getElementById('aviso-turma').value = '';
+  AvisoApp.toggleDest();
+  openModal('modal-aviso');
+}
+
+// ===== COMUNICADOS APP =====
+const ComunicadoApp = {
+  data: [],
+  async load() {
+    const data = await supaApi('GET', '/comunicados_escola?select=*&order=created_at.desc');
+    this.data = data || [];
+    this.render();
+  },
+  render() {
+    const el = document.getElementById('comunicados-list');
+    if (!this.data.length) {
+      el.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg class="icon"><use href="#icon-megaphone"/></svg></div><div class="empty-state-text">Nenhum comunicado ainda</div></div>';
+      return;
+    }
+    el.innerHTML = `<div style="display:flex;flex-direction:column;gap:12px">${this.data.map(c => `
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+          <div style="flex:1">
+            <div style="font-weight:600;font-size:15px;margin-bottom:4px">${c.titulo}</div>
+            <div style="font-size:13px;color:var(--text-sub);margin-bottom:8px">${c.mensagem}</div>
+            <div style="font-size:12px;color:var(--text-muted)">
+              ${fmtRelative(c.created_at)} · ${c.turma ? '<svg class="icon icon-inline"><use href="#icon-school"/></svg>'+c.turma : '<svg class="icon icon-inline"><use href="#icon-users"/></svg>Todos'} ·
+              ${c.status==='enviado' ? `${c.destinatarios||0} enviados` : 'Rascunho'}
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+            <span class="badge ${c.status==='enviado'?'badge-green':'badge-gray'}">${c.status==='enviado'?'Enviado':'Rascunho'}</span>
+            ${c.status==='rascunho' ? `<button class="btn btn-secondary btn-xs" onclick="ComunicadoApp.sendDraftNow(${c.id})"><svg class="icon icon-sm"><use href="#icon-send"/></svg> Enviar</button>` : ''}
+          </div>
+        </div>
+      </div>`).join('')}</div>`;
+  },
+  async saveDraft() {
+    const titulo = document.getElementById('com-titulo').value.trim();
+    const msg = document.getElementById('com-msg').value.trim();
+    const turma = document.getElementById('com-turma').value;
+    if (!titulo || !msg) { showToast('Preencha título e mensagem', 'error'); return; }
+    try {
+      await supaApi('POST', '/comunicados_escola', { titulo, mensagem: msg, status: 'rascunho', turma: turma||null });
+      showToast('Rascunho salvo!');
+      closeModal('modal-comunicado');
+      this.load();
+    } catch(e) { showToast('Erro ao salvar: ' + e.message, 'error'); }
+  },
+  async sendAll() {
+    const titulo = document.getElementById('com-titulo').value.trim();
+    const msg = document.getElementById('com-msg').value.trim();
+    const turma = document.getElementById('com-turma').value;
+    if (!titulo || !msg) { showToast('Preencha título e mensagem', 'error'); return; }
+
+    let query = '/responsaveis?select=id,telefone,nome,turma&order=nome.asc';
+    if (turma) query += `&turma=eq.${encodeURIComponent(turma)}`;
+    const resps = await supaApi('GET', query) || [];
+
+    if (!resps.length) { showToast('Nenhum responsável para enviar', 'error'); return; }
+
+    let rec;
+    try {
+      rec = await supaApi('POST', '/comunicados_escola', { titulo, mensagem: msg, status: 'rascunho', turma: turma||null });
+    } catch(e) { showToast('Erro ao criar comunicado: ' + e.message, 'error'); return; }
+    const comId = Array.isArray(rec) ? rec[0]?.id : rec?.id;
+
+    const wrap = document.getElementById('com-progress-wrap');
+    const bar = document.getElementById('com-progress-bar');
+    const label = document.getElementById('com-progress-label');
+    wrap.style.display = 'block';
+    document.getElementById('btnEnviarCom').disabled = true;
+
+    let sent = 0;
+    for (const r of resps) {
+      if (r.telefone) {
+        await sendWhatsApp(r.telefone, `📣 *${titulo}*\n\n${msg}\n\n_Colégio Raio de Luz 🌟_`);
+      }
+      sent++;
+      const pct = Math.round((sent/resps.length)*100);
+      bar.style.width = pct + '%';
+      label.textContent = `Enviando... ${sent}/${resps.length}`;
+    }
+
+    if (comId) {
+      try {
+        await supaApi('PATCH', `/comunicados_escola?id=eq.${comId}`, { status:'enviado', enviado_em: new Date().toISOString(), destinatarios: sent });
+      } catch(e) { console.error('Erro ao atualizar status do comunicado:', e); }
+    }
+
+    wrap.style.display = 'none';
+    document.getElementById('btnEnviarCom').disabled = false;
+    showToast(`Comunicado enviado para ${sent} responsáveis!`);
+    closeModal('modal-comunicado');
+    this.load();
+  },
+  async sendDraftNow(id) {
+    const c = this.data.find(x => x.id === id);
+    if (!c) return;
+    let query = '/responsaveis?select=id,telefone,turma';
+    if (c.turma) query += `&turma=eq.${encodeURIComponent(c.turma)}`;
+    const resps = await supaApi('GET', query) || [];
+    let sent = 0;
+    for (const r of resps) {
+      if (r.telefone) { await sendWhatsApp(r.telefone, `📣 *${c.titulo}*\n\n${c.mensagem}\n\n_Colégio Raio de Luz 🌟_`); sent++; }
+    }
+    try {
+      await supaApi('PATCH', `/comunicados_escola?id=eq.${id}`, { status:'enviado', enviado_em: new Date().toISOString(), destinatarios: sent });
+    } catch(e) { console.error('Erro ao atualizar status:', e); }
+    showToast(`Comunicado enviado para ${sent} responsáveis!`);
+    this.load();
+  }
+};
+
+function openNovoComunicado() {
+  ['com-titulo','com-msg'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('com-turma').value = '';
+  document.getElementById('com-progress-wrap').style.display = 'none';
+  openModal('modal-comunicado');
+}
+
+// ===== AUTORIZAÇÕES APP =====
+const AuthApp = {
+  data: [],
+  respMap: {},
+  _resp(a) {
+    // tenta join PostgREST; fallback para mapa client-side (FK nem sempre reconhecida via SQL)
+    const joined = Array.isArray(a.responsaveis) ? a.responsaveis[0] : a.responsaveis;
+    return joined || this.respMap[a.responsavel_id] || null;
+  },
+  async load() {
+    const [data, resps] = await Promise.all([
+      supaApi('GET', '/autorizacoes?select=*,responsaveis(nome,aluno,turma)&order=created_at.desc'),
+      supaApi('GET', '/responsaveis?select=id,nome,aluno,turma&order=nome.asc')
+    ]);
+    this.data = data || [];
+    this.respMap = Object.fromEntries((resps || []).map(r => [r.id, r]));
+    this.render();
+  },
+  filter() {
+    const q = document.getElementById('authSearch').value.toLowerCase();
+    const filtered = q
+      ? this.data.filter(a => {
+          const r = this._resp(a);
+          return r?.nome?.toLowerCase().includes(q) || r?.aluno?.toLowerCase().includes(q) || a.nome_autorizador?.toLowerCase().includes(q);
+        })
+      : this.data;
+    this.renderList(filtered);
+  },
+  render() { this.renderList(this.data); },
+  renderList(list) {
+    const el = document.getElementById('auth-list');
+    if (!list.length) {
+      el.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg class="icon"><use href="#icon-key"/></svg></div><div class="empty-state-text">Nenhuma autorização encontrada</div></div>';
+      return;
+    }
+    el.innerHTML = `<div class="table-wrap">
+      <table>
+        <thead><tr><th>Aluno</th><th>Responsável</th><th>Autorizado</th><th>Documento</th><th>Parentesco</th><th>Data</th><th></th></tr></thead>
+        <tbody>
+          ${list.map(a => {
+            const r = this._resp(a);
+            return `<tr>
+              <td>
+                <div style="font-weight:600">${r?.aluno||'?'}</div>
+                <span class="turma-pill">${r?.turma||'?'}</span>
+              </td>
+              <td style="color:var(--text-sub)">${r?.nome||'?'}</td>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div class="avatar" style="width:30px;height:30px;font-size:12px">${initials(a.nome_autorizador)}</div>
+                  <span style="font-weight:600">${a.nome_autorizador||'—'}</span>
+                </div>
+              </td>
+              <td style="font-family:var(--font-mono);font-size:12px">${a.documento||'—'}</td>
+              <td><span class="badge badge-blue">${a.parentesco||'—'}</span></td>
+              <td style="font-size:12px;color:var(--text-muted)">${fmtDataBr(a.created_at)}</td>
+              <td><button class="btn btn-danger btn-xs" onclick="AuthApp.delete(${a.id})"><svg class="icon icon-sm"><use href="#icon-trash"/></svg></button></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`;
+  },
+  buscarResp() {
+    const q = document.getElementById('auth-resp-busca').value.toLowerCase();
+    const res = document.getElementById('auth-resp-results');
+    document.getElementById('auth-resp-id').value = '';
+    document.getElementById('auth-resp-preview').style.display = 'none';
+    if (!q) { res.innerHTML = ''; return; }
+    const found = Object.values(this.respMap).filter(r =>
+      r.nome?.toLowerCase().includes(q) || r.aluno?.toLowerCase().includes(q)
+    ).slice(0, 6);
+    res.innerHTML = found.length
+      ? found.map(r => `
+          <div onclick="AuthApp.selectResp(${r.id},'${r.nome.replace(/'/g,"\\'")}','${(r.aluno||'').replace(/'/g,"\\'")}','${(r.turma||'').replace(/'/g,"\\'")}');"
+               style="padding:8px 12px;border-radius:var(--radius-sm);background:var(--bg-surface2);margin-bottom:4px;cursor:pointer;font-size:13px;font-weight:600;border:1px solid var(--border-soft)"
+               onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background='var(--bg-surface2)'">
+            ${r.nome} <span style="color:var(--text-muted);font-weight:400">· ${r.aluno||'?'} · <span class="turma-pill" style="font-size:10px">${r.turma||'?'}</span></span>
+          </div>`).join('')
+      : '<div style="font-size:12px;color:var(--text-muted);padding:8px">Nenhum responsável encontrado</div>';
+  },
+  selectResp(id, nome, aluno, turma) {
+    document.getElementById('auth-resp-id').value = id;
+    document.getElementById('auth-resp-busca').value = nome;
+    document.getElementById('auth-resp-results').innerHTML = '';
+    const prev = document.getElementById('auth-resp-preview');
+    prev.innerHTML = `<svg class="icon icon-inline"><use href="#icon-user"/></svg><strong>${nome}</strong> &nbsp;·&nbsp; ${aluno} &nbsp;·&nbsp; <span class="turma-pill">${turma}</span>`;
+    prev.style.display = '';
+  },
+  async save() {
+    const rid = document.getElementById('auth-resp-id').value;
+    const nome = document.getElementById('auth-nome').value.trim();
+    if (!rid) { showToast('Selecione um responsável', 'error'); return; }
+    if (!nome) { showToast('Informe o nome do autorizado', 'error'); return; }
+    try {
+      await supaApi('POST', '/autorizacoes', {
+        responsavel_id: parseInt(rid),
+        nome_autorizador: nome,
+        documento: document.getElementById('auth-doc').value.trim() || null,
+        parentesco: document.getElementById('auth-parent').value || null
+      });
+      showToast('Autorização cadastrada!');
+      closeModal('modal-auth');
+      this.load();
+    } catch(e) { showToast('Erro ao salvar: ' + e.message, 'error'); }
+  },
+  async delete(id) {
+    if (!confirm('Remover esta autorização?')) return;
+    try {
+      await supaApi('DELETE', `/autorizacoes?id=eq.${id}`);
+      showToast('Autorização removida.');
+      this.load();
+    } catch(e) { showToast('Erro ao remover: ' + e.message, 'error'); }
+  }
+};
+
+function openNovaAuth() {
+  ['auth-resp-busca','auth-resp-id','auth-nome','auth-doc'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('auth-parent').value = '';
+  document.getElementById('auth-resp-results').innerHTML = '';
+  document.getElementById('auth-resp-preview').style.display = 'none';
+  openModal('modal-auth');
+}
+
+
+// ===== BOT CONFIG =====
+function openBotConfig() { openModal('modal-bot'); }
+async function saveBotName() {
+  const name = document.getElementById('bot-name').value.trim();
+  if (!name) { showToast('Digite um nome para o bot', 'error'); return; }
+  try {
+    await fetch(`${EVOLUTION_URL}/chat/updateProfileName/${INSTANCE}`, {
+      method: 'POST',
+      headers: { 'apikey': EVOLUTION_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name })
+    });
+    showToast('Nome do bot atualizado!');
+  } catch { showToast('Erro ao atualizar nome do bot', 'error'); }
+  closeModal('modal-bot');
+}
+
+// ===== REFRESH =====
+document.getElementById('refreshBtn').onclick = () => {
+  loadPage(currentPage);
+  showToast('Dados atualizados!', 'info');
+};
+
+// ===== AUTO-REFRESH 60s =====
+setInterval(() => loadPage(currentPage), 60000);
+
+// ===== INITIAL LOAD =====
+loadPage('dashboard');
+</script>
+</body>
+</html>
