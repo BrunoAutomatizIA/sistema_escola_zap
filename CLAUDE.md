@@ -36,8 +36,7 @@ Toda alteração solicitada pelo usuário é implementada e, em seguida, **já c
 |---|---|
 | `bot_escola.json` | Workflow n8n principal (bot WhatsApp) |
 | `notificacao_webhook.json` | Workflow n8n auxiliar — webhook de notificações |
-| `index.html` | Dashboard admin SPA (HTML/CSS/JS puro, sem build) |
-| `index_2.html` | Variante visual do dashboard (identidade estilo Apple Store) — ver seção própria abaixo |
+| `index_2.html` | Dashboard admin SPA (HTML/CSS/JS puro, sem build) |
 | `schema.sql` | Script DDL completo para o Supabase |
 
 ---
@@ -48,11 +47,11 @@ Toda alteração solicitada pelo usuário é implementada e, em seguida, **já c
 |---|---|---|
 | **n8n** | Plataforma de automação que roda os workflows | host: `n8n.automacaopme.com.br` |
 | **Evolution API** | Gateway WhatsApp | `apikey: F5E45E6A06AC-4857-807A-923D226DE8E1` (host: `evolution.automacaopme.com.br`, instance: `Bot_Escola`) |
-| **Supabase** | Banco PostgreSQL via REST | projeto `AutomatizIA` — `ywsobgbpwhykkfolvoml` (anon key hardcoded em `index.html`) |
+| **Supabase** | Banco PostgreSQL via REST | projeto `AutomatizIA` — `ywsobgbpwhykkfolvoml` (anon key hardcoded em `index_2.html`) |
 
 > As credenciais estão hardcoded nos arquivos. Em produção com múltiplos clientes, extraí-las para variáveis de ambiente do n8n.
 
-> **ATENÇÃO:** `bot_escola.json` ainda aponta para o projeto Supabase antigo (`rcghqqwbwxbhrxjwutqu`). Todos os nós HTTP do bot precisam ter a URL e chave atualizadas para `ywsobgbpwhykkfolvoml`. O dashboard (`index.html`) já usa o projeto correto.
+> **ATENÇÃO:** `bot_escola.json` ainda aponta para o projeto Supabase antigo (`rcghqqwbwxbhrxjwutqu`). Todos os nós HTTP do bot precisam ter a URL e chave atualizadas para `ywsobgbpwhykkfolvoml`. O dashboard (`index_2.html`) já usa o projeto correto.
 
 ---
 
@@ -155,7 +154,7 @@ O `sendWhatsApp(number, text)` no dashboard chama este endpoint. Usado por Aviso
 
 ---
 
-## Dashboard Admin (`index.html`)
+## Dashboard Admin (`index_2.html`)
 
 SPA pura: nenhum framework, nenhum build. Abre direto no browser. Navegação client-side via atributos `data-page`.
 
@@ -229,64 +228,49 @@ SPA pura: nenhum framework, nenhum build. Abre direto no browser. Navegação cl
 
 ---
 
-## Variante visual — `index_2.html`
-
-Cópia funcional de `index.html` (mesma estrutura HTML, mesmas Apps JS, mesmas tabelas Supabase) com uma
-**identidade visual alternativa**, inspirada em análise real de `apple.com/br/store` (paleta/tipografia via
-`getComputedStyle`, não em suposições sobre a marca Apple). Os dois arquivos coexistem — `index_2.html` é
-uma opção de estilo, não substitui `index.html` por padrão.
-
-**O que muda (só CSS + ícones, zero mudança de lógica/JS):**
-- Paleta monocromática + 2 acentos: fundo `#F5F5F7`, texto `#1D1D1F`, azul `#0066CC` (ações primárias/links),
-  laranja `#B64400` (único acento de destaque). Dark mode em preto puro (`#000`/`#1D1D1F`).
-- Tipografia: pilha nativa do sistema (`-apple-system, "SF Pro Display/Text", Helvetica Neue`) — sem SF Pro
-  embutida (fonte proprietária da Apple). Pesos limitados a 400/600 (sem bold pesado 700–900).
-- Componentes: cards com `border-radius:18px` + sombra `2px 4px 12px rgba(0,0,0,.08)`; botões em pílula
-  (`border-radius:980px`), replicando o padrão outline→preenchido-escuro no hover observado no site de origem.
-- **Correção de bug de ícones:** o sprite SVG (`#icon-*`) é desenhado no estilo Feather (ícones de linha), mas
-  o CSS de `index.html` só define `fill:currentColor` sem `stroke` — isso faz vários ícones renderizarem
-  invisíveis (ex.: `icon-plus`, `icon-menu`, que são só `<line>`) ou como blobs sólidos malformados
-  (ex.: `icon-calendar`, `icon-alert`). Em `index_2.html` a regra `.icon` foi corrigida para
-  `fill:none; stroke:currentColor; stroke-linecap:round; stroke-linejoin:round` (exceto `.icon-fill`, usada
-  só no logo do WhatsApp, que é um glifo sólido). **Esse bug ainda existe em `index.html`** — ver Pendências.
-- Emojis decorativos (👶⚠️📢🔴🟡🟢 etc.) trocados por ícones SVG monocromáticos ou texto simples; adicionados
-  os símbolos `icon-user`, `icon-inbox`, `icon-settings`, `icon-info`, `icon-archive` ao sprite.
-- Mensagens de WhatsApp enviadas pelo bot (templates com emoji tipo 🌟) **não foram alteradas** — é conteúdo
-  do bot para os pais, fora do escopo de identidade visual do dashboard.
-
----
-
 ## Tema e Design
 
-> Esta seção documenta a identidade visual de `index.html` (marca Colégio Raio de Luz). A paleta/tipografia
-> de `index_2.html` é independente — ver seção "Variante visual — `index_2.html`" acima.
+Identidade visual inspirada em análise real de `apple.com/br/store` (paleta/tipografia via `getComputedStyle`,
+não em suposições sobre a marca Apple). Logo do Colégio Raio de Luz (`assets/logo-colegio-raio-de-luz.png`)
+aplicado sobre um card branco na sidebar, para manter contraste em qualquer tema.
 
-### Cores (Colégio Raio de Luz)
+### Cores
 ```css
---brand-primary:       #1E72BE   /* azul principal */
---brand-primary-dark:  #155A97
---brand-secondary:     #7DC242   /* verde */
---brand-secondary-dark:#5F9930
---brand-accent:        #FBB040   /* âmbar */
---brand-accent-dark:   #D9960A
+--brand-primary:       #0066CC   /* ações primárias/links */
+--brand-primary-dark:  #004C99
+--brand-secondary:     #1D1D1F   /* preenchimentos escuros */
+--brand-secondary-dark:#000000
+--brand-accent:        #B64400   /* único acento cromático fora da escala de cinza */
+--brand-accent-dark:   #8F3600
+--brand-danger:        #D70015   /* exceção funcional — ações destrutivas/urgência alta */
 ```
+
+Paleta monocromática (cinzas) + os acentos acima. Dark mode em preto puro (`#000`/`#1D1D1F`).
 
 ### Light / Dark
 | Token | Light | Dark |
 |---|---|---|
-| `--bg-page` | `#F0F6FF` | `#091828` |
-| `--bg-surface` | `#FFFFFF` | `#0F2235` |
-| `--sidebar-bg` | `#0D2140` | `#060E1A` |
-| `--text-main` | `#0D2140` | `#E0EEFF` |
+| `--bg-page` | `#F5F5F7` | `#000000` |
+| `--bg-surface` | `#FFFFFF` | `#1D1D1F` |
+| `--sidebar-bg` | `#1D1D1F` | `#000000` |
+| `--text-main` | `#1D1D1F` | `#F5F5F7` |
 
 Persistido em `localStorage['escola-theme']`. Padrão: `light`.
 
 ### Fontes
-- **Outfit** (400/500/600/700/800) — UI principal
-- **Space Mono** (400/700) — métricas e labels monospace
+Pilha nativa do sistema (`-apple-system, "SF Pro Display/Text", Helvetica Neue`) — sem SF Pro embutida (fonte
+proprietária da Apple). Pesos limitados a 400/600 (sem bold pesado 700–900).
+
+### Componentes
+Cards com `border-radius:18px` + sombra `2px 4px 12px rgba(0,0,0,.08)`; botões em pílula (`border-radius:980px`),
+replicando o padrão outline→preenchido-escuro no hover observado no site de origem.
 
 ### Ícones
-SVG sprite inline no topo do `<body>`. Novos ícones: adicionar `<symbol id="icon-NOME">` ao sprite. Uso: `<svg class="icon"><use href="#icon-NOME"/></svg>`.
+SVG sprite inline no topo do `<body>`, estilo Feather (ícones de linha): `.icon { fill:none; stroke:currentColor;
+stroke-linecap:round; stroke-linejoin:round; }` (exceto `.icon-fill`, usada só no glifo sólido do WhatsApp).
+Novos ícones: adicionar `<symbol id="icon-NOME">` ao sprite. Uso: `<svg class="icon"><use href="#icon-NOME"/></svg>`.
+Mensagens de WhatsApp enviadas pelo bot (templates com emoji tipo 🌟) ficam fora do escopo de identidade visual
+do dashboard — são conteúdo do bot para os pais, não elementos de UI.
 
 ### Responsivo
 | Breakpoint | Comportamento |
@@ -327,7 +311,7 @@ showToast('Informação', 'info')
 
 ## Como editar o dashboard
 
-`index.html` é auto-contido. Edite diretamente — sem build. Ao adicionar nova página:
+`index_2.html` é auto-contido. Edite diretamente — sem build. Ao adicionar nova página:
 1. Criar `<div class="page" id="page-NOME">` dentro de `<main class="main">`
 2. Adicionar item no `.sidebar` com `data-page="NOME"`
 3. Adicionar item no `.bottom-nav` com `data-page="NOME"`
@@ -380,8 +364,6 @@ Todas as páginas recarregam dados ao serem navegadas. Auto-refresh a cada 60s.
 - **Fluxos do bot** — apenas o cadastro está documentado nos nós vistos. Os fluxos de cardápio, agenda, ocorrências, solicitações, avisos e reservas precisam ser validados após a atualização do Supabase.
 - **Segurança** — mover as chaves de API (Supabase anon key e Evolution API key) para variáveis de ambiente do n8n antes de entregar para o cliente em produção.
 - **AuthApp sem form de nova autorização** — a página só lista e exclui. Criar modal de cadastro com busca de responsável + campos nome/documento/parentesco.
-- **`index.html` — ícones SVG renderizando quebrados** — a regra `.icon` só tem `fill:currentColor` sem `stroke`, mas o sprite é desenhado no estilo Feather (linhas). Resultado: ícones como `icon-plus` e `icon-menu` ficam invisíveis, outros viram blobs sólidos. Já corrigido em `index_2.html` (ver seção "Variante visual"); replicar o fix em `index.html` se ele seguir sendo o dashboard principal.
-- **Decidir entre `index.html` e `index_2.html`** — os dois arquivos coexistem com a mesma funcionalidade e identidades visuais diferentes. Definir com o cliente qual vira o dashboard oficial (ou se ambos ficam como opções) antes da entrega final.
 
 ---
 
