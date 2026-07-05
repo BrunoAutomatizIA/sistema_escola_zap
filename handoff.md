@@ -4,7 +4,7 @@
 **Cliente:** Colégio Raio de Luz  
 **Responsável Automatiz.ia:** Bruno Vargas Joaquim  
 **Repositório:** https://github.com/BrunoAutomatizIA/sistema_escola_zap  
-**Data:** 2026-06-22 (última atualização: 2026-07-04)  
+**Data:** 2026-06-22 (última atualização: 2026-07-05)  
 **URL publicada:** https://brunoautomatizia.github.io/sistema_escola_zap/ (GitHub Pages, branch `main`)
 
 ---
@@ -55,6 +55,7 @@ SVG no lugar de emojis, botões em formato pílula. O arquivo da variante (`inde
 | **Evolution API** | `https://evolution.automacaopme.com.br` · Instance: `bot-bruno` |
 | **Evolution API key** | `187303942A46-4052-8D89-5A4CA2523ABD` |
 | **n8n** | `https://n8n.automacaopme.com.br` |
+| **Workflow no n8n** | Nomeado **ESCOLA_ZAP** (renomeado de "My workflow" em 05/07) — contém o bot principal *e* o webhook de notificação no mesmo canvas |
 | **Webhook bot** | `POST /webhook/escola-bot` |
 | **Webhook notificações** | `POST /webhook/notificar-escola` |
 
@@ -110,6 +111,7 @@ Abrir `index.html` diretamente no browser — não requer servidor, build ou dep
 - [x] Comunicados em massa com barra de progresso
 - [x] Autorizações de busca (cadastro via modal + lista + busca)
 - [x] Bot com todos os fluxos implementados (cadastro, cardápio, agenda, ocorrências, solicitações, avisos, reservas)
+- [x] Comandos globais `CANCELAR` e `MENU`/`0` — funcionam em qualquer etapa, inclusive no meio do cadastro
 - [x] Tema claro/escuro, persistido no localStorage
 - [x] Layout responsivo (desktop, tablet, mobile)
 - [x] Feedback de erro real via toast (supaApi lança Error em mutações)
@@ -117,6 +119,13 @@ Abrir `index.html` diretamente no browser — não requer servidor, build ou dep
 ---
 
 ## Pendências e problemas conhecidos
+
+### Urgente — bot fora do ar
+
+0. **WhatsApp desconectado da instância `bot-bruno`** — em 05/07 a Evolution API caiu com `disconnectionReasonCode: 401` / `"tag":"conflict","type":"device_removed"` (o aparelho vinculado foi removido pelo lado do WhatsApp; não tem relação com o reimport do workflow no n8n). Enquanto não reconectar, o bot não responde nenhuma mensagem.
+   - Tentativa de vincular o WhatsApp pessoal do Bruno (11 98486-9585) falhou com "Couldn't link device" mesmo após limpar a sessão (`DELETE /instance/logout/bot-bruno`) e gerar QR novo — esse número já está no limite de aparelhos conectados (3, perto do limite de 4 do WhatsApp).
+   - **Decisão:** manter o número antigo (+55 11 99897-2460, perfil "Leonardo Buzato 2"). Reconectar pedindo para o Leonardo escanear um QR Code novo (gerado na hora, expira rápido) — sem previsão, depende da disponibilidade dele.
+   - Comando para gerar QR: `GET /instance/connect/bot-bruno` (Evolution API); se a instância estiver travada em `connecting`, rodar `DELETE /instance/logout/bot-bruno` antes.
 
 ### Alta prioridade
 
