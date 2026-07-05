@@ -22,6 +22,8 @@ Rastreamento de pendências do projeto. Cada task referencia a spec corresponden
 
 ## ✅ Concluído
 
+- [x] Corrigir bug de regex em "Fazer Reserva" (quebrava o fluxo silenciosamente)
+- [x] Comandos globais `CANCELAR` e `MENU`/`0` — funcionam em qualquer etapa, inclusive no cadastro
 - [x] Atualizar `bot_escola.json` para Supabase novo (`ywsobgbpwhykkfolvoml`)
 - [x] Criar modal de nova autorização em `AuthApp` — `specs/dashboard-autorizacoes.md`
 - [x] Cadastro de responsáveis via bot (multi-step 2 passos) — `specs/bot-cadastro.md`

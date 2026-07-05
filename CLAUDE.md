@@ -121,22 +121,31 @@ Responsavel existe? [false] → Lógica Cadastro → DELETE Sessao → Cadastro 
 null → aguardando_nome → aguardando_aluno_turma → (ok=true)
 ```
 > `aguardando_aluno_turma` aceita nome da criança + turma numa única mensagem (separador `,`, ` - ` ou `/`).
+> Digitar `CANCELAR`, `MENU` ou `0` em qualquer etapa reseta a sessão de cadastro (mensagem de cancelamento).
 
 ### Roteamento principal (responsável cadastrado)
 ```
 Responsavel existe? [true] → Roteador → Switch Rota
+  ├── cancelar     → texto é "CANCELAR" (checado antes de tudo, mesmo com sessão ativa)
+  ├── voltarmenu   → texto é "MENU" ou "0" (idem — funciona em qualquer etapa)
+  ├── autorizacao  → etapa.startsWith("autorizacao_") ou texto="3"/btn_autorizacao
+  ├── reserva      → etapa.startsWith("reserva_") ou texto="4"/btn_reserva
+  ├── ocorrencia   → etapa.startsWith("ocorrencia_") ou texto="5"/btn_ocorrencia
+  ├── solicitacao  → etapa.startsWith("solicitacao_") ou texto="6"/btn_solicitacao
   ├── agenda       → texto="1" ou buttonId="btn_agenda"
   ├── cardapio     → texto="2" ou buttonId="btn_cardapio"
-  ├── autorizacao  → texto="3" ou buttonId="btn_autorizacao" ou etapa.startsWith("autorizacao_")
-  ├── reserva      → texto="4" ou buttonId="btn_reserva" ou etapa.startsWith("reserva_")
-  ├── ocorrencia   → texto="5" ou buttonId="btn_ocorrencia" ou etapa.startsWith("ocorrencia_")
-  ├── solicitacao  → texto="6" ou buttonId="btn_solicitacao" ou etapa.startsWith("solicitacao_")
   ├── avisos       → texto="7" ou buttonId="btn_avisos"
-  ├── cancelar     → texto é "CANCELAR" (maiúsculo)
-  └── menu         → qualquer outra coisa
+  └── menu         → qualquer outra coisa (fallback)
 ```
 > Cardápio, agenda e avisos são consultas sem sessão (GET → formatar → enviar). Autorização, reserva,
 > ocorrência e solicitação são multi-step e usam prefixo de `etapa` para continuar a sessão.
+> `cancelar` e `voltarmenu` têm prioridade sobre o prefixo de `etapa`, então funcionam a qualquer momento
+> mesmo com uma sessão multi-step em andamento — é a saída de emergência do usuário em qualquer fluxo.
+
+**Rota `voltarmenu`** (nó `DELETE Sessao Menu` → `Enviar Menu`): apaga qualquer sessão ativa e reenvia o
+menu principal — diferente de `cancelar`, que só confirma o cancelamento sem reexibir o menu. `Enviar Menu`
+lê os dados do responsável via `$('Roteador').item.json.*` (não de `$json`), pois agora tem duas entradas
+possíveis (direto do `Switch Rota` no fallback, ou via `DELETE Sessao Menu` na rota `voltarmenu`).
 
 **Padrão de sessão multi-step (cadastro, autorização, reserva, ocorrência, solicitação):**
 ```

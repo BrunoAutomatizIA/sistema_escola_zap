@@ -170,7 +170,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const d = $json;\nconst etapa = d.sessaoEtapa, texto = d.texto ?? '', dados = d.sessaoDados ?? {};\nlet nd = { ...dados }, prox = null, resp = '', ok = false;\n\nif (!etapa) {\n  resp = 'Olá! Bem-vindo ao bot da escola. 😊\\n\\nDigite o seu *nome completo* como responsável:';\n  prox = 'aguardando_nome'; nd = {};\n} else if (etapa === 'aguardando_nome') {\n  if (texto.length < 3) { resp = '⚠️ Nome muito curto. Digite seu nome completo.'; prox = 'aguardando_nome'; }\n  else {\n    nd.nome = texto;\n    resp = `Obrigado, *${texto}*! 👋\\n\\nAgora me informe o *nome da criança* e qual *turma/ano* ela está:\\n\\n_(ex: João - 3A, Maria / 2° ano B)_`;\n    prox = 'aguardando_aluno_turma';\n  }\n} else if (etapa === 'aguardando_aluno_turma') {\n  if (texto.length < 2) { resp = '⚠️ Por favor, informe o nome da criança e a turma.'; prox = 'aguardando_aluno_turma'; }\n  else {\n    const sep = texto.includes(',') ? ',' : texto.includes(' - ') ? ' - ' : texto.includes('/') ? '/' : null;\n    if (sep) {\n      const parts = texto.split(sep).map(s => s.trim());\n      nd.aluno = parts[0];\n      nd.turma = parts.slice(1).join(' ').trim();\n    } else {\n      nd.aluno = texto; nd.turma = '';\n    }\n    ok = true;\n    resp = `✅ *Cadastro realizado!*\\n\\n👤 ${nd.nome}\\n👶 ${nd.aluno}${nd.turma ? ' — ' + nd.turma : ''}\\n\\nBem-vindo(a)! Envie qualquer mensagem para ver o menu. 🎉`;\n  }\n}\n\nreturn [{ json: { from: d.from, instance: d.instance, resp, prox, nd: JSON.stringify(nd), ok, nome: nd.nome ?? '', aluno: nd.aluno ?? '', turma: nd.turma ?? '' } }];"
+        "jsCode": "const d = $json;\nconst etapa = d.sessaoEtapa, texto = d.texto ?? '', dados = d.sessaoDados ?? {};\nlet nd = { ...dados }, prox = null, resp = '', ok = false;\nconst upper = texto.trim().toUpperCase();\n\nif (etapa && (upper === 'CANCELAR' || upper === 'MENU' || texto.trim() === '0')) {\n  resp = '🚫 Cadastro cancelado. Quando quiser, é só mandar uma mensagem para começar de novo. 😊';\n  prox = null; nd = {};\n} else if (!etapa) {\n  resp = 'Olá! Bem-vindo ao bot da escola. 😊\\n\\nDigite o seu *nome completo* como responsável:';\n  prox = 'aguardando_nome'; nd = {};\n} else if (etapa === 'aguardando_nome') {\n  if (texto.length < 3) { resp = '⚠️ Nome muito curto. Digite seu nome completo.'; prox = 'aguardando_nome'; }\n  else {\n    nd.nome = texto;\n    resp = `Obrigado, *${texto}*! 👋\\n\\nAgora me informe o *nome da criança* e qual *turma/ano* ela está:\\n\\n_(ex: João - 3A, Maria / 2° ano B)_`;\n    prox = 'aguardando_aluno_turma';\n  }\n} else if (etapa === 'aguardando_aluno_turma') {\n  if (texto.length < 2) { resp = '⚠️ Por favor, informe o nome da criança e a turma.'; prox = 'aguardando_aluno_turma'; }\n  else {\n    const sep = texto.includes(',') ? ',' : texto.includes(' - ') ? ' - ' : texto.includes('/') ? '/' : null;\n    if (sep) {\n      const parts = texto.split(sep).map(s => s.trim());\n      nd.aluno = parts[0];\n      nd.turma = parts.slice(1).join(' ').trim();\n    } else {\n      nd.aluno = texto; nd.turma = '';\n    }\n    ok = true;\n    resp = `✅ *Cadastro realizado!*\\n\\n👤 ${nd.nome}\\n👶 ${nd.aluno}${nd.turma ? ' — ' + nd.turma : ''}\\n\\nBem-vindo(a)! Envie qualquer mensagem para ver o menu. 🎉`;\n  }\n}\n\nreturn [{ json: { from: d.from, instance: d.instance, resp, prox, nd: JSON.stringify(nd), ok, nome: nd.nome ?? '', aluno: nd.aluno ?? '', turma: nd.turma ?? '' } }];"
       },
       "id": "es-0001-0001-0001-0001-000000000008",
       "name": "Lógica Cadastro",
@@ -404,7 +404,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const d = $json;\nconst t = (d.texto ?? '').trim();\nconst upper = t.toUpperCase();\nconst b = d.buttonId;\nconst etapa = d.sessaoEtapa ?? '';\n\nlet rota = 'menu';\nif (upper === 'CANCELAR') rota = 'cancelar';\nelse if (etapa.startsWith('autorizacao_')) rota = 'autorizacao';\nelse if (etapa.startsWith('reserva_')) rota = 'reserva';\nelse if (etapa.startsWith('ocorrencia_')) rota = 'ocorrencia';\nelse if (etapa.startsWith('solicitacao_')) rota = 'solicitacao';\nelse if (b === 'btn_agenda' || t === '1') rota = 'agenda';\nelse if (b === 'btn_cardapio' || t === '2') rota = 'cardapio';\nelse if (b === 'btn_autorizacao' || t === '3') rota = 'autorizacao';\nelse if (b === 'btn_reserva' || t === '4') rota = 'reserva';\nelse if (b === 'btn_ocorrencia' || t === '5') rota = 'ocorrencia';\nelse if (b === 'btn_solicitacao' || t === '6') rota = 'solicitacao';\nelse if (b === 'btn_avisos' || t === '7') rota = 'avisos';\n\nreturn [{ json: { ...d, rota } }];"
+        "jsCode": "const d = $json;\nconst t = (d.texto ?? '').trim();\nconst upper = t.toUpperCase();\nconst b = d.buttonId;\nconst etapa = d.sessaoEtapa ?? '';\n\nlet rota = 'menu';\nif (upper === 'CANCELAR') rota = 'cancelar';\nelse if (upper === 'MENU' || t === '0') rota = 'voltarmenu';\nelse if (etapa.startsWith('autorizacao_')) rota = 'autorizacao';\nelse if (etapa.startsWith('reserva_')) rota = 'reserva';\nelse if (etapa.startsWith('ocorrencia_')) rota = 'ocorrencia';\nelse if (etapa.startsWith('solicitacao_')) rota = 'solicitacao';\nelse if (b === 'btn_agenda' || t === '1') rota = 'agenda';\nelse if (b === 'btn_cardapio' || t === '2') rota = 'cardapio';\nelse if (b === 'btn_autorizacao' || t === '3') rota = 'autorizacao';\nelse if (b === 'btn_reserva' || t === '4') rota = 'reserva';\nelse if (b === 'btn_ocorrencia' || t === '5') rota = 'ocorrencia';\nelse if (b === 'btn_solicitacao' || t === '6') rota = 'solicitacao';\nelse if (b === 'btn_avisos' || t === '7') rota = 'avisos';\n\nreturn [{ json: { ...d, rota } }];"
       },
       "id": "es-0001-0001-0001-0001-000000000014",
       "name": "Roteador",
@@ -625,6 +625,29 @@
               },
               "renameOutput": true,
               "outputKey": "menu"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.rota }}",
+                    "rightValue": "voltarmenu",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "voltarmenu"
             }
           ]
         },
@@ -642,7 +665,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://evolution.automacaopme.com.br/message/sendText/{{ $json.instance }}",
+        "url": "=https://evolution.automacaopme.com.br/message/sendText/{{ $('Roteador').item.json.instance }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -661,11 +684,11 @@
           "parameters": [
             {
               "name": "number",
-              "value": "={{ $json.from }}"
+              "value": "={{ $('Roteador').item.json.from }}"
             },
             {
               "name": "text",
-              "value": "={{ '🏫 *EscolaZap*\\n\\nOlá, *' + $json.responsavelNome + '*! 👋\\n👶 ' + $json.responsavelAluno + ' — Turma ' + $json.responsavelTurma + '\\n\\nComo posso ajudar?\\n\\n1️⃣  📅 Agenda & Eventos\\n2️⃣  🍽️ Cardápio da Semana\\n3️⃣  ✅ Autorizar Busca\\n4️⃣  🗓️ Fazer Reserva\\n5️⃣  ⚠️ Registrar Ocorrência\\n6️⃣  📋 Solicitações\\n7️⃣  📢 Meus Avisos\\n\\n_Digite o número da opção desejada_' }}"
+              "value": "={{ '🏫 *EscolaZap*\\n\\nOlá, *' + $('Roteador').item.json.responsavelNome + '*! 👋\\n👶 ' + $('Roteador').item.json.responsavelAluno + ' — Turma ' + $('Roteador').item.json.responsavelTurma + '\\n\\nComo posso ajudar?\\n\\n1️⃣  📅 Agenda & Eventos\\n2️⃣  🍽️ Cardápio da Semana\\n3️⃣  ✅ Autorizar Busca\\n4️⃣  🗓️ Fazer Reserva\\n5️⃣  ⚠️ Registrar Ocorrência\\n6️⃣  📋 Solicitações\\n7️⃣  📢 Meus Avisos\\n\\n_Digite *0* a qualquer momento para voltar aqui, ou *CANCELAR* para encerrar uma operação em andamento._\\n\\n_Digite o número da opção desejada_' }}"
             }
           ]
         },
@@ -1649,6 +1672,44 @@
           }
         }
       },
+      "id": "es-0001-0001-0001-0001-000000000053",
+      "name": "DELETE Sessao Menu",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1680,
+        1760
+      ]
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://ywsobgbpwhykkfolvoml.supabase.co/rest/v1/sessoes_escola?telefone=eq.{{ $json.from }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl3c29iZ2Jwd2h5a2tmb2x2b21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NzY0MzcsImV4cCI6MjA5NjM1MjQzN30.9AT-9X8WX3ecA2_OYOy4tVaJLgNhf3k1lo8rngkWcE8"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
       "id": "es-0001-0001-0001-0001-000000000045",
       "name": "DELETE Sessao Cancelar",
       "type": "n8n-nodes-base.httpRequest",
@@ -2116,6 +2177,24 @@
             "index": 0
           }
         ],
+        [
+          {
+            "node": "Enviar Menu",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "DELETE Sessao Menu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DELETE Sessao Menu": {
+      "main": [
         [
           {
             "node": "Enviar Menu",
