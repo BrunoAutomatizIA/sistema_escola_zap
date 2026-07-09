@@ -37,13 +37,13 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://evolution.automacaopme.com.br/message/sendText/Bot_Escola",
+        "url": "https://evolution.automacaopme.com.br/message/sendText/bot-bruno",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "apikey",
-              "value": "F5E45E6A06AC-4857-807A-923D226DE8E1"
+              "value": "187303942A46-4052-8D89-5A4CA2523ABD"
             }
           ]
         },
