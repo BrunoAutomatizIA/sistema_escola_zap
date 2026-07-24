@@ -1,0 +1,30 @@
+# Ollama self-hosted (Qwen2.5 3B) pra Comunicação → Mensagens (bot de IA do portal dos pais) —
+# ver app_escola_zap_2/specs/comunicacao-mensagens.md. Copiar esta pasta pra VPS em /docker/ollama
+# (mesma convenção de /docker/evolution-api-nhkw) e rodar `docker compose up -d` de dentro dela.
+#
+# IMPORTANTE — VPS compartilhada com n8n + Evolution API do bot WhatsApp já em produção:
+#   - mem_limit fixo abaixo pra não sufocar os outros serviços (ver specs/comunicacao-mensagens.md § 8).
+#   - Sem label de Traefik / porta publicada — só precisa ser alcançável pelo n8n dentro da rede
+#     Docker, nunca exposto na internet.
+#
+# ANTES DE SUBIR: descobrir o nome real da rede Docker do container do n8n
+# (`docker inspect <container-do-n8n> --format '{{ json .NetworkSettings.Networks }}'`, mesmo processo
+# usado pra achar o working_dir do Evolution API) e substituir o placeholder abaixo.
+services:
+  ollama:
+    image: ollama/ollama:latest
+    restart: unless-stopped
+    mem_limit: 4g
+    cpus: 1.5
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - n8n_network
+
+networks:
+  n8n_network:
+    external: true
+    name: SUBSTITUIR_PELO_NOME_REAL_DA_REDE_DO_N8N
+
+volumes:
+  ollama_data:
