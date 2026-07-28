@@ -46,7 +46,7 @@ Toda alteração solicitada pelo usuário é implementada e, em seguida, **já c
 | Serviço | Uso | Credencial no projeto |
 |---|---|---|
 | **n8n** | Plataforma de automação que roda os workflows | host: `n8n.automacaopme.com.br` |
-| **Evolution API** | Gateway WhatsApp | `apikey: 187303942A46-4052-8D89-5A4CA2523ABD` (host: `evolution.automacaopme.com.br`, instance: `bot-bruno`) |
+| **Evolution API** | Gateway WhatsApp | `apikey: 8GGq72xrmZfwzPUPY5zZ2wEFi73pOhQU` (host: `evolution.automacaopme.com.br`, instance: `bot-bruno`, número conectado: 5511961511872 — apikey rotaciona sem aviso, conferir com `docker exec evolution-api-nhkw-api-1 env \| grep AUTHENTICATION_API_KEY` na VPS antes de confiar neste valor) |
 | **Supabase** | Banco PostgreSQL via REST | projeto `AutomatizIA` — `ywsobgbpwhykkfolvoml` (anon key hardcoded em `index.html`) |
 
 > As credenciais estão hardcoded nos arquivos. Em produção com múltiplos clientes, extraí-las para variáveis de ambiente do n8n.

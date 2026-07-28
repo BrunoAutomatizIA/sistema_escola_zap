@@ -52,8 +52,8 @@ SVG no lugar de emojis, botões em formato pílula. O arquivo da variante (`inde
 |---|---|
 | **Supabase** | Projeto `AutomatizIA` · URL: `https://ywsobgbpwhykkfolvoml.supabase.co` |
 | **Supabase anon key** | `eyJhbGci...kWcE8` (ver `index.html`) |
-| **Evolution API** | `https://evolution.automacaopme.com.br` · Instance: `bot-bruno` |
-| **Evolution API key** | `187303942A46-4052-8D89-5A4CA2523ABD` |
+| **Evolution API** | `https://evolution.automacaopme.com.br` · Instance: `bot-bruno` (número conectado: 5511961511872, desde 26/07) |
+| **Evolution API key** | `8GGq72xrmZfwzPUPY5zZ2wEFi73pOhQU` (rotacionada em algum momento antes de 26/07 — a chave antiga `187303942A46-4052-8D89-5A4CA2523ABD` documentada aqui ficou stale e causou 401 tanto em chamadas diretas quanto na credencial salva no n8n; conferir sempre com `docker exec evolution-api-nhkw-api-1 env \| grep AUTHENTICATION_API_KEY` na VPS antes de assumir que está certa) |
 | **n8n** | `https://n8n.automacaopme.com.br` |
 | **Workflow no n8n** | Nomeado **ESCOLA_ZAP** (renomeado de "My workflow" em 05/07) — contém o bot principal *e* o webhook de notificação no mesmo canvas |
 | **Webhook bot** | `POST /webhook/escola-bot` |
@@ -120,12 +120,23 @@ Abrir `index.html` diretamente no browser — não requer servidor, build ou dep
 
 ## Pendências e problemas conhecidos
 
-### Urgente — bot fora do ar
+### Resolvido em 28/07 — bot reconectado
 
-0. **WhatsApp desconectado da instância `bot-bruno`** — em 05/07 a Evolution API caiu com `disconnectionReasonCode: 401` / `"tag":"conflict","type":"device_removed"` (o aparelho vinculado foi removido pelo lado do WhatsApp; não tem relação com o reimport do workflow no n8n). Enquanto não reconectar, o bot não responde nenhuma mensagem.
-   - Tentativa de vincular o WhatsApp pessoal do Bruno (11 98486-9585) falhou com "Couldn't link device" mesmo após limpar a sessão (`DELETE /instance/logout/bot-bruno`) e gerar QR novo — esse número já está no limite de aparelhos conectados (3, perto do limite de 4 do WhatsApp).
-   - **Decisão:** manter o número antigo (+55 11 99897-2460, perfil "Leonardo Buzato 2"). Reconectar pedindo para o Leonardo escanear um QR Code novo (gerado na hora, expira rápido) — sem previsão, depende da disponibilidade dele.
-   - Comando para gerar QR: `GET /instance/connect/bot-bruno` (Evolution API); se a instância estiver travada em `connecting`, rodar `DELETE /instance/logout/bot-bruno` antes.
+0. ~~WhatsApp desconectado da instância `bot-bruno`~~ — **reconectado em 26/07** com o número
+   **5511961511872**, via QR code novo (`GET /instance/connect/bot-bruno` após `DELETE
+   /instance/logout/bot-bruno` pra limpar o estado travado em `connecting`). Após reconectar, o bot
+   ainda não respondia — causas encontradas e corrigidas em 28/07:
+   - **Webhook da instância sumiu** (`GET /webhook/find/bot-bruno` retornava `null`) — provavelmente se
+     perdeu no logout/reconexão. Recriado apontando para `https://n8n.automacaopme.com.br/webhook/escola-bot`
+     via `POST /webhook/set/bot-bruno` com `events: ["MESSAGES_UPSERT"]` (mesmo padrão da instância
+     `Bot_Condominio`, que nunca teve esse problema).
+   - **Credencial da Evolution API salva no n8n estava com a apikey antiga/stale** — o nó "Menu: Enviar
+     Mensagem Principal" (e os demais que chamam `sendText`) falhavam com "Authorization failed - please
+     check your credentials". Corrigido atualizando a apikey na credencial do n8n para o valor atual.
+   - Se o bot voltar a não responder, checar nessa ordem: 1) instância `open` em `fetchInstances`, 2)
+     `webhook/find/bot-bruno` não é `null` e aponta pro n8n, 3) execução aparece em Executions no workflow
+     ESCOLA_ZAP, 4) se a execução dá erro de autorização num nó HTTP Request, é a apikey da credencial do
+     n8n que está desatualizada — conferir a real na VPS (ver linha "Evolution API key" acima).
 
 ### Alta prioridade
 
