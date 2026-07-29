@@ -49,7 +49,12 @@ Toda alteração solicitada pelo usuário é implementada e, em seguida, **já c
 | **Evolution API** | Gateway WhatsApp | `apikey: 8GGq72xrmZfwzPUPY5zZ2wEFi73pOhQU` (host: `evolution.automacaopme.com.br`, instance: `bot-bruno`, número conectado: 5511961511872 — apikey rotaciona sem aviso, conferir com `docker exec evolution-api-nhkw-api-1 env \| grep AUTHENTICATION_API_KEY` na VPS antes de confiar neste valor) |
 | **Supabase** | Banco PostgreSQL via REST | projeto `AutomatizIA` — `ywsobgbpwhykkfolvoml` (anon key hardcoded em `index.html`) |
 
-> As credenciais estão hardcoded nos arquivos. Em produção com múltiplos clientes, extraí-las para variáveis de ambiente do n8n.
+> **No n8n**, a apikey da Evolution API **não** está mais hardcoded em cada nó — desde 29/07 existe uma
+> credencial única "Evolution API - bot-bruno" (Header Auth) usada pelos 11 nós HTTP Request do
+> `ESCOLA_ZAP` que chamam `message/sendText`. Ao trocar a apikey, editar só essa credencial
+> (n8n → Personal → Credentials), nunca mais nó por nó. `index.html`/Supabase anon key continuam
+> hardcoded nos arquivos por enquanto — extrair pra variáveis de ambiente do n8n se for produção com
+> múltiplos clientes.
 
 > `bot_escola.json` e `index.html` já apontam para o projeto Supabase correto (`ywsobgbpwhykkfolvoml`).
 

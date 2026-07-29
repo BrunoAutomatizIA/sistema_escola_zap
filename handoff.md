@@ -54,6 +54,7 @@ SVG no lugar de emojis, botões em formato pílula. O arquivo da variante (`inde
 | **Supabase anon key** | `eyJhbGci...kWcE8` (ver `index.html`) |
 | **Evolution API** | `https://evolution.automacaopme.com.br` · Instance: `bot-bruno` (número conectado: 5511961511872, desde 26/07) |
 | **Evolution API key** | `8GGq72xrmZfwzPUPY5zZ2wEFi73pOhQU` (rotacionada em algum momento antes de 26/07 — a chave antiga `187303942A46-4052-8D89-5A4CA2523ABD` documentada aqui ficou stale e causou 401 tanto em chamadas diretas quanto na credencial salva no n8n; conferir sempre com `docker exec evolution-api-nhkw-api-1 env \| grep AUTHENTICATION_API_KEY` na VPS antes de assumir que está certa) |
+| **Credencial n8n "Evolution API - bot-bruno"** | Header Auth (`apikey` → valor acima), id `75jsC7bhNhVpyi4e`, criada em 29/07 — desde então **todos** os nós HTTP Request do `ESCOLA_ZAP` que chamam `message/sendText` usam essa credencial única (`Generic Credential Type` → `Header Auth`) em vez de ter a apikey colada em cada nó. Ao trocar a apikey, editar só essa credencial (Personal → Credentials) — não precisa mais tocar em nó nenhum do workflow |
 | **n8n** | `https://n8n.automacaopme.com.br` |
 | **Workflow no n8n** | Nomeado **ESCOLA_ZAP** (renomeado de "My workflow" em 05/07) — contém o bot principal *e* o webhook de notificação no mesmo canvas |
 | **Webhook bot** | `POST /webhook/escola-bot` |
@@ -120,23 +121,31 @@ Abrir `index.html` diretamente no browser — não requer servidor, build ou dep
 
 ## Pendências e problemas conhecidos
 
-### Resolvido em 28/07 — bot reconectado
+### Resolvido em 26–29/07 — bot reconectado + apikey consolidada numa credencial só
 
 0. ~~WhatsApp desconectado da instância `bot-bruno`~~ — **reconectado em 26/07** com o número
    **5511961511872**, via QR code novo (`GET /instance/connect/bot-bruno` após `DELETE
    /instance/logout/bot-bruno` pra limpar o estado travado em `connecting`). Após reconectar, o bot
-   ainda não respondia — causas encontradas e corrigidas em 28/07:
+   ainda não respondia — causas encontradas e corrigidas em 28–29/07:
    - **Webhook da instância sumiu** (`GET /webhook/find/bot-bruno` retornava `null`) — provavelmente se
      perdeu no logout/reconexão. Recriado apontando para `https://n8n.automacaopme.com.br/webhook/escola-bot`
      via `POST /webhook/set/bot-bruno` com `events: ["MESSAGES_UPSERT"]` (mesmo padrão da instância
      `Bot_Condominio`, que nunca teve esse problema).
-   - **Credencial da Evolution API salva no n8n estava com a apikey antiga/stale** — o nó "Menu: Enviar
-     Mensagem Principal" (e os demais que chamam `sendText`) falhavam com "Authorization failed - please
-     check your credentials". Corrigido atualizando a apikey na credencial do n8n para o valor atual.
+   - **A apikey da Evolution API estava colada (hardcoded) individualmente em ~10 nós HTTP Request do
+     `bot_escola.json`** (um por fluxo: Cadastro, Menu, Agenda, Cardápio, Autorização, Ocorrência,
+     Solicitação, Aviso, Cancelar, Reserva) — não era uma credencial n8n compartilhada. Corrigir só o nó do
+     Menu (28/07) resolveu aquele fluxo, mas os outros continuaram falhando com "Authorization failed -
+     please check your credentials" um a um conforme testados (ex.: "Reserva: Enviar Resposta" em 29/07).
+   - **Correção definitiva em 29/07:** criada uma credencial única no n8n, tipo **Header Auth**, nome
+     **"Evolution API - bot-bruno"** (id `75jsC7bhNhVpyi4e`), com `apikey` → valor atual. Todos os 11 nós
+     HTTP Request que chamam `message/sendText` foram migrados pra `Authentication: Generic Credential
+     Type → Header Auth` apontando pra essa credencial, removendo o header `apikey` hardcoded de cada um.
+     Agora trocar a apikey é editar 1 credencial, não 10+ nós.
    - Se o bot voltar a não responder, checar nessa ordem: 1) instância `open` em `fetchInstances`, 2)
      `webhook/find/bot-bruno` não é `null` e aponta pro n8n, 3) execução aparece em Executions no workflow
-     ESCOLA_ZAP, 4) se a execução dá erro de autorização num nó HTTP Request, é a apikey da credencial do
-     n8n que está desatualizada — conferir a real na VPS (ver linha "Evolution API key" acima).
+     ESCOLA_ZAP, 4) se a execução dá erro de autorização num nó HTTP Request, atualizar a credencial
+     **"Evolution API - bot-bruno"** (Personal → Credentials) com a apikey real da VPS — não precisa mais
+     editar nó nenhum.
 
 ### Alta prioridade
 
